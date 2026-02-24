@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 920" width="1320" height="920">
+  <defs>
+    <style><![CDATA[
+      text { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      .board { fill: #111827; }
+      .panel { fill: #ffffff; stroke: #d1d5db; stroke-width: 1; }
+      .header { fill: #4f46e5; }
+      .title { font-size: 17px; font-weight: 700; fill: #ffffff; }
+      .label { font-size: 12px; font-weight: 600; fill: #111827; }
+      .body { font-size: 12px; fill: #374151; }
+      .mono { font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 11px; fill: #4338ca; }
+      .warnBox { fill: #fffbeb; stroke: #fde68a; stroke-width: 1; }
+      .okBox { fill: #ecfdf5; stroke: #86efac; stroke-width: 1; }
+      .errBox { fill: #fef2f2; stroke: #fca5a5; stroke-width: 1; }
+      .btnPrimary { fill: #4f46e5; }
+      .btnSecondary { fill: #f3f4f6; stroke: #d1d5db; stroke-width: 1; }
+      .btnDanger { fill: #b91c1c; }
+      .btnTextLight { font-size: 12px; font-weight: 600; fill: #ffffff; }
+      .btnTextDark { font-size: 12px; font-weight: 600; fill: #374151; }
+      .note { font-size: 10px; fill: #6b7280; }
+      .wire { font-size: 10px; fill: #dc2626; font-style: italic; }
+      .flow { font-size: 11px; fill: #1f2937; font-weight: 600; }
+    ]]></style>
+  </defs>
+
+  <rect x="0" y="0" width="1320" height="920" class="board"/>
+  <text x="24" y="28" class="wire">DotEnvUp key mismatch recovery wireframes (desktop + mobile + error + transitions)</text>
+
+  <!-- DESKTOP: mismatch entry -->
+  <rect x="24" y="48" width="610" height="370" rx="8" class="panel"/>
+  <rect x="24" y="48" width="610" height="46" rx="8" class="header"/>
+  <rect x="24" y="84" width="610" height="10" fill="#4f46e5"/>
+  <text x="42" y="76" class="title">DotEnvUp: Key mismatch detected</text>
+
+  <text x="44" y="120" class="label">Cannot decrypt .env.up with current key.</text>
+  <text x="44" y="140" class="body">Required Key-Id from file header:</text>
+  <text x="44" y="156" class="mono">pBEsFwUPu2Q</text>
+  <text x="44" y="178" class="body">Current local Key-Id:</text>
+  <text x="44" y="194" class="mono">WtU83kDRSUY (mismatch)</text>
+
+  <rect x="40" y="208" width="576" height="66" rx="6" class="warnBox"/>
+  <text x="52" y="228" class="label">Safe by default:</text>
+  <text x="52" y="244" class="body">- .env.up is not corrupted; key is different or missing.</text>
+  <text x="52" y="260" class="body">- DotEnvUp will not delete files automatically in this state.</text>
+
+  <rect x="44" y="292" width="184" height="36" rx="6" class="btnPrimary"/>
+  <text x="136" y="314" text-anchor="middle" class="btnTextLight">Find matching key</text>
+  <rect x="238" y="292" width="176" height="36" rx="6" class="btnSecondary"/>
+  <text x="326" y="314" text-anchor="middle" class="btnTextDark">Import key bundle</text>
+  <rect x="424" y="292" width="188" height="36" rx="6" class="btnSecondary"/>
+  <text x="518" y="314" text-anchor="middle" class="btnTextDark">Transfer from old computer</text>
+
+  <rect x="44" y="336" width="220" height="30" rx="6" class="btnDanger"/>
+  <text x="154" y="356" text-anchor="middle" class="btnTextLight">I lost this key (unrecoverable)</text>
+  <text x="272" y="354" class="note">creates metadata marker only, never plaintext secrets</text>
+
+  <!-- DESKTOP: scan progress/results -->
+  <rect x="662" y="48" width="634" height="370" rx="8" class="panel"/>
+  <rect x="662" y="48" width="634" height="46" rx="8" class="header"/>
+  <rect x="662" y="84" width="634" height="10" fill="#4f46e5"/>
+  <text x="680" y="76" class="title">Find matching key on this computer</text>
+
+  <text x="682" y="120" class="label">Scan scope consent</text>
+  <text x="682" y="138" class="body">Quick scan (default): project folder + ~/.dotenvup + Desktop + Documents + Downloads</text>
+  <text x="682" y="154" class="body">Deep scan: full home directory (requires second confirmation)</text>
+  <text x="682" y="170" class="note">Local-only operation. No network calls. User can cancel at any time.</text>
+
+  <rect x="682" y="186" width="592" height="32" rx="4" fill="#e5e7eb"/>
+  <rect x="682" y="186" width="328" height="32" rx="4" fill="#4f46e5"/>
+  <text x="698" y="206" class="btnTextLight">Scanning... 42% (231 files checked)</text>
+
+  <rect x="682" y="230" width="592" height="130" rx="6" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="694" y="252" class="label">Results</text>
+  <text x="694" y="270" class="mono">MATCH   ~/Downloads/laptop-backup.dotenvup-key   keyId=pBEsFwUPu2Q</text>
+  <text x="694" y="286" class="body">MISMATCH ~/.dotenvup/identity                        keyId=WtU83kDRSUY</text>
+  <text x="694" y="302" class="body">INVALID  ~/Desktop/old/key-export.json              wrong bundle format</text>
+  <text x="694" y="320" class="note">Match entries expose only path + key id metadata.</text>
+
+  <rect x="682" y="370" width="150" height="36" rx="6" class="btnPrimary"/>
+  <text x="757" y="392" text-anchor="middle" class="btnTextLight">Use selected key</text>
+  <rect x="842" y="370" width="128" height="36" rx="6" class="btnSecondary"/>
+  <text x="906" y="392" text-anchor="middle" class="btnTextDark">Import manually</text>
+  <rect x="980" y="370" width="118" height="36" rx="6" class="btnSecondary"/>
+  <text x="1039" y="392" text-anchor="middle" class="btnTextDark">Deep scan</text>
+  <rect x="1108" y="370" width="166" height="36" rx="6" class="btnSecondary"/>
+  <text x="1191" y="392" text-anchor="middle" class="btnTextDark">Cancel and keep encrypted</text>
+
+  <!-- MOBILE/NARROW -->
+  <rect x="24" y="444" width="370" height="430" rx="8" class="panel"/>
+  <rect x="24" y="444" width="370" height="42" rx="8" class="header"/>
+  <rect x="24" y="476" width="370" height="10" fill="#4f46e5"/>
+  <text x="40" y="470" class="title">Key mismatch</text>
+
+  <text x="40" y="512" class="body">Required Key-Id</text>
+  <text x="40" y="528" class="mono">pBEsFwUPu2Q</text>
+  <text x="40" y="548" class="body">Current Key-Id</text>
+  <text x="40" y="564" class="mono">WtU83kDRSUY</text>
+
+  <rect x="36" y="580" width="346" height="64" rx="6" class="warnBox"/>
+  <text x="48" y="602" class="body">Encrypted file is intact.</text>
+  <text x="48" y="618" class="body">Recovery options below.</text>
+
+  <rect x="40" y="656" width="338" height="34" rx="6" class="btnPrimary"/>
+  <text x="209" y="678" text-anchor="middle" class="btnTextLight">Find key on this computer</text>
+  <rect x="40" y="698" width="338" height="34" rx="6" class="btnSecondary"/>
+  <text x="209" y="720" text-anchor="middle" class="btnTextDark">Import key bundle</text>
+  <rect x="40" y="740" width="338" height="34" rx="6" class="btnSecondary"/>
+  <text x="209" y="762" text-anchor="middle" class="btnTextDark">From another computer</text>
+  <rect x="40" y="782" width="338" height="34" rx="6" class="btnDanger"/>
+  <text x="209" y="804" text-anchor="middle" class="btnTextLight">I lost key (unrecoverable)</text>
+
+  <!-- ERROR + unrecoverable -->
+  <rect x="420" y="444" width="876" height="430" rx="8" class="panel"/>
+  <rect x="420" y="444" width="876" height="42" rx="8" class="header"/>
+  <rect x="420" y="476" width="876" height="10" fill="#4f46e5"/>
+  <text x="438" y="470" class="title">Unrecoverable path + transfer guide</text>
+
+  <rect x="438" y="506" width="840" height="82" rx="6" class="errBox"/>
+  <text x="452" y="530" class="label">If no matching key can be found:</text>
+  <text x="452" y="548" class="body">- Decryption of this .env.up is cryptographically impossible without original private key.</text>
+  <text x="452" y="564" class="body">- Keep file for future recovery and create marker: .env.up.key-pBEsFwUPu2Q.txt.</text>
+  <text x="452" y="580" class="body">- Never auto-delete .env.up in this flow.</text>
+
+  <rect x="438" y="600" width="840" height="110" rx="6" class="okBox"/>
+  <text x="452" y="622" class="label">Another computer flow</text>
+  <text x="452" y="640" class="mono">old machine: up key export backup.dotenvup-key</text>
+  <text x="452" y="656" class="mono">new machine: up key import backup.dotenvup-key</text>
+  <text x="452" y="674" class="body">After import, retry unlock/lock automatically.</text>
+  <text x="452" y="692" class="note">UI exposes a copy button for these commands.</text>
+
+  <text x="438" y="732" class="flow">Transition notes</text>
+  <text x="438" y="750" class="body">MismatchDetected -> RecoveryAssistant -> ScanOrImport -> KeyMatch -> RetryOriginalAction</text>
+  <text x="438" y="768" class="body">MismatchDetected -> RecoveryAssistant -> Unrecoverable -> KeepEncrypted + MarkerFile(optional)</text>
+
+  <rect x="438" y="792" width="166" height="36" rx="6" class="btnPrimary"/>
+  <text x="521" y="814" text-anchor="middle" class="btnTextLight">Retry unlock now</text>
+  <rect x="614" y="792" width="182" height="36" rx="6" class="btnSecondary"/>
+  <text x="705" y="814" text-anchor="middle" class="btnTextDark">Create marker file only</text>
+  <rect x="806" y="792" width="194" height="36" rx="6" class="btnSecondary"/>
+  <text x="903" y="814" text-anchor="middle" class="btnTextDark">Open troubleshooting docs</text>
+  <rect x="1010" y="792" width="268" height="36" rx="6" class="btnSecondary"/>
+  <text x="1144" y="814" text-anchor="middle" class="btnTextDark">Dismiss (leave .env.up untouched)</text>
+</svg>

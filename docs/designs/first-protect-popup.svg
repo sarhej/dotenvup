@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 560 520" width="560" height="520">
+  <defs>
+    <style><![CDATA[
+      text { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+      .title { font-size: 18px; font-weight: 700; fill: #fff; }
+      .body { font-size: 13px; fill: #374151; }
+      .body-bold { font-size: 13px; font-weight: 600; fill: #1a1a2e; }
+      .code-text { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 12px; fill: #6366f1; }
+      .warning { font-size: 12px; fill: #92400e; }
+      .warning-bold { font-size: 12px; font-weight: 600; fill: #92400e; }
+      .promo { font-size: 12px; fill: #374151; }
+      .promo-bold { font-size: 13px; font-weight: 600; fill: #4f46e5; }
+      .promo-link { font-size: 12px; fill: #6366f1; text-decoration: underline; }
+      .btn-text { font-size: 14px; font-weight: 600; fill: #fff; }
+      .btn-text-secondary { font-size: 14px; font-weight: 500; fill: #6b7280; }
+      .note { font-size: 10px; fill: #9ca3af; font-style: italic; }
+      .wireframe-label { font-size: 9px; fill: #dc2626; font-style: italic; }
+    ]]></style>
+    <!-- Lock icon symbol -->
+    <symbol id="lock-shield" viewBox="0 0 24 24">
+      <rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="16.5" r="1.5" fill="currentColor"/>
+    </symbol>
+    <!-- Warning triangle icon -->
+    <symbol id="warn-icon" viewBox="0 0 20 20">
+      <polygon points="10,2 19,18 1,18" fill="none" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round"/>
+      <text x="10" y="15" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">!</text>
+    </symbol>
+    <!-- Lightbulb icon -->
+    <symbol id="bulb-icon" viewBox="0 0 20 20">
+      <circle cx="10" cy="9" r="6" fill="none" stroke="#4f46e5" stroke-width="1.5"/>
+      <line x1="8" y1="16" x2="12" y2="16" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="8" y1="18" x2="12" y2="18" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="10" y1="3" x2="10" y2="5" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+
+  <!-- Background (VS Code dark environment simulation) -->
+  <rect width="560" height="520" fill="#1e1e2e" rx="12"/>
+
+  <!-- Webview panel (white card) with simple shadow -->
+  <rect x="23" y="20" width="520" height="488" rx="8" fill="#00000020"/>
+  <rect x="20" y="16" width="520" height="488" rx="8" fill="#ffffff"/>
+
+  <!-- Header bar (indigo) -->
+  <rect x="20" y="16" width="520" height="56" rx="8" fill="#6366f1"/>
+  <rect x="20" y="48" width="520" height="24" fill="#6366f1"/>
+  <use xlink:href="#lock-shield" x="36" y="28" width="24" height="24" color="#fff"/>
+  <text x="68" y="47" class="title">Protect Your Secrets</text>
+
+  <!-- Wireframe annotation -->
+  <text x="510" y="36" text-anchor="end" class="wireframe-label">v1 &#x2014; First Protect consent popup</text>
+
+  <!-- Section 1: What happens -->
+  <text x="44" y="98" class="body-bold">What will happen:</text>
+  <text x="44" y="116" class="body">DotEnvUp will encrypt your .env file locally using</text>
+  <text x="44" y="132" class="body">X25519 + XChaCha20-Poly1305 (the same crypto used by</text>
+  <text x="44" y="148" class="body">Signal and WireGuard). Your secrets stay on your machine.</text>
+
+  <!-- Section 2: Key storage (green box) -->
+  <rect x="36" y="164" width="488" height="68" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="52" y="186" class="body-bold">Where your key is stored:</text>
+  <text x="52" y="206" class="code-text">~/.dotenvup/identity</text>
+  <text x="52" y="222" class="body">(like ~/.ssh &#x2014; permissions 600, only you can access it)</text>
+
+  <!-- Section 3: Warning (yellow box) -->
+  <rect x="36" y="244" width="488" height="56" rx="6" fill="#fffbeb" stroke="#fde68a" stroke-width="1"/>
+  <use xlink:href="#warn-icon" x="42" y="252" width="18" height="18" color="#92400e"/>
+  <text x="64" y="266" class="warning-bold">This key is LOCAL to this machine.</text>
+  <text x="64" y="284" class="warning">If you lose it, encrypted .env.up files cannot be recovered.</text>
+
+  <!-- Section 4: UnknownPassword promo (indigo box) -->
+  <rect x="36" y="312" width="488" height="96" rx="6" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1"/>
+  <use xlink:href="#bulb-icon" x="42" y="322" width="18" height="18"/>
+  <text x="64" y="336" class="promo-bold">Need to share secrets with your team or AI agents?</text>
+  <text x="64" y="354" class="promo">UnknownPassword adds encrypted sharing, safe AI agent</text>
+  <text x="64" y="370" class="promo">access, automatic key backup, and team management &#x2014; so</text>
+  <text x="64" y="386" class="promo">you never lose a key or leak a secret.</text>
+  <text x="64" y="402" class="promo-link">Learn more at unknownpassword.com &#x2192;</text>
+
+  <!-- Buttons -->
+  <!-- Secondary: Cancel -->
+  <rect x="128" y="424" width="88" height="42" rx="6" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+  <text x="172" y="450" text-anchor="middle" class="btn-text-secondary">Cancel</text>
+
+  <!-- Primary: Protect My .env -->
+  <rect x="228" y="424" width="180" height="42" rx="6" fill="#6366f1"/>
+  <text x="318" y="450" text-anchor="middle" class="btn-text">Protect My .env</text>
+
+  <!-- Footer note -->
+  <text x="280" y="488" text-anchor="middle" class="note">Shown once on first protect. Key storage can be changed in settings.</text>
+
+</svg>

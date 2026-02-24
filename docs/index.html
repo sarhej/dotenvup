@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DotEnvUp - .env files with memory and a lock</title>
+    <meta name="description" content="Open-source encrypted .env format. Zero code changes. Safe to commit.">
+    <link rel="icon" type="image/svg+xml" href="assets/logo-dark.svg">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --text: #e2e8f0;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #1e293b;
+            --border: #334155;
+            --code-bg: #1e293b;
+            --code-text: #a5b4fc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 0 4rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .logo img {
+            height: 32px;
+            width: 32px;
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 0.95rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        nav a:hover {
+            opacity: 1;
+            color: var(--primary);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+        }
+
+        .install-block {
+            background: var(--code-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9rem;
+            color: var(--code-text);
+            border: 1px solid var(--border);
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 4rem;
+        }
+
+        .install-section {
+            margin: 2rem 0 4rem;
+        }
+
+        .install-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #fff;
+        }
+
+        .install-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .install-section ol {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            padding-left: 1.2rem;
+        }
+
+        .install-section li {
+            margin-bottom: 0.4rem;
+        }
+
+        .install-section a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .install-section a:hover {
+            text-decoration: underline;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.5);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .feature-card h3 {
+            margin-top: 0;
+            color: #fff;
+        }
+
+        .feature-card p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+
+        .code-preview {
+            background: #000;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .code-preview pre {
+            margin: 0;
+            font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+
+        .comment { color: #64748b; }
+        .keyword { color: #c084fc; }
+        .string { color: #86efac; }
+        .meta { color: #38bdf8; }
+
+        footer {
+            margin-top: 6rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 2.5rem; }
+            .header { flex-direction: column; gap: 1rem; }
+            nav { margin-top: 1rem; }
+            nav a { margin: 0 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="logo">
+                <img src="assets/logo-dark.svg" alt="DotEnvUp Logo">
+                DotEnvUp
+            </a>
+            <nav>
+                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">Docs</a>
+                <a href="https://github.com/sarhej/dotenvup">GitHub</a>
+                <a href="https://unknownpassword.com">UnknownPassword</a>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <h1>.env files, but with memory<br>— and a lock.</h1>
+            <p class="tagline">
+                Open-source encrypted .env format. Zero code changes. Safe to commit.<br>
+                Stop sharing secrets over Slack.
+            </p>
+
+            <div class="cta-group">
+                <a href="https://github.com/sarhej/dotenvup/releases" class="btn btn-primary">Download Extension (.vsix)</a>
+                <a href="https://github.com/sarhej/dotenvup" class="btn btn-secondary">View on GitHub</a>
+            </div>
+
+            <div class="install-block">
+                <span>npm install -g @dotenvup/cli</span>
+            </div>
+        </section>
+
+        <section class="install-section">
+            <h2>Install</h2>
+            <div class="install-grid">
+                <div class="feature-card">
+                    <h3>VS Code / Cursor Extension</h3>
+                    <p>One-click lock/unlock from the status bar. No terminal needed.</p>
+                    <ol>
+                        <li>Download <code>.vsix</code> from <a href="https://github.com/sarhej/dotenvup/releases">Releases</a></li>
+                        <li>In your editor: <strong>Extensions</strong> → <code>...</code> → <strong>Install from VSIX...</strong></li>
+                        <li>Or from terminal:</li>
+                    </ol>
+                    <div class="code-preview" style="margin: 0.5rem 0;">
+<pre><code><span class="comment"># VS Code</span>
+code --install-extension dotenvup-0.2.0.vsix
+
+<span class="comment"># Cursor</span>
+cursor --install-extension dotenvup-0.2.0.vsix</code></pre>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <h3>CLI</h3>
+                    <p>For terminal workflows, CI/CD, and AI agents.</p>
+                    <div class="code-preview" style="margin: 0.5rem 0;">
+<pre><code>npm install -g @dotenvup/cli
+
+up init            <span class="comment"># generate keypair</span>
+up import .env     <span class="comment"># encrypt → .env.up</span>
+up lock            <span class="comment"># delete plaintext</span>
+up unlock 5m       <span class="comment"># decrypt for 5 min</span>
+up run -- npm start <span class="comment"># no file on disk</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="code-preview">
+<pre><code><span class="meta">#!dotenvup v1</span>
+<span class="comment"># Encrypted-By: @alice</span>
+<span class="comment"># Encrypted-For: @bob, @charlie</span>
+
+<span class="keyword">[keys]</span>
+DB_HOST          v3  2026-02-10T08:00:00Z  @alice    staging cluster
+DB_PASSWORD      v5  2026-02-15T10:30:00Z  @alice    <span class="comment"># rotated</span>
+API_KEY          v2  2026-02-01T00:00:00Z  @alice    test key
+
+<span class="keyword">[encrypted]</span>
+recipient:@bob    nonce:abc123... payload:SGVsbG8g...</code></pre>
+        </div>
+
+        <section class="features">
+            <div class="feature-card">
+                <h3>🔒 Encrypted at Rest</h3>
+                <p>Values, comments, and structure are encrypted on disk using XChaCha20-Poly1305. No more plaintext secrets in your repo.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📝 Comments Preserved</h3>
+                <p>Your <code># Database</code> headers, blank lines, and commented-out secrets survive the encrypt/decrypt roundtrip perfectly.</p>
+            </div>
+            <div class="feature-card">
+                <h3>⚡️ Zero Code Changes</h3>
+                <p>Works with existing <code>dotenv</code> libraries. Just <code>up unlock</code> to work, and <code>up lock</code> when done. Or use <code>up run</code>.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📍 Metadata</h3>
+                <p>See who changed a key and when, without decrypting it. The "half-open envelope" format keeps context visible.</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>DotEnvUp is an open-source project by <a href="https://unknownpassword.com">UnknownPassword</a>.</p>
+            <p>Released under the MIT License.</p>
+        </footer>
+    </div>
+</body>
+</html>

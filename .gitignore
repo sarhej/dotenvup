@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+*.tsbuildinfo
+
+# Environment files (the whole point of this project)
+.env
+.env.local
+.env.*.local
+
+# DotEnvUp backups and keys
+.env.up.bak*
+.env.up.key*
+*.dotenvup-key
+*.key
+*.key.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+.vscode-test/
+.qa-fake-project/
+
+# VS Code extension packaging
+*.vsix

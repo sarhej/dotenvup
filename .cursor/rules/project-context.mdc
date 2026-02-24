@@ -1,0 +1,56 @@
+---
+description: Project context for DotEnvUp — always loaded
+globs: 
+alwaysApply: true
+---
+
+# Project: DotEnvUp
+
+## What This Is
+
+DotEnvUp is an open-source encrypted `.env` file format (`.env.up`) and tooling ecosystem. It makes secrets safe by default without changing how developers work.
+
+**Tagline:** ".env files, but with memory — and a lock."
+
+## Architecture
+
+This repo (`sarhej/dotenvup`) is the **open-source format and tools** (MIT). It includes everything needed for local secret management: format, CLI, Node.js library, and VS Code/Cursor extension.
+
+For team sharing, audit, and governance: [unknownpassword.com](https://unknownpassword.com).
+
+## Packages in This Repo
+
+| Package | Path | npm | Purpose |
+|---|---|---|---|
+| `@dotenvup/format` | `packages/format/` | Published 0.0.1 | Core `.env.up` parser & writer |
+| `@dotenvup/node` | `packages/node/` | Published 0.0.1 | Drop-in `dotenv` replacement |
+| `@dotenvup/cli` | `packages/cli/` | Published 0.0.1 | CLI tool (`up lock/unlock/run/show`) |
+| DotEnvUp Extension | `packages/vscode-dotenvup/` | Not yet | VS Code extension — lock/unlock, metadata, staleness |
+
+## Key Concepts
+
+- **`.env.up` format**: Encrypted `.env` with cleartext metadata header (key names, versions, timestamps, authors) and encrypted values. "Half-open envelope." See `docs/SECURITY.md` and `docs/USER_GUIDE.md`. Types in `packages/format/src/index.ts`.
+- **Lock/unlock UX**: Status bar button temporarily decrypts `.env.up` → generates standard `.env` → auto-locks after timer or process exit.
+- **Zero code changes**: Existing `dotenv` libraries and `process.env` work unchanged. The `.env` file just appears/disappears.
+
+## Key Documents
+
+- `docs/USER_GUIDE.md` — Commands, workflows, drift detection
+- `docs/SECURITY.md` — Crypto, threat model, what is encrypted
+- `docs/TROUBLESHOOTING.md` — Common errors, key recovery
+- `docs/ROADMAP.md` — Extension hardening, native installers
+
+## Current State
+
+CLI (`@dotenvup/cli`) and format (`@dotenvup/format`) are **implemented and production-ready** (except Windows testing). The VS Code extension is MVP — lock/unlock, import, status, show keys, key management, recovery. Repo builds clean and all tests pass (macOS, Ubuntu).
+
+## For AI Agents
+
+Full automation guide: [AGENTS.md](AGENTS.md) at repo root.
+
+- **Never assume `.env` exists** — it may be locked. Use `up run -- <command>` to inject env.
+- Use `up status` (or `up status --json`) to check lock state and drift.
+- Prefer `up run -- <command>` when a command needs env (tests, build, run).
+- In non-interactive use: `--yes`, `--force`, `--duration`, `--force-delete`, `--json`.
+- Exit codes: `0` success, `1` user/usage error, `2` system error.
+- Do not commit `.env`; `.env.up` is safe to commit.

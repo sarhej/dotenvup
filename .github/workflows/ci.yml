@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --workspace=@dotenvup/format
+      - run: npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=dotenvup
+      - name: Test (Linux — needs virtual display for VS Code)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm test
+      - name: Test (macOS)
+        if: runner.os != 'Linux'
+        run: npm test

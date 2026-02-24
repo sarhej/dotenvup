@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "DotEnvUp",
+  "scopeName": "source.dotenvup",
+  "patterns": [
+    { "include": "#shebang" },
+    { "include": "#section" },
+    { "include": "#comment" },
+    { "include": "#header-field" },
+    { "include": "#key-metadata" },
+    { "include": "#encrypted-block" }
+  ],
+  "repository": {
+    "shebang": {
+      "match": "^#!dotenvup.*$",
+      "name": "comment.line.shebang.dotenvup"
+    },
+    "section": {
+      "match": "^\\[([a-zA-Z_-]+)\\]\\s*$",
+      "name": "entity.name.section.dotenvup",
+      "captures": {
+        "1": { "name": "keyword.control.section.dotenvup" }
+      }
+    },
+    "comment": {
+      "match": "^\\s*#.*$",
+      "name": "comment.line.number-sign.dotenvup"
+    },
+    "header-field": {
+      "match": "^#\\s*([A-Za-z-]+):\\s*(.*)$",
+      "captures": {
+        "1": { "name": "keyword.other.header-field.dotenvup" },
+        "2": { "name": "string.unquoted.header-value.dotenvup" }
+      }
+    },
+    "key-metadata": {
+      "match": "^([A-Z_][A-Z0-9_]*)\\s+(v\\d+)\\s+(\\S+)\\s+(@\\S+)(.*)?$",
+      "captures": {
+        "1": { "name": "variable.other.key-name.dotenvup" },
+        "2": { "name": "constant.numeric.version.dotenvup" },
+        "3": { "name": "string.unquoted.timestamp.dotenvup" },
+        "4": { "name": "entity.name.tag.author.dotenvup" },
+        "5": { "name": "comment.inline.note.dotenvup" }
+      }
+    },
+    "encrypted-block": {
+      "match": "^(recipient:\\S+)\\s+(nonce:\\S+)\\s+(payload:\\S+)$",
+      "captures": {
+        "1": { "name": "keyword.other.recipient.dotenvup" },
+        "2": { "name": "constant.other.nonce.dotenvup" },
+        "3": { "name": "string.other.payload.dotenvup" }
+      }
+    }
+  }
+}

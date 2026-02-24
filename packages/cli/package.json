@@ -1,0 +1,47 @@
+{
+  "name": "@dotenvup/cli",
+  "version": "0.1.0",
+  "description": "CLI tool for managing .env.up encrypted environment files",
+  "keywords": [
+    "dotenv",
+    "env",
+    "encrypted",
+    "secrets",
+    "cli",
+    "dotenvup"
+  ],
+  "homepage": "https://dotenvup.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarhej/dotenvup.git",
+    "directory": "packages/cli"
+  },
+  "license": "MIT",
+  "author": "UnknownPassword",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "up": "./dist/bin.js",
+    "dotenvup": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dotenvup/format": "*",
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "typescript": "^5.7.0"
+  }
+}

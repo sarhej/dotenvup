@@ -1,0 +1,49 @@
+{
+  "name": "@dotenvup/format",
+  "version": "0.1.0",
+  "description": "Core parser and writer for the .env.up encrypted environment file format",
+  "keywords": [
+    "dotenv",
+    "env",
+    "encrypted",
+    "secrets",
+    "environment",
+    "dotenvup"
+  ],
+  "homepage": "https://dotenvup.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarhej/dotenvup.git",
+    "directory": "packages/format"
+  },
+  "license": "MIT",
+  "author": "UnknownPassword",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "libsodium-wrappers": "^0.8.2",
+    "dotenv": "^16.4.5"
+  }
+}

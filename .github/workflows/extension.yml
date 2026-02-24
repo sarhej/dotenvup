@@ -1,0 +1,43 @@
+name: Extension
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  lint-build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --workspace=@dotenvup/format
+      - run: npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=dotenvup
+      - run: npm run lint --workspace=dotenvup
+      - run: xvfb-run -a npm run test --workspace=dotenvup
+
+  package-on-release:
+    needs: lint-build-test
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --workspace=@dotenvup/format
+      - run: npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=dotenvup
+      - run: npx @vscode/vsce package --no-dependencies -o dotenvup-${{ github.event.release.tag_name }}.vsix
+        working-directory: packages/vscode-dotenvup
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: packages/vscode-dotenvup/dotenvup-${{ github.event.release.tag_name }}.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
