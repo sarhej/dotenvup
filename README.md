@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/logo-dark.svg" alt="DotEnvUp Logo" width="128" height="128" />
+</p>
+
 # DotEnvUp
 
 > `.env` files, but with memory — and a lock.

@@ -1,9 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect x="4" y="2" width="24" height="28" rx="3" fill="#f5f5f5" stroke="#555" stroke-width="1.5"/>
-  <rect x="8" y="7" width="16" height="2" rx="1" fill="#888"/>
-  <rect x="8" y="11" width="12" height="2" rx="1" fill="#aaa"/>
-  <rect x="8" y="15" width="14" height="2" rx="1" fill="#aaa"/>
-  <circle cx="22" cy="23" r="6" fill="#2d7d46"/>
-  <rect x="20.5" y="19.5" width="3" height="4.5" rx="1" fill="none" stroke="#fff" stroke-width="1.2"/>
-  <rect x="19" y="22.5" width="6" height="4.5" rx="1" fill="#fff"/>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <mask id="arrow-mask">
+    <rect width="256" height="256" fill="white"/>
+    <path d="M128 128L160 160H144V192H112V160H96L128 128Z" fill="black"/>
+  </mask>
+  <g mask="url(#arrow-mask)">
+    <!-- Lock Shackle -->
+    <path d="M128 24C101.49 24 80 45.49 80 72V104H176V72C176 45.49 154.51 24 128 24ZM144 104H112V72C112 63.163 119.163 56 128 56C136.837 56 144 63.163 144 72V104Z" fill="#3DDC84"/>
+    <!-- Lock Body -->
+    <rect x="48" y="104" width="160" height="128" rx="24" fill="#3DDC84"/>
+  </g>
 </svg>
