@@ -29,6 +29,15 @@ Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.u
 - VS Code ^1.85.0 or Cursor
 - Node.js 20+
 
+## Install (from VSIX)
+
+Download the latest [.vsix from Releases](https://github.com/sarhej/dotenvup/releases) (e.g. [v0.3.0](https://github.com/sarhej/dotenvup/releases/download/v0.3.0/dotenvup-0.3.0.vsix)), then **Extensions** → `...` → **Install from VSIX...**, or:
+
+```bash
+code --install-extension dotenvup-0.3.0.vsix   # VS Code
+cursor --install-extension dotenvup-0.3.0.vsix # Cursor
+```
+
 ## Extension Settings
 
 | Setting | Default | Description |

@@ -69,7 +69,7 @@ graph TD
 | [`@dotenvup/format`](./packages/format) | Core `.env.up` format parser & writer | [![npm](https://img.shields.io/npm/v/@dotenvup/format)](https://www.npmjs.com/package/@dotenvup/format) |
 | [`@dotenvup/node`](./packages/node) | Drop-in `dotenv` replacement for Node.js | [![npm](https://img.shields.io/npm/v/@dotenvup/node)](https://www.npmjs.com/package/@dotenvup/node) |
 | [`@dotenvup/cli`](./packages/cli) | CLI tool (`up lock`, `up unlock`, `up run`) | [![npm](https://img.shields.io/npm/v/@dotenvup/cli)](https://www.npmjs.com/package/@dotenvup/cli) |
-| [DotEnvUp Extension](./packages/vscode-dotenvup) | VS Code / Cursor extension — local secret management | [Install from VSIX](./packages/vscode-dotenvup) |
+| [DotEnvUp Extension](./packages/vscode-dotenvup) | VS Code / Cursor extension — local secret management | [Download .vsix (v0.3.0)](https://github.com/sarhej/dotenvup/releases/download/v0.3.0/dotenvup-0.3.0.vsix) |
 
 ## The `.env.up` Format
 
@@ -126,19 +126,20 @@ flowchart LR
 - [Security Model](docs/SECURITY.md) — What is encrypted, threat model
 - [File Type Registration](docs/FILE_TYPE.md) — MIME types, UTI, icons for OS integration
 - [Roadmap](docs/ROADMAP.md) — Extension hardening, native installers, OS file type registration
+- [Publishing to the Marketplace](docs/PUBLISHING.md) — How to publish the VS Code extension (maintainers)
 
 ## Install
 
 ### VS Code / Cursor Extension (recommended)
 
-Download the `.vsix` from [Releases](https://github.com/sarhej/dotenvup/releases), then:
+Download the `.vsix` from [Releases](https://github.com/sarhej/dotenvup/releases) ([v0.3.0](https://github.com/sarhej/dotenvup/releases/tag/v0.3.0)), then:
 
 ```bash
 # VS Code
-code --install-extension dotenvup-0.2.0.vsix
+code --install-extension dotenvup-0.3.0.vsix
 
 # Cursor
-cursor --install-extension dotenvup-0.2.0.vsix
+cursor --install-extension dotenvup-0.3.0.vsix
 ```
 
 Or in the editor: **Extensions** → `...` menu → **Install from VSIX...** → select the file.
