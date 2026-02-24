@@ -173,6 +173,13 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
           autoLockTimer = null;
           return;
         }
+        // SAFETY: never delete .env if it has changes not saved to .env.up (user would lose data)
+        const lockCmd = await import('./lock');
+        if (privKey && (await lockCmd.envHasDrift(envPath, envUpPath, privKey))) {
+          logger.error('DotEnvUp: Auto-lock skipped — .env has changes not saved to .env.up. Save them with DotEnvUp: Import, then lock.');
+          autoLockTimer = null;
+          return;
+        }
         try {
           await fs.unlink(envPath);
           logger.info('DotEnvUp: Auto-locked — .env removed');

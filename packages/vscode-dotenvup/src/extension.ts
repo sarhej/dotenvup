@@ -292,6 +292,12 @@ export function deactivate(): void {
         logger.error(`DotEnvUp: BLOCKED delete during deactivate — ${safeCheck.reason}`);
         continue;
       }
+      // Never delete .env if it has changes not saved to .env.up (user would lose data)
+      const lockCmd = await import('./commands/lock');
+      if (privateKey && (await lockCmd.envHasDrift(envPath, envUpPath, privateKey))) {
+        logger.error('DotEnvUp: Left .env in place on close — it has changes not saved to .env.up. Save with DotEnvUp: Import, then lock.');
+        continue;
+      }
       try {
         await fsP.unlink(envPath);
         logger.debug('DotEnvUp: Deactivate removed .env', { root });

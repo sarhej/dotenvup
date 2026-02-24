@@ -9,6 +9,37 @@ import * as fs from 'fs/promises';
 import * as logger from '../logger';
 import type { ExtensionKeyStore } from '../keystore';
 
+/**
+ * Returns true if .env has changes not saved to .env.up (drift).
+ * Used by auto-lock and deactivate to avoid deleting .env and losing data.
+ */
+export async function envHasDrift(
+  envPath: string,
+  envUpPath: string,
+  privateKey: Uint8Array,
+): Promise<boolean> {
+  const { parseEnvFile, entriesMatch, parse, decryptAny } = await import('@dotenvup/format');
+  let envContent: string;
+  try {
+    envContent = await fs.readFile(envPath, 'utf8');
+  } catch {
+    return false; // no .env or unreadable → no drift
+  }
+  const envEntries = parseEnvFile(envContent);
+  if (Object.keys(envEntries).length === 0) return false;
+
+  let decrypted: Record<string, string>;
+  try {
+    const content = await fs.readFile(envUpPath, 'utf8');
+    const file = parse(content);
+    const result = await decryptAny(file, privateKey, '@local');
+    decrypted = result.entries;
+  } catch {
+    return true; // can't decrypt → assume drift, do not delete
+  }
+  return !entriesMatch(envEntries, decrypted);
+}
+
 function formatDiffSummary(diff: { added: string[]; removed: string[]; changed: string[] }): string {
   const parts: string[] = [];
   if (diff.added.length) parts.push(`+${diff.added.length} new`);
@@ -128,13 +159,20 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
     const diff = entriesDiff(decrypted, envEntries);
     const summary = formatDiffSummary(diff);
     const choice = await vscode.window.showWarningMessage(
-      `Your .env has changes not saved to .env.up (${summary}). Lock anyway? Changes will be lost.`,
-      'Lock (discard changes)',
+      `Your .env has changes not saved to .env.up (${summary}). Save them and lock?`,
+      'Save to .env.up & Lock',
       'Cancel',
     );
-    if (choice !== 'Lock (discard changes)') {
+    if (choice !== 'Save to .env.up & Lock') {
       return;
     }
+    const importCmd = await import('./import');
+    const imported = await importCmd.run(keystore, root, { silent: true });
+    if (!imported) {
+      logger.error('DotEnvUp: Import failed. .env preserved.');
+      return;
+    }
+    return run(keystore, root, { skipConfirm: true });
   }
 
   const config = vscode.workspace.getConfiguration('dotenvup');

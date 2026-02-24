@@ -2,6 +2,21 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.3.0] - 2026-02-24
+
+### Added
+
+- **Lock with drift: Save & Lock** — When `.env` has changes not saved to `.env.up`, Lock now offers only "Save to .env.up & Lock" or "Cancel". Choosing Save & Lock runs Import (preserves your changes into `.env.up`) then locks. No option to discard changes.
+- **Drift check on auto-lock** — Timer auto-lock no longer deletes `.env` when it has unsaved-to-.env.up changes. It skips the lock and logs so you can Import then Lock manually.
+- **Drift check on close** — Closing VS Code/Cursor no longer deletes `.env` when it has unsaved-to-.env.up changes. `.env` is left in place with a log message.
+- **Tests** — New test suite "Lock with drift" (Save & Lock preserves changes, Cancel leaves files unchanged, dialog has no discard option). Runs when `@dotenvup/format` is loadable.
+- **Safety audit** — `packages/vscode-dotenvup/docs/ENV_DELETION_SAFETY_AUDIT.md` documents every code path that can delete or overwrite `.env` and its guard.
+
+### Fixed
+
+- **Data loss prevention** — Lock could previously offer "Lock (discard changes)", which would delete a saved `.env` and lose new lines. That option is removed; the only way to lock when there is drift is to save first (Save to .env.up & Lock).
+- **Auto-lock and deactivate** — They previously deleted `.env` after a timer or on close without checking drift, so users could lose data if they had edited `.env` and not run Import. Both paths now check drift and skip deletion when `.env` has changes not in `.env.up`.
+
 ## [0.1.2] - 2026-02-24
 
 ### Added
