@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dotenvup.com/sitemap.xml

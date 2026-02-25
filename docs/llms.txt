@@ -1,0 +1,68 @@
+# DotEnvUp
+
+> DotEnvUp is an open-source encrypted .env file format (.env.up) and tooling ecosystem for developers.
+
+## What is DotEnvUp?
+
+DotEnvUp encrypts .env files into .env.up files that are safe to commit to Git. It uses hybrid public-key encryption (X25519 + XChaCha20-Poly1305) with zero-knowledge design — no server, no cloud, no key management service.
+
+The .env.up format is a "half-open envelope": key names, versions, timestamps, and authors are visible in cleartext (replacing .env.example), while secret values are encrypted.
+
+## Key Features
+
+- Zero-knowledge encryption: Private keys stay on your machine (~/.dotenvup/identity)
+- Safe to commit: .env.up files belong in Git
+- Comments preserved: Lossless roundtrip of comments, blank lines, and structure
+- Multi-recipient: Encrypt for multiple users (@alice, @bob) and machines (@ci)
+- CI/CD ready: `up run -- npm test` decrypts at runtime with no file on disk
+- Zero code changes: Works with existing dotenv libraries and process.env
+- VS Code / Cursor extension: One-click lock/unlock from the status bar
+- CLI tool: `up init`, `up import`, `up lock`, `up unlock`, `up run`
+
+## Format Specification
+
+The .env.up format is a published open standard (v1):
+- Full spec: https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md
+- Encryption: X25519 key exchange + XChaCha20-Poly1305 (AEAD)
+- Library: libsodium
+- Multi-recipient via crypto_box_seal (anonymous sender encryption)
+
+## Links
+
+- Website: https://dotenvup.com
+- GitHub: https://github.com/sarhej/dotenvup
+- npm (format): https://www.npmjs.com/package/@dotenvup/format
+- npm (CLI): https://www.npmjs.com/package/@dotenvup/cli
+- npm (Node.js): https://www.npmjs.com/package/@dotenvup/node
+- Format Spec: https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md
+- User Guide: https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md
+- Security Model: https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md
+- Team Sharing (commercial): https://unknownpassword.com
+
+## Installation
+
+```bash
+# CLI
+npm install -g @dotenvup/cli
+
+# VS Code / Cursor extension
+# Download .vsix from https://github.com/sarhej/dotenvup/releases
+code --install-extension dotenvup-0.4.0.vsix
+
+# Node.js library (drop-in dotenv replacement)
+npm install @dotenvup/node
+```
+
+## Quick Start
+
+```bash
+up init            # Generate keypair (stored at ~/.dotenvup/identity)
+up import .env     # Encrypt .env → .env.up (comments preserved)
+up lock            # Delete plaintext .env
+up unlock 5m       # Decrypt for 5 minutes
+up run -- npm start  # Run with decrypted env vars (no file on disk)
+```
+
+## License
+
+MIT — open source and free forever.

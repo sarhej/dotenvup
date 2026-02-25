@@ -3,8 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DotEnvUp - .env files with memory and a lock</title>
-    <meta name="description" content="Open-source encrypted .env format. Zero-knowledge, zero-trust — no cloud, no server. Safe to commit.">
+    <title>DotEnvUp — Encrypted .env Files for Git | Open-Source Secret Management</title>
+    <meta name="description" content="DotEnvUp is an open-source encrypted .env file format (.env.up) with zero-knowledge encryption (X25519 + XChaCha20-Poly1305). Safe to commit to Git. VS Code extension and CLI for developers. No server required.">
+    <meta name="keywords" content="dotenv, encrypted env, secret management, .env encryption, dotenvup, environment variables, git secrets, zero-knowledge, XChaCha20, VS Code extension, CLI tool, open source">
+    <link rel="canonical" href="https://dotenvup.com/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dotenvup.com/">
+    <meta property="og:title" content="DotEnvUp — Encrypted .env Files for Git">
+    <meta property="og:description" content="Open-source encrypted .env format. Zero-knowledge, zero-trust — no cloud, no server. VS Code extension and CLI. Safe to commit.">
+    <meta property="og:site_name" content="DotEnvUp">
+    <meta property="og:image" content="https://dotenvup.com/assets/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="DotEnvUp — Encrypted .env Files for Git">
+    <meta name="twitter:description" content="Open-source encrypted .env format. Zero-knowledge encryption, safe to commit, VS Code extension and CLI.">
+    <meta name="twitter:image" content="https://dotenvup.com/assets/og-image.png">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "DotEnvUp",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Cross-platform",
+        "description": "Open-source encrypted .env file format (.env.up) and tooling. Zero-knowledge encryption with X25519 + XChaCha20-Poly1305. VS Code extension and CLI for secure secret management.",
+        "url": "https://dotenvup.com",
+        "license": "https://opensource.org/licenses/MIT",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "DotEnvUp",
+            "url": "https://dotenvup.com"
+        },
+        "codeRepository": "https://github.com/sarhej/dotenvup",
+        "programmingLanguage": "TypeScript",
+        "softwareVersion": "0.4.0"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "DotEnvUp v1 Encrypted .env Format Specification",
+        "description": "Open standard for encrypted environment variable files. Hybrid public-key encryption (X25519 + XChaCha20-Poly1305), multi-recipient support, lossless roundtrip, CI/CD-ready.",
+        "url": "https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md",
+        "author": {
+            "@type": "Organization",
+            "name": "DotEnvUp"
+        },
+        "datePublished": "2026-02-25",
+        "proficiencyLevel": "Expert"
+    }
+    </script>
+
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
     <style>
         :root {
@@ -241,6 +300,17 @@
             text-decoration: underline;
         }
 
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
         @media (max-width: 640px) {
             h1 { font-size: 2.5rem; }
             .header { flex-direction: column; gap: 1rem; }
@@ -252,58 +322,59 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="logo">
-                <img src="/assets/logo-dark.svg" alt="DotEnvUp Logo">
+            <a href="/" class="logo" aria-label="DotEnvUp — Encrypted .env Format">
+                <img src="/assets/logo-dark.svg" alt="DotEnvUp Logo" width="32" height="32">
                 DotEnvUp
             </a>
-            <nav>
-                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md">Format Spec</a>
-                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">Docs</a>
-                <a href="https://github.com/sarhej/dotenvup">GitHub</a>
-                <a href="https://unknownpassword.com">UnknownPassword</a>
+            <nav aria-label="Main navigation">
+                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md" title="DotEnvUp v1 encrypted .env format specification">.env.up Format Spec (v1)</a>
+                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md" title="DotEnvUp documentation and user guide">Documentation</a>
+                <a href="https://github.com/sarhej/dotenvup" title="DotEnvUp source code on GitHub">GitHub</a>
+                <a href="https://unknownpassword.com" title="UnknownPassword — team secret sharing built on DotEnvUp">UnknownPassword</a>
             </nav>
         </header>
 
-        <section class="hero">
-            <h1>.env files, but with memory<br>— and a lock.</h1>
-            <p class="tagline">
-                Open-source encrypted .env format. Zero-knowledge, zero-trust — no cloud, no server. Safe to commit.<br>
-                Stop sharing secrets over Slack.
-            </p>
+        <main>
+            <section class="hero" aria-label="Introduction">
+                <h1>.env files, but with memory<br>— and a lock.</h1>
+                <p class="tagline">
+                    Open-source encrypted <code>.env</code> file format for developers.
+                    Zero-knowledge, zero-trust — no cloud, no server. Safe to commit to Git.
+                </p>
 
-            <div class="cta-group">
-                <a href="https://github.com/sarhej/dotenvup/releases" class="btn btn-primary">Download Extension (.vsix)</a>
-                <a href="https://github.com/sarhej/dotenvup" class="btn btn-secondary">View on GitHub</a>
-            </div>
+                <div class="cta-group">
+                    <a href="https://github.com/sarhej/dotenvup/releases" class="btn btn-primary">Download VS Code Extension</a>
+                    <a href="https://github.com/sarhej/dotenvup" class="btn btn-secondary">Source Code on GitHub</a>
+                </div>
 
-            <div class="install-block">
-                <span>npm install -g @dotenvup/cli</span>
-            </div>
-        </section>
+                <div class="install-block" aria-label="CLI install command">
+                    <span>npm install -g @dotenvup/cli</span>
+                </div>
+            </section>
 
-        <section class="install-section">
-            <h2>Install</h2>
-            <div class="install-grid">
-                <div class="feature-card">
-                    <h3>VS Code / Cursor Extension</h3>
-                    <p>One-click lock/unlock from the status bar. No terminal needed.</p>
-                    <ol>
-                        <li>Download <code>.vsix</code> from <a href="https://github.com/sarhej/dotenvup/releases">Releases</a></li>
-                        <li>In your editor: <strong>Extensions</strong> → <code>...</code> → <strong>Install from VSIX...</strong></li>
-                        <li>Or from terminal:</li>
-                    </ol>
-                    <div class="code-preview" style="margin: 0.5rem 0;">
+            <section class="install-section" aria-label="Installation">
+                <h2>Install DotEnvUp</h2>
+                <div class="install-grid">
+                    <div class="feature-card">
+                        <h3>VS Code / Cursor Extension</h3>
+                        <p>One-click lock/unlock from the status bar. No terminal needed.</p>
+                        <ol>
+                            <li>Download <code>.vsix</code> from <a href="https://github.com/sarhej/dotenvup/releases">GitHub Releases</a></li>
+                            <li>In your editor: <strong>Extensions</strong> → <code>...</code> → <strong>Install from VSIX...</strong></li>
+                            <li>Or from terminal:</li>
+                        </ol>
+                        <div class="code-preview" style="margin: 0.5rem 0;">
 <pre><code><span class="comment"># VS Code</span>
 code --install-extension dotenvup-0.4.0.vsix
 
 <span class="comment"># Cursor</span>
 cursor --install-extension dotenvup-0.4.0.vsix</code></pre>
+                        </div>
                     </div>
-                </div>
-                <div class="feature-card">
-                    <h3>CLI</h3>
-                    <p>For terminal workflows, CI/CD, and AI agents.</p>
-                    <div class="code-preview" style="margin: 0.5rem 0;">
+                    <div class="feature-card">
+                        <h3>CLI for Terminal, CI/CD, and AI Agents</h3>
+                        <p>Encrypt, decrypt, and run commands with secrets — no file on disk.</p>
+                        <div class="code-preview" style="margin: 0.5rem 0;">
 <pre><code>npm install -g @dotenvup/cli
 
 up init            <span class="comment"># generate keypair</span>
@@ -311,15 +382,18 @@ up import .env     <span class="comment"># encrypt → .env.up</span>
 up lock            <span class="comment"># delete plaintext</span>
 up unlock 5m       <span class="comment"># decrypt for 5 min</span>
 up run -- npm start <span class="comment"># no file on disk</span></code></pre>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <div class="code-preview">
+            <section aria-label="Example .env.up file format">
+                <h2 class="visually-hidden">The .env.up Encrypted File Format</h2>
+                <div class="code-preview">
 <pre><code><span class="meta">#!dotenvup v1</span>
 <span class="comment"># Encrypted-By: @alice</span>
-<span class="comment"># Encrypted-For: @bob, @charlie</span>
+<span class="comment"># Algorithm: x25519-xchacha20-poly1305</span>
+<span class="comment"># Encrypted-For: @alice, @bob, @ci</span>
 
 <span class="keyword">[keys]</span>
 DB_HOST          v3  2026-02-10T08:00:00Z  @alice    staging cluster
@@ -327,46 +401,54 @@ DB_PASSWORD      v5  2026-02-15T10:30:00Z  @alice    <span class="comment"># rot
 API_KEY          v2  2026-02-01T00:00:00Z  @alice    test key
 
 <span class="keyword">[encrypted]</span>
-recipient:@bob    nonce:abc123... payload:SGVsbG8g...</code></pre>
-        </div>
+recipient:@alice  nonce:abc123...  ephemeral:def456...  payload:SGVsbG8g...
+recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</code></pre>
+                </div>
+            </section>
 
-        <section class="features" style="grid-template-columns: 1fr; margin-bottom: 2rem;">
-            <div class="feature-card" style="text-align: center; border-color: var(--primary); background: rgba(99, 102, 241, 0.06);">
-                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Open Standard — DotEnvUp v1</h3>
-                <p style="max-width: 600px; margin: 0 auto 1.25rem;">
-                    The <code>.env.up</code> format is a published open standard. X25519 + XChaCha20-Poly1305 encryption,
-                    multi-recipient support, CI/CD-ready, and lossless roundtrip of comments and structure.
-                </p>
-                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md" class="btn btn-primary" style="font-size: 0.95rem;">Read the Format Specification</a>
-            </div>
-        </section>
+            <section class="features" style="grid-template-columns: 1fr; margin-bottom: 2rem;" aria-label="Open standard">
+                <article class="feature-card" style="text-align: center; border-color: var(--primary); background: rgba(99, 102, 241, 0.06);">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Open Standard — DotEnvUp v1 Encrypted .env Specification</h3>
+                    <p style="max-width: 600px; margin: 0 auto 1.25rem;">
+                        The <code>.env.up</code> format is a published open standard for encrypted environment files.
+                        Hybrid public-key encryption (X25519 + XChaCha20-Poly1305), multi-recipient support,
+                        CI/CD pipeline integration, and lossless roundtrip of comments and structure.
+                    </p>
+                    <a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md" class="btn btn-primary" style="font-size: 0.95rem;">Read the .env.up Format Specification (v1)</a>
+                </article>
+            </section>
 
-        <section class="features">
-            <div class="feature-card">
-                <h3>🔐 Zero-knowledge, zero-trust</h3>
-                <p>No server, no cloud. Your keys live only on your machine (<code>~/.dotenvup/identity</code>). We never see your secrets — encrypt and decrypt locally.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🔒 Encrypted at Rest</h3>
-                <p>Values, comments, and structure are encrypted on disk using XChaCha20-Poly1305. No more plaintext secrets in your repo.</p>
-            </div>
-            <div class="feature-card">
-                <h3>📝 Comments Preserved</h3>
-                <p>Your <code># Database</code> headers, blank lines, and commented-out secrets survive the encrypt/decrypt roundtrip perfectly.</p>
-            </div>
-            <div class="feature-card">
-                <h3>⚡️ Zero Code Changes</h3>
-                <p>Works with existing <code>dotenv</code> libraries. Just <code>up unlock</code> to work, and <code>up lock</code> when done. Or use <code>up run</code>.</p>
-            </div>
-            <div class="feature-card">
-                <h3>📍 Metadata</h3>
-                <p>See who changed a key and when, without decrypting it. The "half-open envelope" format keeps context visible.</p>
-            </div>
-        </section>
+            <section class="features" aria-label="Features">
+                <article class="feature-card">
+                    <h3>Zero-Knowledge Encryption</h3>
+                    <p>No server, no cloud. Your private keys live only on your machine (<code>~/.dotenvup/identity</code>). Encrypt and decrypt locally with X25519 + XChaCha20-Poly1305.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Encrypted at Rest — Safe to Commit</h3>
+                    <p>Secret values, comments, and file structure are encrypted on disk. Commit <code>.env.up</code> to Git — it replaces both <code>.env</code> and <code>.env.example</code>.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Comments and Structure Preserved</h3>
+                    <p>Your <code># Database</code> headers, blank lines, and commented-out secrets survive the encrypt/decrypt roundtrip with perfect fidelity.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Zero Code Changes Required</h3>
+                    <p>Works with existing <code>dotenv</code> libraries and <code>process.env</code>. Just <code>up unlock</code> to work, <code>up lock</code> when done. Or use <code>up run</code> for no-file-on-disk mode.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Visible Metadata — Half-Open Envelope</h3>
+                    <p>See which keys exist, who changed them, and when — without decrypting. The cleartext header replaces <code>.env.example</code> for onboarding.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Multi-Recipient and CI/CD Ready</h3>
+                    <p>Encrypt once for multiple recipients — teammates (<code>@alice</code>) and machines (<code>@ci</code>). Zero-knowledge CI/CD: <code>up run -- npm test</code> in your pipeline.</p>
+                </article>
+            </section>
+        </main>
 
         <footer>
-            <p>DotEnvUp is an open-source project by <a href="https://unknownpassword.com">UnknownPassword</a>.</p>
-            <p>Released under the MIT License.</p>
+            <p>DotEnvUp is an <a href="https://github.com/sarhej/dotenvup">open-source project</a> by <a href="https://unknownpassword.com">UnknownPassword</a>. Released under the <a href="https://github.com/sarhej/dotenvup/blob/main/LICENSE">MIT License</a>.</p>
+            <p><a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md">.env.up Format Specification</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md">Security Model</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">User Guide</a> · <a href="https://www.npmjs.com/package/@dotenvup/format">npm: @dotenvup/format</a></p>
         </footer>
     </div>
 </body>
