@@ -11,4 +11,5 @@ esbuild.mjs
 tsconfig.json
 **/*.ts
 !dist/extension.js
-../**
+**/vitest.config.*
+**/packages/**
