@@ -78,7 +78,7 @@ Lock always persists the current `.env` into `.env.up` and removes `.env`. If th
 | [`@dotenvup/cli`](./packages/cli) | CLI tool (`up lock`, `up unlock`, `up run`) | [![npm](https://img.shields.io/npm/v/@dotenvup/cli)](https://www.npmjs.com/package/@dotenvup/cli) |
 | [DotEnvUp Extension](./packages/vscode-dotenvup) | VS Code / Cursor extension — local secret management | [Download .vsix (v0.4.0)](https://github.com/sarhej/dotenvup/releases/download/v0.4.0/dotenvup-0.4.0.vsix) |
 
-## The `.env.up` Format
+## The `.env.up` Format — [Open Standard (v1)](docs/FORMAT_SPEC.md)
 
 An encrypted `.env` with visible metadata — a "half-open envelope":
 
@@ -109,7 +109,7 @@ recipient:@bob    nonce:abc123... payload:SGVsbG8g...
 
 You can see **what's inside** (key names, versions, timestamps) without decrypting. The actual values — and the original `.env` content including all comments — are encrypted per-recipient.
 
-**Full details:** [Security Model](docs/SECURITY.md) · [User Guide](docs/USER_GUIDE.md)
+**Full details:** [Format Spec](docs/FORMAT_SPEC.md) · [Security Model](docs/SECURITY.md) · [User Guide](docs/USER_GUIDE.md)
 
 ## Key Storage
 
@@ -128,9 +128,10 @@ flowchart LR
 
 ## Documentation
 
+- **[Format Specification (v1)](docs/FORMAT_SPEC.md)** — The authoritative `.env.up` open standard
 - [User Guide](docs/USER_GUIDE.md) — Commands, workflows, drift explained
-- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common errors, identity file and recovery issues
 - [Security Model](docs/SECURITY.md) — What is encrypted, threat model
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common errors, identity file and recovery issues
 - [File Type Registration](docs/FILE_TYPE.md) — MIME types, UTI, icons for OS integration
 - [Roadmap](docs/ROADMAP.md) — Extension hardening, native installers, OS file type registration
 - [Publishing to the Marketplace](docs/PUBLISHING.md) — How to publish the VS Code extension (maintainers)

@@ -257,6 +257,7 @@
                 DotEnvUp
             </a>
             <nav>
+                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md">Format Spec</a>
                 <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">Docs</a>
                 <a href="https://github.com/sarhej/dotenvup">GitHub</a>
                 <a href="https://unknownpassword.com">UnknownPassword</a>
@@ -293,10 +294,10 @@
                     </ol>
                     <div class="code-preview" style="margin: 0.5rem 0;">
 <pre><code><span class="comment"># VS Code</span>
-code --install-extension dotenvup-0.2.0.vsix
+code --install-extension dotenvup-0.4.0.vsix
 
 <span class="comment"># Cursor</span>
-cursor --install-extension dotenvup-0.2.0.vsix</code></pre>
+cursor --install-extension dotenvup-0.4.0.vsix</code></pre>
                     </div>
                 </div>
                 <div class="feature-card">
@@ -328,6 +329,17 @@ API_KEY          v2  2026-02-01T00:00:00Z  @alice    test key
 <span class="keyword">[encrypted]</span>
 recipient:@bob    nonce:abc123... payload:SGVsbG8g...</code></pre>
         </div>
+
+        <section class="features" style="grid-template-columns: 1fr; margin-bottom: 2rem;">
+            <div class="feature-card" style="text-align: center; border-color: var(--primary); background: rgba(99, 102, 241, 0.06);">
+                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Open Standard — DotEnvUp v1</h3>
+                <p style="max-width: 600px; margin: 0 auto 1.25rem;">
+                    The <code>.env.up</code> format is a published open standard. X25519 + XChaCha20-Poly1305 encryption,
+                    multi-recipient support, CI/CD-ready, and lossless roundtrip of comments and structure.
+                </p>
+                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md" class="btn btn-primary" style="font-size: 0.95rem;">Read the Format Specification</a>
+            </div>
+        </section>
 
         <section class="features">
             <div class="feature-card">
