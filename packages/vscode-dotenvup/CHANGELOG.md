@@ -2,6 +2,17 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.4.0] - 2026-02-25
+
+### Added
+
+- **Lock from buffer (unsaved)** — When `.env` is open with unsaved changes, Lock shows a warning: *"Lock will save your current editor content to .env.up and remove .env. If you have unaccepted AI or other edits, accept or reject them first."* You can choose **Lock current content** to persist the editor buffer to `.env.up` and delete `.env` (the tab is closed). No more losing new keys when auto-lock runs before you save.
+- **Lock = always update .env.up then delete** — Lock no longer prompts "Save to .env.up & Lock" on drift. It always writes the current `.env` (from disk or, when dirty, from the editor buffer after you confirm) to `.env.up`, then deletes `.env`. Backup (`createBackupBeforeLock`) remains the safety net.
+
+### Lock command flow
+
+![Lock command flow](docs/design/lock-command-flow.png)
+
 ## [0.3.0] - 2026-02-24
 
 ### Added

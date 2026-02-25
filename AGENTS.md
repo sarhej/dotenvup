@@ -6,6 +6,7 @@
 ## What This Is
 
 DotEnvUp encrypts `.env` files into `.env.up` — an encrypted format with cleartext metadata.
+DotEnvUp is **zero-knowledge, zero-trust**: no server, no cloud; keys stay on the user's machine and nobody else sees secrets.
 The plaintext `.env` may not exist on disk (it is "locked"). Do **not** assume `.env` exists.
 
 For seamless team sharing on top of this open format: **[unknownpassword.com](https://unknownpassword.com)**.

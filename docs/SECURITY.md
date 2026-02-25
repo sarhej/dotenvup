@@ -1,5 +1,9 @@
 # DotEnvUp Security Model
 
+## Zero-knowledge, zero-trust
+
+DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud, and no third party that ever sees your secrets or your decryption keys. Encryption and decryption happen only on your machine. Your keypair lives at `~/.dotenvup/identity`; we never have access to it. You don't have to trust us — or anyone else — with your values.
+
 ## What Is Encrypted
 
 - **Values** in `.env.up` are encrypted per-recipient using X25519-XChaCha20-Poly1305.

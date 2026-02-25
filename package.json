@@ -10,8 +10,11 @@
     "build": "npm run build --workspace=@dotenvup/format && npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=dotenvup",
     "clean": "npm run clean --workspaces",
     "lint": "npm run lint --workspaces",
-    "test": "npm run test --workspaces"
-},"devDependencies":{"vitest":"^2.0.0"
+    "test": "npm run test --workspaces",
+    "package:extension": "npm run build && npm run package --workspace=dotenvup",
+    "publish:extension": "npm run build && (cd packages/vscode-dotenvup && npx @vscode/vsce publish --no-dependencies)"
+  },
+  "devDependencies":{"vitest":"^2.0.0"
   },
   "engines": {
     "node": ">=20.0.0"

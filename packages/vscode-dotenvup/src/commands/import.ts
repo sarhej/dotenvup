@@ -19,6 +19,8 @@ export interface ImportOptions {
   silent?: boolean;
   /** When set, use this file as source; output path = same dir + basename + ".up" (e.g. .env.local → .env.local.up) */
   sourcePath?: string;
+  /** When set, use this content instead of reading from disk (requires sourcePath for output path and recipients). Used by Lock when locking from buffer. */
+  sourceContent?: string;
 }
 
 export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, options?: ImportOptions): Promise<boolean> {
@@ -38,8 +40,12 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
   const fs = await import('fs/promises');
   let srcPath: string;
   let autoDetected = false;
+  const useSourceContent = options?.sourceContent !== undefined && options?.sourcePath !== undefined;
 
-  if (options?.sourcePath) {
+  if (useSourceContent) {
+    srcPath = options.sourcePath!;
+    autoDetected = true;
+  } else if (options?.sourcePath) {
     srcPath = options.sourcePath;
     try {
       const stat = await fs.lstat(srcPath);
@@ -86,12 +92,16 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
   }
 
   let content: string;
-  try {
-    const buf = await fs.readFile(srcPath);
-    content = new TextDecoder('utf-8', { fatal: true }).decode(buf);
-  } catch (e) {
-    logger.error('DotEnvUp: File is not valid UTF-8.');
-    return false;
+  if (useSourceContent) {
+    content = options.sourceContent!;
+  } else {
+    try {
+      const buf = await fs.readFile(srcPath);
+      content = new TextDecoder('utf-8', { fatal: true }).decode(buf);
+    } catch (e) {
+      logger.error('DotEnvUp: File is not valid UTF-8.');
+      return false;
+    }
   }
 
   const { parseEnvFile } = await import('@dotenvup/format');

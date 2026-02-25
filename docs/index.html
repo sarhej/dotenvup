@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DotEnvUp - .env files with memory and a lock</title>
-    <meta name="description" content="Open-source encrypted .env format. Zero code changes. Safe to commit.">
+    <meta name="description" content="Open-source encrypted .env format. Zero-knowledge, zero-trust — no cloud, no server. Safe to commit.">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
     <style>
         :root {
@@ -266,7 +266,7 @@
         <section class="hero">
             <h1>.env files, but with memory<br>— and a lock.</h1>
             <p class="tagline">
-                Open-source encrypted .env format. Zero code changes. Safe to commit.<br>
+                Open-source encrypted .env format. Zero-knowledge, zero-trust — no cloud, no server. Safe to commit.<br>
                 Stop sharing secrets over Slack.
             </p>
 
@@ -330,6 +330,10 @@ recipient:@bob    nonce:abc123... payload:SGVsbG8g...</code></pre>
         </div>
 
         <section class="features">
+            <div class="feature-card">
+                <h3>🔐 Zero-knowledge, zero-trust</h3>
+                <p>No server, no cloud. Your keys live only on your machine (<code>~/.dotenvup/identity</code>). We never see your secrets — encrypt and decrypt locally.</p>
+            </div>
             <div class="feature-card">
                 <h3>🔒 Encrypted at Rest</h3>
                 <p>Values, comments, and structure are encrypted on disk using XChaCha20-Poly1305. No more plaintext secrets in your repo.</p>

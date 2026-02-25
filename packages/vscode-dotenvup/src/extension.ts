@@ -286,14 +286,19 @@ export function deactivate(): void {
         continue;
       }
 
+      const lockCmd = await import('./commands/lock');
+      // Never delete .env if it has unsaved changes in the editor (user would lose the buffer)
+      if (lockCmd.envFileIsDirty(envPath)) {
+        logger.error('DotEnvUp: Left .env in place on close — file has unsaved changes. Save and use DotEnvUp: Import, then lock.');
+        continue;
+      }
       const privateKey = await keystore.getPrivateKey();
       const safeCheck = await isSafeToDelete(envUpPath, privateKey);
       if (!safeCheck.safe) {
         logger.error(`DotEnvUp: BLOCKED delete during deactivate — ${safeCheck.reason}`);
         continue;
       }
-      // Never delete .env if it has changes not saved to .env.up (user would lose data)
-      const lockCmd = await import('./commands/lock');
+      // Never delete .env if it has changes not saved to .env.up (drift on disk)
       if (privateKey && (await lockCmd.envHasDrift(envPath, envUpPath, privateKey))) {
         logger.error('DotEnvUp: Left .env in place on close — it has changes not saved to .env.up. Save with DotEnvUp: Import, then lock.');
         continue;

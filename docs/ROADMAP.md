@@ -61,7 +61,7 @@ The extension works end-to-end but is MVP quality. Every item below must be addr
 
 - [ ] **Bundle with esbuild** — Current build is raw `tsc`. Switch to esbuild for a single-file `extension.js` bundle (faster activation, smaller `.vsix`).
 - [ ] **CI for extension** — GitHub Actions: lint, build, test on each push. Package `.vsix` on release tag.
-- [ ] **Publish to Marketplace** — Set up publisher account, `vsce publish` in CI.
+- [ ] **Publish to Marketplace** — Set up publisher account, `vsce publish` in CI. **Guide:** [docs/PUBLISHING.md](./PUBLISHING.md). From root: `npm run publish:extension` (after `vsce login dotenvup`).
 - [ ] **Pre-release channel** — Use VS Code pre-release versioning for early feedback.
 
 ---

@@ -2,10 +2,11 @@
 
 > `.env` files, but with memory — and a lock.
 
-Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.up` directly in VS Code (and Cursor). Lock and unlock with one click, keep AI workflows safe, and use local key backup/recovery — without changing app code.
+Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.up` directly in VS Code (and Cursor). **Zero-knowledge, zero-trust** — no cloud, no server; your keys stay on your machine and we never see your secrets. Lock and unlock with one click, keep AI workflows safe, and use local key backup/recovery — without changing app code.
 
 ## Features
 
+- **Zero-knowledge, zero-trust** — No server, no cloud. Keys at `~/.dotenvup/identity`; we never see your secrets.
 - **One-click lock / unlock** — Status bar shows lock state; click to toggle. Auto-locks after a timer or when the editor closes.
 - **Comment preservation** — Comments, blank lines, commented-out secrets, and ordering survive the encrypt/decrypt roundtrip.
 - **Cross-IDE keys** — Keypair stored at `~/.dotenvup/identity`, shared across VS Code, Cursor, CLI, and any tool.
@@ -15,6 +16,12 @@ Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.u
 - **Status** — Lock state, key count, stale key warnings, and drift detection.
 - **Multi-root workspaces** — Pick which folder to act on when several have `.env.up`.
 - **Safety everywhere** — Every `.env` deletion path is guarded: decrypt verification, pre-deletion backups, TOCTOU checks.
+
+### Lock command flow
+
+Lock persists the current `.env` into `.env.up` and removes `.env`. If the file has unsaved changes, a warning lets you lock the **current editor content** (and reminds you to accept or reject any AI edits first).
+
+![Lock command flow](docs/design/lock-command-flow.png)
 
 ## Quick Start
 
@@ -31,11 +38,11 @@ Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.u
 
 ## Install (from VSIX)
 
-Download the latest [.vsix from Releases](https://github.com/sarhej/dotenvup/releases) (e.g. [v0.3.0](https://github.com/sarhej/dotenvup/releases/download/v0.3.0/dotenvup-0.3.0.vsix)), then **Extensions** → `...` → **Install from VSIX...**, or:
+Download the latest [.vsix from Releases](https://github.com/sarhej/dotenvup/releases) (e.g. [v0.4.0](https://github.com/sarhej/dotenvup/releases/download/v0.4.0/dotenvup-0.4.0.vsix)), then **Extensions** → `...` → **Install from VSIX...**, or:
 
 ```bash
-code --install-extension dotenvup-0.3.0.vsix   # VS Code
-cursor --install-extension dotenvup-0.3.0.vsix # Cursor
+code --install-extension dotenvup-0.4.0.vsix   # VS Code
+cursor --install-extension dotenvup-0.4.0.vsix # Cursor
 ```
 
 ## Extension Settings

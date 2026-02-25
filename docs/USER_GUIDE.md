@@ -2,7 +2,7 @@
 
 ## Overview
 
-DotEnvUp encrypts your `.env` file into a `.env.up` format. Secrets stay encrypted on disk. You unlock temporarily when working, and lock when done.
+DotEnvUp encrypts your `.env` file into a `.env.up` format. **Zero-knowledge, zero-trust** — no server, no cloud; your keys stay on your machine and we never see your secrets. Secrets stay encrypted on disk. You unlock temporarily when working, and lock when done.
 
 ## Commands
 

@@ -173,10 +173,22 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
           autoLockTimer = null;
           return;
         }
-        // SAFETY: never delete .env if it has changes not saved to .env.up (user would lose data)
         const lockCmd = await import('./lock');
+        // SAFETY: never delete .env if it has unsaved changes in the editor (user would lose the buffer)
+        if (lockCmd.envFileIsDirty(envPath)) {
+          logger.error('DotEnvUp: Auto-lock skipped — .env has unsaved changes. Save the file (e.g. Ctrl+S), then use DotEnvUp: Import to save to .env.up and lock.');
+          void vscode.window.showWarningMessage(
+            'DotEnvUp: .env has unsaved changes. Save the file first, then lock (or use Import to save to .env.up).',
+          );
+          autoLockTimer = null;
+          return;
+        }
+        // SAFETY: never delete .env if it has changes not saved to .env.up (drift on disk)
         if (privKey && (await lockCmd.envHasDrift(envPath, envUpPath, privKey))) {
           logger.error('DotEnvUp: Auto-lock skipped — .env has changes not saved to .env.up. Save them with DotEnvUp: Import, then lock.');
+          void vscode.window.showWarningMessage(
+            'DotEnvUp: .env has changes not saved to .env.up. Use DotEnvUp: Import to save them, then lock.',
+          );
           autoLockTimer = null;
           return;
         }
