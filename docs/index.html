@@ -45,7 +45,7 @@
         },
         "codeRepository": "https://github.com/sarhej/dotenvup",
         "programmingLanguage": "TypeScript",
-        "softwareVersion": "0.4.0"
+        "softwareVersion": "0.4.1"
     }
     </script>
     <script type="application/ld+json">
@@ -443,6 +443,49 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
                     <h3>Multi-Recipient and CI/CD Ready</h3>
                     <p>Encrypt once for multiple recipients — teammates (<code>@alice</code>) and machines (<code>@ci</code>). Zero-knowledge CI/CD: <code>up run -- npm test</code> in your pipeline.</p>
                 </article>
+            </section>
+
+            <section class="use-cases" aria-label="Supported use cases">
+                <h2 style="text-align: center; font-size: 2rem; margin: 4rem 0 2rem; color: #fff;">Supported use cases</h2>
+                <p style="text-align: center; color: #94a3b8; max-width: 640px; margin: 0 auto 2rem;">All of these work with the free, open-source model — no server, no account. Full steps are in the <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md" style="color: var(--primary);">User Guide</a>.</p>
+                <ul style="list-style: none; padding: 0; margin: 0 auto; max-width: 700px;">
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">First-time setup</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Run <code>up init</code>, then <code>up import .env</code>. If you don’t have a <code>.env</code> yet, create one with your keys first. Then <code>up lock --yes</code> to remove plaintext.</p>
+                    </li>
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">Daily work</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Run <code>up unlock --duration 30m</code> (or use the VS Code/Cursor status bar). Work with <code>.env</code>; it auto-locks after the duration. Or use <code>up unlock --until-terminal-exit</code> and lock when you exit the shell.</p>
+                    </li>
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">Run commands without writing .env</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Use <code>up run -- npm start</code> or <code>up run -- python main.py</code>. Decrypted env vars are injected into the process; no <code>.env</code> file is written. Ideal for CI/CD and AI agents.</p>
+                    </li>
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">Moving to another computer</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">On the old machine: <code>up key export backup.dotenvup-key</code>. On the new machine: <code>up key import backup.dotenvup-key</code>, then <code>up unlock</code>. If you lost the key, use <code>up recover .env.up --deep</code> to search for key candidates.</p>
+                    </li>
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">Editing secrets</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Run <code>up unlock</code>, edit <code>.env</code>, then run <code>up import .env</code> to save into <code>.env.up</code>, then <code>up lock</code>. If you lock without importing, the lock command will warn (drift detection).</p>
+                    </li>
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">Sharing with one other person</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">They share their public key (file or <code>up keys --json</code>). You run <code>up recipients add &lt;path-or-base64&gt; --label alice</code>, then <code>up import .env</code>. Share <code>.env.up</code> (e.g. via git). They run <code>up unlock</code> with their own key — no server, no account.</p>
+                    </li>
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">Team recipients</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Each teammate shares their public key. Project owner adds each with <code>up recipients add ... --label name</code>, then re-imports with <code>up import .env</code>. Teammates decrypt with <code>up unlock</code>. Recipients are stored in <code>.dotenvup.recipients.json</code> (public keys only).</p>
+                    </li>
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">Recover when key is missing</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">If you see “encrypted with another key”, run <code>up recover</code> or <code>up recover .env.up --deep</code> to search the machine for key candidates. In VS Code/Cursor, use <strong>DotEnvUp: Recover Key Mismatch</strong>.</p>
+                    </li>
+                    <li class="feature-card" style="margin-bottom: 1rem;">
+                        <h3 style="margin-top: 0; color: #fff;">VS Code / Cursor extension</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Status bar: one-click lock/unlock. Command Palette: DotEnvUp Unlock, Lock, Import, Show Keys, Status, Key Management (backup/recovery), Recipients Add/List/Remove, Recover Key Mismatch. First Protect flow when you have only <code>.env</code>. Import All for multiple workspace folders. See extension README for settings (confirmOnLock, defaultUnlockDuration, createBackupBeforeLock, etc.).</p>
+                    </li>
+                </ul>
             </section>
         </main>
 

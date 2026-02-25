@@ -97,11 +97,12 @@ Use this when you see “encrypted with another key” and need to locate a key 
 
 ### up recipients <list|add|remove|discover>
 
-Manage extra project recipients so `.env.up` is encrypted for more than your local key.
+Manage extra project recipients so `.env.up` is encrypted for more than your local key. For `add`, you can pass a path to a `.pub` or key-bundle file, or a base64-encoded public key string.
 
 ```bash
 up recipients list
 up recipients add ~/.dotenvup/identity.pub --label alice-laptop
+up recipients add "base64publickey..." --label alice
 up recipients remove alice-laptop
 up recipients discover
 up recipients discover --deep
@@ -139,7 +140,7 @@ up init
 up import .env
 ```
 
-You now have `.env.up`. Lock to remove plaintext:
+If you don't have a `.env` yet, create one with your keys, then run `up import .env`. You now have `.env.up`. Lock to remove plaintext:
 
 ```bash
 up lock --yes
@@ -193,7 +194,7 @@ If you lock without importing, your edits are lost. The lock command will warn y
 
 ### Team recipient workflow
 
-1. Each teammate exports or shares their **public** key (`identity.pub`) or key bundle.
+1. Each teammate shares their **public** key: their public key file (e.g. `~/.dotenvup/identity.pub`) or the `publicKey` value from `up keys --json`.
 2. Project owner adds recipients:
 
 ```bash
@@ -207,6 +208,42 @@ up import .env
 ```
 
 4. Teammate can now `up unlock` with their own private key.
+
+### Sharing with one other person
+
+Use this when you want a single collaborator (or a deploy key, CI key, etc.) to be able to decrypt the same `.env.up` without any server or account — still the free, zero-knowledge model.
+
+**You (owner):**
+
+1. Get their **public key**. They can share their public key file (e.g. `~/.dotenvup/identity.pub`) or run `up keys --json` and send you the `publicKey` value (base64).
+2. Add them as a recipient (from the project root):
+
+   ```bash
+   up recipients add /path/to/their.pub --label alice
+   ```
+   Or paste the base64 public key:
+
+   ```bash
+   up recipients add "base64string..." --label alice
+   ```
+3. Re-encrypt so the file includes them: `up import .env`. (If you use the VS Code/Cursor extension, Lock or Import then Lock does the same.)
+4. Share `.env.up` (e.g. via git, USB, secure channel). Do not share `.dotenvup.recipients.json` unless you want to expose who has access; the file itself only holds public keys.
+
+**They (recipient):**
+
+1. Install DotEnvUp and run `up init` if they don't have a keypair yet.
+2. Put the `.env.up` file in their project (or open the repo).
+3. Run `up unlock` (or use the extension). Decryption uses their local key automatically; no extra steps.
+
+### Using the VS Code / Cursor extension
+
+If you use the DotEnvUp extension in VS Code or Cursor:
+
+- **Status bar** — Click to lock or unlock; the label shows current state (Locked / Unlocked, drift).
+- **Command Palette** — Run **DotEnvUp: Unlock**, **DotEnvUp: Lock**, **DotEnvUp: Import**, **DotEnvUp: Show Keys**, **DotEnvUp: Status**, **DotEnvUp: Key Management** (webview for backup/recovery and key discovery), **DotEnvUp: Recipients: Add / List / Remove**, **DotEnvUp: Recover Key Mismatch** (when `.env.up` was encrypted with another key).
+- **First Protect** — When the workspace has only `.env` and no `.env.up`, the extension can guide you to encrypt it for the first time.
+- **Import All** — Encrypt all `.env` files across workspace folders in one go.
+- **Settings** — See the extension README for options such as `confirmOnLock`, `defaultUnlockDuration`, `createBackupBeforeLock` (encrypted `.env.up.bak-<timestamp>` before lock), and `encryptAllEnvFiles`.
 
 ## Drift Explained
 

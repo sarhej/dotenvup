@@ -56,6 +56,28 @@ export async function envHasDrift(
   return !entriesMatch(envEntries, decrypted);
 }
 
+/**
+ * Close the .env editor tab (if open) so VS Code doesn't prompt
+ * "Do you want to save?" when the file is deleted from disk.
+ */
+async function closeEnvTab(envPath: string): Promise<void> {
+  const normalizedEnv = path.normalize(envPath);
+  const doc = vscode.workspace.textDocuments.find(
+    (d) => d.uri.scheme === 'file' && path.normalize(d.uri.fsPath) === normalizedEnv,
+  );
+  if (!doc) return;
+  const docUri = doc.uri;
+  for (const group of vscode.window.tabGroups.all) {
+    for (const tab of group.tabs) {
+      const input = tab.input as { uri?: vscode.Uri };
+      if (input?.uri?.toString() === docUri.toString()) {
+        await vscode.window.tabGroups.close(tab);
+        return;
+      }
+    }
+  }
+}
+
 export interface LockOptions {
   /** Override paths (default: .env and .env.up in root) */
   envPath?: string;
@@ -141,22 +163,12 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
       logger.error(`DotEnvUp: Verification failed after write (${safeCheck.reason}). .env preserved.`);
       return;
     }
+    await closeEnvTab(envPath);
     try {
       await fs.unlink(envPath);
     } catch (e) {
       logger.error('DotEnvUp: Failed to remove .env', e);
       return;
-    }
-    // Close the .env editor tab so the user doesn't have a stale dirty tab for a deleted file
-    const docUri = doc.uri;
-    for (const group of vscode.window.tabGroups.all) {
-      for (const tab of group.tabs) {
-        const input = tab.input as { uri?: vscode.Uri };
-        if (input?.uri?.toString() === docUri.toString()) {
-          await vscode.window.tabGroups.close(tab);
-          break;
-        }
-      }
     }
     logger.info(`DotEnvUp: Locked from editor — .env removed (${Object.keys(bufferEntries).length} keys)`);
     return;
@@ -223,6 +235,7 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
         await fs.copyFile(envUpPath, path.join(path.dirname(envUpPath), path.basename(envUpPath) + '.bak-' + Date.now()));
       } catch {}
     }
+    await closeEnvTab(envPath);
     try {
       await fs.unlink(envPath);
       logger.info(`DotEnvUp: Re-encrypted and locked — .env removed (${Object.keys(envEntries).length} keys)`);
@@ -277,6 +290,7 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
     return;
   }
 
+  await closeEnvTab(envPath);
   try {
     await fs.unlink(envPath);
     logger.info(`DotEnvUp: Locked — .env removed (${Object.keys(envEntries).length} keys)`);

@@ -2,6 +2,21 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.4.1] - 2026-02-25
+
+### Fixed
+
+- **Lock and editor tab** — When Lock deletes `.env`, the extension now closes the `.env` editor tab *before* deleting the file. This prevents VS Code/Cursor from showing the confusing "Do you want to save the changes you made to .env?" dialog after lock (all code paths: lock from buffer, lock from disk, re-encrypt and lock).
+
+### Added
+
+- **Tests** — Lock tests now assert that the `.env` tab is closed after lock (dirty buffer path and new "lock from disk closes tab" test).
+
+### Documentation
+
+- **User Guide** — New subsections: "Sharing with one other person" (step-by-step), "Using the VS Code / Cursor extension" (status bar, commands, First Protect, Import All, settings pointer). Updated: first-time setup (no .env yet), team workflow (how to get public key), recipients add (path or base64).
+- **dotenvup.com** — New "Supported use cases" section with instruction-style bullets (first-time, daily work, run without file, move machine, edit secrets, sharing with one person, team recipients, recover key, VS Code/Cursor). Link to User Guide for full steps.
+
 ## [0.4.0] - 2026-02-25
 
 ### Added

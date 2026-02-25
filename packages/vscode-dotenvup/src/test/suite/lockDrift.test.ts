@@ -239,6 +239,70 @@ suite('Lock with drift', () => {
     assert.strictEqual(entries.A, '1');
     assert.strictEqual(entries.B, '2', 'buffer content B must be in .env.up after lock from buffer');
 
+    const tabStillOpen = vscode.window.tabGroups.all.some((g) =>
+      g.tabs.some((t) => {
+        const input = t.input as { uri?: vscode.Uri };
+        return input?.uri?.toString() === uri.toString();
+      }),
+    );
+    assert.strictEqual(tabStillOpen, false, '.env tab must be closed after lock from buffer');
+
+    await fs.rm(dir, { recursive: true, force: true });
+  });
+
+  test('Lock from disk closes .env tab before deleting the file', async function () {
+    if (!format) {
+      this.skip();
+      return;
+    }
+    const dir = await createTempDir();
+    const { publicKey, privateKey } = await format.generateKeypair();
+    await writeEnvUp(dir, { A: '1' }, publicKey);
+    const envPath = path.join(dir, '.env');
+    await fs.writeFile(envPath, 'A=1', 'utf8');
+
+    const uri = vscode.Uri.file(envPath);
+    const doc = await vscode.workspace.openTextDocument(uri);
+    await vscode.window.showTextDocument(doc);
+
+    const origGetConfig = vscode.workspace.getConfiguration;
+    (vscode.workspace as {
+      getConfiguration: (section?: string, scope?: vscode.ConfigurationScope | null) => vscode.WorkspaceConfiguration;
+    }).getConfiguration = (section?: string) =>
+      ({
+        get: (key: string, defaultValue?: boolean) => {
+          if (section !== 'dotenvup') return defaultValue;
+          if (key === 'confirmOnLock') return false;
+          if (key === 'createBackupBeforeLock') return false;
+          return defaultValue;
+        },
+        update: async () => {},
+      }) as unknown as vscode.WorkspaceConfiguration;
+
+    const mockKeystore = {
+      getPrivateKey: () => Promise.resolve(privateKey),
+      getPublicKey: () => Promise.resolve(publicKey),
+      getIdentityDir: () => dir,
+    } as unknown as ExtensionKeyStore;
+
+    try {
+      await lockCmd.run(mockKeystore, dir);
+    } finally {
+      (vscode.workspace as {
+        getConfiguration: (section?: string, scope?: vscode.ConfigurationScope | null) => vscode.WorkspaceConfiguration;
+      }).getConfiguration = origGetConfig;
+    }
+
+    await assert.rejects(fs.access(envPath), '.env must be removed after lock');
+
+    const tabStillOpen = vscode.window.tabGroups.all.some((g) =>
+      g.tabs.some((t) => {
+        const input = t.input as { uri?: vscode.Uri };
+        return input?.uri?.toString() === uri.toString();
+      }),
+    );
+    assert.strictEqual(tabStillOpen, false, '.env tab must be closed after lock from disk');
+
     await fs.rm(dir, { recursive: true, force: true });
   });
 });
