@@ -43,8 +43,8 @@ suite('Integration', () => {
 suite('Integration — unprotected workspace (only .env)', () => {
   /**
    * Critical: when workspace has only .env and no .env.up, status bar shows
-   * ".env (unprotected)" and "Click to manage" must open QuickPick with
-   * Init and Import. This suite verifies the fixture and state logic.
+   * "All unprotected"; clicking opens QuickPick to protect. This suite
+   * verifies the fixture and state logic.
    */
   let unprotectedDir: string;
 
@@ -69,7 +69,7 @@ suite('Integration — unprotected workspace (only .env)', () => {
     assert.strictEqual(
       computeFolderState(true, false),
       'unprotected',
-      'only .env → unprotected; status bar shows "Click to manage"',
+      'only .env → unprotected; status bar shows "All unprotected"',
     );
   });
 });

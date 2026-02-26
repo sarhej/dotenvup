@@ -2,8 +2,9 @@
  * Status bar tests
  *
  * Important: when workspace has only .env (unprotected), status bar shows
- * "$(warning) .env (unprotected)" and tooltip "Click to manage"; clicking
- * runs dotenvup.toggleLock which must show QuickPick (Init / Import).
+ * "All unprotected"; clicking runs dotenvup.toggleLock which shows
+ * QuickPick to protect. When all locations have .env.up: "All protected".
+ * When some do and some don't: "Partially protected".
  */
 
 import * as assert from 'assert';
@@ -20,14 +21,14 @@ suite('Status bar', () => {
   test('updateStatusBar locked sets text and tooltip', () => {
     const item = createStatusBar(() => {});
     updateStatusBar(item, true);
-    assert.ok(item.text.includes('locked'));
+    assert.ok(item.text.includes('All protected'));
     assert.ok(String(item.tooltip ?? '').includes('unlock'));
   });
 
   test('updateStatusBar unlocked sets text', () => {
     const item = createStatusBar(() => {});
     updateStatusBar(item, false, 3);
-    assert.ok(item.text.includes('unlocked'));
+    assert.ok(item.text.includes('All protected'));
     assert.ok(item.text.includes('3'));
   });
 

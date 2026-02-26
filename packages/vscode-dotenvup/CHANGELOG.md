@@ -2,6 +2,19 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.4.5] - 2026-02-26
+
+### Added
+
+- **Partially protected** — When both `.env` and `.env.up` exist in the same folder, status bar shows "Partially protected" (with tooltip "both .env and .env.up — lock to remove .env") instead of "All protected". "All protected" is shown only when all such locations are locked.
+- **Unlock with merge** — If `.env` already exists when you Unlock, you can choose "Use .env (e.g. local/agent)" or "Use .env.up (e.g. from team)". Merged content is written to both `.env` and `.env.up`.
+- **Safe Edit with merge** — When opening Safe Edit and `.env` exists, you can merge (prefer `.env` or `.env.up`). After saving, you are prompted "Remove .env from disk?" to clean up.
+- **Tests** — Safe Edit edge cases: readFile with `merge=env` when `.env` exists vs removed (fallback), wrong-key decryption, writeFile when `.env.up` was deleted, stat when `.env.up` is missing. Merge utility unit tests.
+
+### Fixed
+
+- Safe Edit virtual FS now correctly throws file-not-found style errors (EntryNotFound) when `.env.up` is missing on stat or when saving after the file was deleted; tests updated to match VS Code error messages.
+
 ## [0.4.1] - 2026-02-25
 
 ### Fixed

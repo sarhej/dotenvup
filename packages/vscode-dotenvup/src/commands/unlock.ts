@@ -72,7 +72,7 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
     return;
   }
 
-  const { parse, decryptAny, parseEnvFile, entriesMatch } = await import('@dotenvup/format');
+  const { parse, decryptAny, parseEnvFile, entriesMatch, create, serialize } = await import('@dotenvup/format');
   const content = await fs.readFile(envUpPath, 'utf8');
   const file = parse(content);
 
@@ -112,20 +112,35 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
     }
   }
 
+  const envUpRaw = rawContent ?? Object.entries(entries).map(([k, v]) => formatEnv(k, v)).join('\n') + '\n';
+  let out = envUpRaw;
+  let finalEntries = entries;
+
+  let envExists = false;
   try {
     await fs.access(envPath);
-    const existingContent = await fs.readFile(envPath, 'utf8');
-    const existingEntries = parseEnvFile(existingContent);
-    if (!entriesMatch(existingEntries, entries)) {
-      const choice = await vscode.window.showWarningMessage(
-        'Your .env has local changes. Unlock will overwrite. Proceed?',
-        'Overwrite',
-        'Cancel',
-      );
-      if (choice !== 'Overwrite') return;
-    }
+    envExists = true;
   } catch {
-    // .env does not exist, no overwrite check
+    // .env does not exist
+  }
+
+  if (envExists) {
+    const existingContent = await fs.readFile(envPath, 'utf8');
+    const choice = await vscode.window.showQuickPick(
+      [
+        { label: 'Use .env.up (e.g. from team)', value: 'envUp' as const },
+        { label: 'Use .env (e.g. local/agent)', value: 'env' as const },
+        { label: 'Cancel', value: 'cancel' as const },
+      ],
+      {
+        placeHolder: 'Both .env and .env.up exist. Use as source of truth?',
+        title: 'DotEnvUp: Unlock',
+      }
+    );
+    if (!choice || choice.value === 'cancel') return;
+    const { mergeEnvContent } = await import('../mergeEnv');
+    out = mergeEnvContent(existingContent, envUpRaw, choice.value);
+    finalEntries = parseEnvFile(out);
   }
 
   const config = vscode.workspace.getConfiguration('dotenvup');
@@ -146,13 +161,23 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
   });
   if (!chosen) return;
 
-  // Prefer raw content (preserves comments, blank lines, ordering) over reconstructed entries
-  const out = rawContent ?? Object.entries(entries).map(([k, v]) => formatEnv(k, v)).join('\n') + '\n';
   await fs.writeFile(envTmpPath, out, 'utf8');
   await fs.rename(envTmpPath, envPath);
 
+  if (envExists) {
+    const publicKey = await keystore.getPublicKey();
+    if (publicKey) {
+      const { getAuthor } = await import('../author');
+      const author = await getAuthor(keystore.getIdentityDir());
+      const recipients = new Map<string, Uint8Array>([[author, publicKey]]);
+      const newFile = await create(finalEntries, author, recipients, out);
+      const serialized = serialize(newFile);
+      await fs.writeFile(envUpPath, serialized, 'utf8');
+    }
+  }
+
   unlockedRoots.add(root);
-  logger.info(`DotEnvUp: Unlocked — ${Object.keys(entries).length} keys written`);
+  logger.info(`DotEnvUp: Unlocked — ${Object.keys(finalEntries).length} keys written`);
 
   if (autoLockTimer) clearTimeout(autoLockTimer);
   if (autoLockDisposable) autoLockDisposable.dispose();

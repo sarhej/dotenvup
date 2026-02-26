@@ -2,19 +2,22 @@
  * Workspace helper tests
  *
  * Critical scenarios (regression protection):
- * - Only .env (no .env.up) → state 'unprotected'; status bar "Click to manage" must show Init/Import.
+ * - Only .env (no .env.up) → state 'unprotected'; status bar shows "All unprotected".
  * - Only .env.up → state 'locked'.
  * - Both .env and .env.up → state 'unlocked'.
  * - Neither → state 'none'.
  * - getTargetWorkspaceRoot returns null when no folder has .env.up (so toggleLock can show get-started flow).
+ * - Scan all env locations: any directory with .env or .env.up is included (not only workspace roots).
  */
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import * as path from 'path';
 import {
   getWorkspaceEnvStates,
   getTargetWorkspaceRoot,
   computeFolderState,
+  envRootDisplayName,
   type FolderState,
 } from '../../workspace';
 
@@ -70,5 +73,47 @@ suite('Workspace helpers', () => {
         'folders with .env but no .env.up must be unprotected (or none if no .env)',
       );
     }
+  });
+
+  suite('getWorkspaceEnvStates (scan all env locations)', () => {
+    test('returns no duplicate roots', async () => {
+      const states = await getWorkspaceEnvStates();
+      const roots = states.map((s) => path.normalize(s.root));
+      const unique = new Set(roots);
+      assert.strictEqual(unique.size, roots.length, 'each env root must appear at most once');
+    });
+
+    test('each state has root, name, state and state is valid FolderState', async () => {
+      const states = await getWorkspaceEnvStates();
+      const validStates: FolderState[] = ['locked', 'unlocked', 'unprotected', 'none'];
+      for (const s of states) {
+        assert.ok(typeof s.root === 'string' && s.root.length > 0, 'root must be non-empty string');
+        assert.ok(typeof s.name === 'string', 'name must be string');
+        assert.ok(validStates.includes(s.state), `state must be one of ${validStates.join(', ')}`);
+      }
+    });
+  });
+
+  suite('envRootDisplayName (multi-location display)', () => {
+    function mockFolder(fsPath: string, name: string): vscode.WorkspaceFolder {
+      return { uri: vscode.Uri.file(fsPath), name, index: 0 };
+    }
+
+    test('workspace root returns folder name', () => {
+      const folders = [mockFolder('/ws', 'MyProject')];
+      assert.strictEqual(envRootDisplayName('/ws', folders), 'MyProject');
+      assert.strictEqual(envRootDisplayName(path.normalize('/ws'), folders), 'MyProject');
+    });
+
+    test('subfolder returns relative path', () => {
+      const folders = [mockFolder('/ws', 'MyProject')];
+      assert.strictEqual(envRootDisplayName('/ws/worker-api', folders), 'worker-api');
+      assert.strictEqual(envRootDisplayName('/ws/packages/api', folders), path.normalize('packages/api'));
+    });
+
+    test('unknown path returns basename', () => {
+      const folders = [mockFolder('/ws', 'MyProject')];
+      assert.strictEqual(envRootDisplayName('/other/foo', folders), 'foo');
+    });
   });
 });

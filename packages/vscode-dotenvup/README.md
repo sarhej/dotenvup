@@ -1,5 +1,7 @@
 # DotEnvUp — VS Code Extension
 
+By [Sergej Fedorovic](https://strt.it) · [Website](https://dotenvup.com) · [All projects](https://strt.it/projects.html)
+
 > `.env` files, but with memory — and a lock.
 
 Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.up` directly in VS Code (and Cursor). **Zero-knowledge, zero-trust** — no cloud, no server; your keys stay on your machine and we never see your secrets. Lock and unlock with one click, keep AI workflows safe, and use local key backup/recovery — without changing app code.
@@ -14,7 +16,8 @@ Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.u
 - **Import** — Convert an existing `.env` to encrypted `.env.up` (auto-detects `.env` in workspace root).
 - **Show Keys** — View key names, versions, and timestamps without decrypting values.
 - **Status** — Lock state, key count, stale key warnings, and drift detection.
-- **Multi-root workspaces** — Pick which folder to act on when several have `.env.up`.
+- **Multi-root workspaces** — When you have multiple roots, only the current project’s envs are shown (the folder containing the active editor). Click the status bar to lock, unlock, or protect any location.
+- **All env locations** — The extension scans the workspace for every `.env` and `.env.up` (including subfolders like `worker-api/`), so the status reflects “All protected”, “Partially protected”, or “All unprotected” and you can protect any of them from one menu.
 - **Safety everywhere** — Every `.env` deletion path is guarded: decrypt verification, pre-deletion backups, TOCTOU checks.
 
 ### Lock command flow
@@ -23,10 +26,20 @@ Lock persists the current `.env` into `.env.up` and removes `.env`. If the file 
 
 ![Lock command flow](docs/design/lock-command-flow.png)
 
+## Status bar
+
+The status bar shows:
+
+- **All protected** — Every `.env` location in scope is under DotEnvUp (locked or temporarily unlocked). Click to lock or unlock.
+- **Partially protected** — Some folders have `.env.up`, others still have plaintext `.env`. Click to choose: Unlock / Lock any protected location, or **Protect** an unprotected one (one-click import + lock).
+- **All unprotected** — No `.env.up` in scope; at least one plaintext `.env`. Click to protect it.
+
+With multiple roots, only the current project (the folder of the active editor) is considered, so you don’t see envs from other roots.
+
 ## Quick Start
 
 1. Open a project that has a `.env` file
-2. Click the lock icon in the status bar (or run `DotEnvUp: Lock .env.up`)
+2. Click the status bar (or run `DotEnvUp: Lock .env.up`)
 3. On first use, a consent popup explains local encryption — click "Protect My .env"
 4. Your `.env` is encrypted to `.env.up` and the plaintext is removed
 5. Click unlock to temporarily restore `.env` — choose a duration or "Forever"
@@ -55,6 +68,7 @@ cursor --install-extension dotenvup-0.4.0.vsix # Cursor
 | `dotenvup.autoLockOnClose` | `true` | Remove `.env` when the editor closes (for roots unlocked in this session). |
 | `dotenvup.createBackupBeforeLock` | `true` | Before locking, save an encrypted backup of `.env.up` as `.env.up.bak-<timestamp>`. No plaintext backup. |
 | `dotenvup.encryptAllEnvFiles` | `false` | Encrypt all `.env.*` files in the project (e.g. `.env.local`, `.env.development`), not only `.env`. Excludes files already ending in `.up`. |
+| `dotenvup.onlyWorkspaceRoot` | `false` | If `true`, only consider `.env`/`.env.up` in the workspace folder root(s), not in subfolders. Use when you want a single entry (e.g. one “Unlock” for the project) instead of every subfolder that has a `.env`. |
 | `dotenvup.keyStorageMode` | `user-file` | Key storage backend mode. Current supported mode: `user-file` (`~/.dotenvup/identity`). |
 
 ## Commands

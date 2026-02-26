@@ -42,6 +42,18 @@ The `.env.up` file was created with a different keypair (e.g. on another machine
 
 If no original private key exists anymore, existing `.env.up` content cannot be decrypted by design.
 
+### "Wrong key" on a project that used to work (Safe Edit / Unlock)
+
+If Unlock or **Safe Edit** suddenly report "incorrect key pair" or "No recipient block could be decrypted" on a project that worked before, DotEnvUp is using a *different* key than the one that encrypted the file.
+
+Common causes:
+
+1. **Environment override** — `UP_KEY`, `DOTENVUP_PRIVATE_KEY`, or `DOTENVUP_IDENTITY_DIR` is set (e.g. in your shell profile or a launch config). The extension and CLI use the same priority: env keys first, then `~/.dotenvup`. If one of these points to another identity, that key is used. Clear the variable if you expect to use `~/.dotenvup`.
+2. **Identity was replaced** — A new key was written to `~/.dotenvup/identity` (e.g. you ran `up init` again or restored a different backup). The `.env.up` file is still encrypted for the old key. Use **DotEnvUp: Recover key mismatch** (or `up recover .env.up`) to find and import the matching key.
+3. **Safe Edit saved with a different key** — If you had an env-based key active when you saved from Safe Edit, the file was re-encrypted only for that key. Use Recover to import that key, or restore `.env.up` from backup if you have it.
+
+**In the extension:** When Safe Edit fails with a key error, use the **Recover key mismatch** button in the message to scan for and import the correct key.
+
 ### "Existing .env has local changes. Use --force to overwrite."
 
 Unlock is refusing to overwrite `.env` because it differs from `.env.up`. In scripts (non-TTY), add `--force` if you intend to overwrite:

@@ -26,11 +26,92 @@ import * as recipientsListCmd from './commands/recipientsList';
 import * as recipientsAddCmd from './commands/recipientsAdd';
 import * as recipientsRemoveCmd from './commands/recipientsRemove';
 import * as recipientsDiscoverCmd from './commands/recipientsDiscover';
+import * as safeEditCmd from './commands/safeEdit';
 import * as logger from './logger';
 import { getWorkspaceEnvStates } from './workspace';
+import { SafeEditFSProvider } from './providers/safeEditFSProvider';
+import { SafeEditCodeLensProvider } from './providers/safeEditCodeLens';
+import { registerSafeEditCustomEditor } from './providers/safeEditCustomEditor';
 
 let statusBarItem: vscode.StatusBarItem;
 let keystore: ExtensionKeyStore;
+
+/** One-click protect flow for a single env root (Import .env → .env.up then lock). */
+async function runProtectForRoot(
+  context: vscode.ExtensionContext,
+  workspace: typeof import('./workspace'),
+  targetRoot: string,
+  fsP: typeof import('fs/promises'),
+): Promise<void> {
+  const hasKey = await keystore.hasKeypair();
+  if (!hasKey) {
+    const { showFirstProtectPanel } = await import('./webview/firstProtect');
+    const { setNickname } = await import('./author');
+    const result = await showFirstProtectPanel(context, keystore.getIdentityDir());
+    if (result.action !== 'protect') return;
+    await context.globalState.update('dotenvup.firstProtectShown', true);
+    const { generateKeypair } = await import('@dotenvup/format');
+    const { publicKey, privateKey } = await generateKeypair();
+    await keystore.storeKeypair(publicKey, privateKey);
+    if (result.nickname) {
+      try {
+        await setNickname(keystore.getIdentityDir(), result.nickname);
+      } catch {
+        // best-effort
+      }
+    }
+  }
+  const config = vscode.workspace.getConfiguration('dotenvup');
+  const encryptAll = config.get<boolean>('encryptAllEnvFiles', false);
+  const filesToProtect = encryptAll
+    ? await workspace.listPlaintextEnvFiles(targetRoot)
+    : [path.join(targetRoot, '.env')];
+  if (filesToProtect.length === 0) return;
+  try {
+    await fsP.access(filesToProtect[0]);
+  } catch {
+    return;
+  }
+  let protectedCount = 0;
+  for (const srcPath of filesToProtect) {
+    const imported = await importCmd.run(keystore, targetRoot, { silent: true, sourcePath: srcPath });
+    if (!imported) {
+      if (!encryptAll) return;
+      continue;
+    }
+    const outPath = path.join(path.dirname(srcPath), path.basename(srcPath) + '.up');
+    try {
+      const { parse, decrypt } = await import('@dotenvup/format');
+      const envUpContent = await fsP.readFile(outPath, 'utf8');
+      const file = parse(envUpContent);
+      const privKey = await keystore.getPrivateKey();
+      if (!privKey) throw new Error('No private key');
+      const decryptResult = await decrypt(file, '@local', privKey);
+      if (Object.keys(decryptResult.entries).length === 0) throw new Error('No entries');
+    } catch {
+      if (!encryptAll) {
+        vscode.window.showErrorMessage('DotEnvUp: Import succeeded but verification failed. Your .env was NOT deleted.');
+        return;
+      }
+      continue;
+    }
+    const createBackupBeforeLock = config.get<boolean>('createBackupBeforeLock', true);
+    if (createBackupBeforeLock) {
+      try {
+        await fsP.copyFile(outPath, path.join(path.dirname(outPath), path.basename(outPath) + '.bak-' + Date.now()));
+      } catch {}
+    }
+    await lockCmd.run(keystore, targetRoot, { envPath: srcPath, envUpPath: outPath });
+    protectedCount++;
+  }
+  const createBackupBeforeLock = config.get<boolean>('createBackupBeforeLock', true);
+  const msg = protectedCount === 0
+    ? 'DotEnvUp: No files were protected.'
+    : protectedCount === 1
+      ? (createBackupBeforeLock ? 'DotEnvUp: .env is now protected. Encrypted backup saved. Click the status bar to unlock.' : 'DotEnvUp: .env is now protected. Click the status bar to unlock.')
+      : (createBackupBeforeLock ? `DotEnvUp: ${protectedCount} files protected. Encrypted backups saved.` : `DotEnvUp: ${protectedCount} files protected.`);
+  vscode.window.showInformationMessage(msg);
+}
 
 async function refreshStatusBarFromFs(): Promise<void> {
   const states = await getWorkspaceEnvStates();
@@ -39,8 +120,10 @@ async function refreshStatusBarFromFs(): Promise<void> {
 
   if (withEnvUp.length === 0) {
     if (unprotected.length > 0) {
-      statusBarItem.text = '$(warning) .env (unprotected)';
-      statusBarItem.tooltip = 'Your .env has no encryption. Click to protect it (one click).';
+      statusBarItem.text = '$(warning) All unprotected';
+      statusBarItem.tooltip = unprotected.length === 1
+        ? 'One .env has no encryption. Click to protect.'
+        : `${unprotected.length} .env locations have no encryption. Click to protect.`;
       statusBarItem.show();
     } else {
       statusBarItem.hide();
@@ -51,20 +134,45 @@ async function refreshStatusBarFromFs(): Promise<void> {
   statusBarItem.show();
   const expiresAt = unlockCmd.getUnlockExpiresAt();
 
-  if (withEnvUp.length === 1) {
-    const s = withEnvUp[0];
-    if (s.state === 'unlocked') {
-      updateStatusBar(statusBarItem, false, s.keyCount, expiresAt);
-    } else {
-      updateStatusBar(statusBarItem, true);
+  const anyUnlocked = withEnvUp.some((s) => s.state === 'unlocked');
+
+  // Partially protected when any location has both .env and .env.up (unlocked)
+  if (unprotected.length === 0 && anyUnlocked) {
+    statusBarItem.text = '$(warning) Partially protected';
+    statusBarItem.tooltip = withEnvUp
+      .map((s) => (s.state === 'unlocked' ? `${s.name}: both .env and .env.up — lock to remove .env` : `${s.name}: ${s.state}`))
+      .join('\n') + '\nClick to lock/unlock.';
+    if (expiresAt != null && expiresAt > Date.now()) {
+      const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+      const m = Math.floor(remaining / 60);
+      const sec = remaining % 60;
+      statusBarItem.tooltip += `\nAuto-lock in ${m}m ${sec}s`;
     }
     return;
   }
 
-  const lockedCount = withEnvUp.filter((s) => s.state === 'locked').length;
-  const unlockedCount = withEnvUp.filter((s) => s.state === 'unlocked').length;
-  statusBarItem.text = `$(lock) DotEnvUp: ${lockedCount} locked, ${unlockedCount} unlocked`;
-  statusBarItem.tooltip = withEnvUp.map((s) => `${s.name}: ${s.state}`).join('\n') + '\nClick to toggle.';
+  // All protected (no unprotected, and no unlocked — all locations locked)
+  if (unprotected.length === 0) {
+    if (withEnvUp.length === 1) {
+      const s = withEnvUp[0];
+      updateStatusBar(statusBarItem, true, s.keyCount, expiresAt);
+    } else {
+      statusBarItem.text = '$(lock) All protected';
+      statusBarItem.tooltip = withEnvUp.map((s) => `${s.name}: ${s.state}`).join('\n') + '\nClick to lock/unlock.';
+      if (expiresAt != null && expiresAt > Date.now()) {
+        const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+        const m = Math.floor(remaining / 60);
+        const sec = remaining % 60;
+        statusBarItem.tooltip += `\nAuto-lock in ${m}m ${sec}s`;
+      }
+    }
+    return;
+  }
+
+  // Partially protected (some locations have only .env, no .env.up)
+  statusBarItem.text = '$(warning) Partially protected';
+  const allRelevant = [...withEnvUp, ...unprotected];
+  statusBarItem.tooltip = allRelevant.map((s) => `${s.name}: ${s.state}`).join('\n') + '\nClick to protect or lock/unlock.';
   if (expiresAt != null && expiresAt > Date.now()) {
     const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
     const m = Math.floor(remaining / 60);
@@ -84,6 +192,18 @@ export function activate(context: vscode.ExtensionContext): void {
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
 
+  // Register Safe Edit providers
+  const safeEditFS = new SafeEditFSProvider(keystore);
+  context.subscriptions.push(
+    vscode.workspace.registerFileSystemProvider('dotenvup-safe', safeEditFS, { isCaseSensitive: true })
+  );
+  
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider({ scheme: 'file', language: 'dotenvup' }, new SafeEditCodeLensProvider())
+  );
+
+  registerSafeEditCustomEditor(context, keystore);
+
   void refreshStatusBarFromFs();
   const countdownInterval = setInterval(() => void refreshStatusBarFromFs(), 30_000);
   context.subscriptions.push({ dispose: () => clearInterval(countdownInterval) });
@@ -101,23 +221,68 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('dotenvup.toggleLock', async () => {
       const workspace = await import('./workspace');
       const fsP = await import('fs/promises');
-      const root = await workspace.getTargetWorkspaceRoot();
+      const states = await workspace.getWorkspaceEnvStates();
+      const withEnvUp = states.filter((s) => s.state === 'locked' || s.state === 'unlocked');
+      const unprotected = states.filter((s) => s.state === 'unprotected');
 
-      if (root) {
-        // Has .env.up — normal toggle between lock/unlock
+      // Single location with .env.up and no unprotected → toggle that one
+      if (withEnvUp.length === 1 && unprotected.length === 0) {
+        const root = withEnvUp[0].root;
         const envPath = path.join(root, '.env');
         const hasEnv = await fsP.access(envPath).then(() => true).catch(() => false);
+        
+        // New Smart Menu for Single Location
+        const items: vscode.QuickPickItem[] = [];
+        const itemData: { action: 'lock' | 'unlock' | 'safeEdit' }[] = [];
+
+        // Always offer Safe Edit
+        items.push({ 
+          label: '$(edit) Safe Edit .env', 
+          description: 'Edit secrets in memory without writing to disk',
+          detail: root 
+        });
+        itemData.push({ action: 'safeEdit' });
+
         if (hasEnv) {
+          items.push({ 
+            label: '$(lock) Lock .env', 
+            description: 'Encrypt and remove .env from disk',
+            detail: root 
+          });
+          itemData.push({ action: 'lock' });
+        } else {
+          items.push({ 
+            label: '$(unlock) Unlock to Disk', 
+            description: 'Decrypt .env to disk (legacy)',
+            detail: root 
+          });
+          itemData.push({ action: 'unlock' });
+        }
+
+        const choice = await vscode.window.showQuickPick(items, {
+          placeHolder: 'DotEnvUp Actions',
+          title: 'DotEnvUp'
+        });
+
+        if (!choice) return;
+        const idx = items.indexOf(choice);
+        const action = itemData[idx].action;
+
+        if (action === 'safeEdit') {
+          await safeEditCmd.run(vscode.Uri.file(path.join(root, '.env.up')), keystore);
+        } else if (action === 'lock') {
           await lockCmd.run(keystore, root);
         } else {
           await unlockCmd.run(keystore, root);
         }
-      } else {
-        // No .env.up — check for unprotected .env and offer one-click "Protect"
-        const states = await workspace.getWorkspaceEnvStates();
-        const unprotected = states.filter((s) => s.state === 'unprotected');
-        if (unprotected.length === 0) return;
+        
+        await refreshStatusBarFromFs();
+        return;
+      }
 
+      // No .env.up anywhere → protect flow (pick unprotected folder if multiple)
+      if (withEnvUp.length === 0) {
+        if (unprotected.length === 0) return;
         const targetRoot = unprotected.length === 1
           ? unprotected[0].root
           : (await vscode.window.showQuickPick(
@@ -125,82 +290,48 @@ export function activate(context: vscode.ExtensionContext): void {
               { placeHolder: 'Select folder to protect', title: 'DotEnvUp' },
             ))?.root;
         if (!targetRoot) return;
+        await runProtectForRoot(context, workspace, targetRoot, fsP);
+        await refreshStatusBarFromFs();
+        return;
+      }
 
-        // Always require consent when no keypair exists (key may have been
-        // deleted/lost since the last session — never silently generate + lock)
-        const hasKey = await keystore.hasKeypair();
-        if (!hasKey) {
-          const { showFirstProtectPanel } = await import('./webview/firstProtect');
-          const { setNickname } = await import('./author');
-          const result = await showFirstProtectPanel(context, keystore.getIdentityDir());
-          if (result.action !== 'protect') return;
-          await context.globalState.update('dotenvup.firstProtectShown', true);
+      // Multiple locations and/or some unprotected → show pick: Unlock / Lock / Protect per location
+      const items: vscode.QuickPickItem[] = [];
+      const itemData: { root: string; action: 'lock' | 'unlock' | 'protect' | 'safeEdit' }[] = [];
+      for (const s of withEnvUp) {
+        // Always offer Safe Edit for existing .env.up
+        items.push({ label: '$(edit) Safe Edit', description: s.name, detail: s.root });
+        itemData.push({ root: s.root, action: 'safeEdit' });
 
-          const { generateKeypair } = await import('@dotenvup/format');
-          const { publicKey, privateKey } = await generateKeypair();
-          await keystore.storeKeypair(publicKey, privateKey);
-          if (result.nickname) {
-            try {
-              await setNickname(keystore.getIdentityDir(), result.nickname);
-            } catch {
-              // best-effort
-            }
-          }
+        if (s.state === 'locked') {
+          items.push({ label: '$(unlock) Unlock to Disk', description: s.name, detail: s.root });
+          itemData.push({ root: s.root, action: 'unlock' });
+        } else {
+          items.push({ label: '$(lock) Lock', description: s.name, detail: s.root });
+          itemData.push({ root: s.root, action: 'lock' });
         }
-
-        const config = vscode.workspace.getConfiguration('dotenvup');
-        const encryptAll = config.get<boolean>('encryptAllEnvFiles', false);
-        const filesToProtect = encryptAll
-          ? await workspace.listPlaintextEnvFiles(targetRoot)
-          : [path.join(targetRoot, '.env')];
-        if (filesToProtect.length === 0) return;
-        try {
-          await fsP.access(filesToProtect[0]);
-        } catch {
-          return;
-        }
-
-        let protectedCount = 0;
-        for (const srcPath of filesToProtect) {
-          const imported = await importCmd.run(keystore, targetRoot, { silent: true, sourcePath: srcPath });
-          if (!imported) {
-            if (!encryptAll) {
-              return;
-            }
-            continue;
-          }
-          const outPath = path.join(path.dirname(srcPath), path.basename(srcPath) + '.up');
-          try {
-            const { parse, decrypt } = await import('@dotenvup/format');
-            const envUpContent = await fsP.readFile(outPath, 'utf8');
-            const file = parse(envUpContent);
-            const privKey = await keystore.getPrivateKey();
-            if (!privKey) throw new Error('No private key');
-            const decryptResult = await decrypt(file, '@local', privKey);
-            if (Object.keys(decryptResult.entries).length === 0) throw new Error('No entries');
-          } catch (verifyErr) {
-            if (!encryptAll) {
-              vscode.window.showErrorMessage('DotEnvUp: Import succeeded but verification failed. Your .env was NOT deleted.');
-              return;
-            }
-            continue;
-          }
-          const createBackupBeforeLock = config.get<boolean>('createBackupBeforeLock', true);
-          if (createBackupBeforeLock) {
-            try {
-              await fsP.copyFile(outPath, path.join(path.dirname(outPath), path.basename(outPath) + '.bak-' + Date.now()));
-            } catch {}
-          }
-          await lockCmd.run(keystore, targetRoot, { envPath: srcPath, envUpPath: outPath });
-          protectedCount++;
-        }
-        const createBackupBeforeLock = config.get<boolean>('createBackupBeforeLock', true);
-        const msg = protectedCount === 0
-          ? 'DotEnvUp: No files were protected.'
-          : protectedCount === 1
-            ? (createBackupBeforeLock ? 'DotEnvUp: .env is now protected. Encrypted backup saved. Click the status bar to unlock.' : 'DotEnvUp: .env is now protected. Click the status bar to unlock.')
-            : (createBackupBeforeLock ? `DotEnvUp: ${protectedCount} files protected. Encrypted backups saved.` : `DotEnvUp: ${protectedCount} files protected.`);
-        vscode.window.showInformationMessage(msg);
+      }
+      for (const s of unprotected) {
+        items.push({ label: '$(warning) Protect', description: s.name, detail: s.root });
+        itemData.push({ root: s.root, action: 'protect' });
+      }
+      const choice = await vscode.window.showQuickPick(items, {
+        placeHolder: 'Choose location to lock, unlock, or protect',
+        title: 'DotEnvUp',
+        matchOnDescription: true,
+      });
+      if (!choice) return;
+      const idx = items.findIndex((i) => i.description === choice.description && i.detail === choice.detail && i.label === choice.label);
+      const data = idx >= 0 ? itemData[idx] : undefined;
+      if (!data) return;
+      if (data.action === 'safeEdit') {
+        await safeEditCmd.run(vscode.Uri.file(path.join(data.root, '.env.up')), keystore);
+      } else if (data.action === 'unlock') {
+        await unlockCmd.run(keystore, data.root);
+      } else if (data.action === 'lock') {
+        await lockCmd.run(keystore, data.root);
+      } else {
+        await runProtectForRoot(context, workspace, data.root, fsP);
       }
       await refreshStatusBarFromFs();
     }),
@@ -257,6 +388,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('dotenvup.recipientsAdd', () => recipientsAddCmd.run()),
     vscode.commands.registerCommand('dotenvup.recipientsRemove', () => recipientsRemoveCmd.run()),
     vscode.commands.registerCommand('dotenvup.recipientsDiscover', () => recipientsDiscoverCmd.run()),
+    vscode.commands.registerCommand('dotenvup.safeEdit', (uri?: vscode.Uri) => safeEditCmd.run(uri, keystore)),
   );
 
   const watcherEnvUp = vscode.workspace.createFileSystemWatcher('**/.env.up');
@@ -267,8 +399,12 @@ export function activate(context: vscode.ExtensionContext): void {
   watcherEnvUp.onDidDelete(refresh);
   watcherEnv.onDidCreate(refresh);
   watcherEnv.onDidChange(refresh);
-  watcherEnv.onDidDelete(refresh);
   context.subscriptions.push(watcherEnvUp, watcherEnv);
+
+  // When workspace has multiple roots, status is scoped to the active editor's folder; refresh when that changes
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(() => void refreshStatusBarFromFs()),
+  );
 }
 
 export function deactivate(): void {

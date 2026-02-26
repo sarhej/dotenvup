@@ -69,6 +69,46 @@ Lock always persists the current `.env` into `.env.up` and removes `.env`. If th
 
 ![Lock command flow](docs/design/lock-command-flow.png)
 
+### Safe Edit (planned)
+
+Edit `.env.up` in place via a **virtual document** — no plaintext `.env` on disk. Open from CodeLens/status bar → edit → save; the extension decrypts for the editor and re-encrypts on save.
+
+```mermaid
+flowchart TB
+    subgraph Initiation[" "]
+        User([User])
+        User -->|"Click CodeLens / Status Bar"| Cmd["Command: safeEdit"]
+        Cmd -->|"Open Virtual Doc"| Virtual["Virtual doc: dotenvup-safe:/.env"]
+    end
+
+    subgraph Provider["Safe Edit Provider"]
+        Editor["VS Code Editor"]
+        FS["SafeEditFSProvider"]
+        Disk[("Disk: .env.up")]
+        Key[(Keystore)]
+
+        Virtual --> FS
+
+        subgraph Read["Read flow"]
+            R1["1. Read .env.up"]
+            R2["2. Decrypt (memory)"]
+            FS --> R1 --> Disk
+            R1 --> R2 --> Key
+            R2 --> Editor
+        end
+
+        subgraph Save["Save flow"]
+            S1["1. Encrypt content"]
+            S2["2. Update .env.up"]
+            Editor -->|"Save (Cmd+S)"| FS
+            FS --> S1 --> Key
+            S1 --> S2 --> Disk
+        end
+    end
+```
+
+Full flow (read/save sequences): [Safe Edit design](docs/design/SAFE_EDIT_FLOW.md).
+
 ## Packages
 
 | Package | Description | npm |
@@ -202,6 +242,17 @@ npm install
 npm run build
 npm run test    # 110 tests across format, safety, and crypto
 ```
+
+## Backlog
+
+Planned work (not yet scheduled):
+
+- **Kubernetes controller** — Cluster-side controller that decrypts `.env.up` (e.g. from a Custom Resource or annotated Secret) and creates/updates a standard Kubernetes `Secret`. Same idea as [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets): one format for local dev (DotEnvUp) and GitOps in-cluster.
+- **MCP (Model Context Protocol)** — MCP server or tools so AI assistants and IDEs can safely check lock state, run `up run`, or trigger lock/unlock without exposing secrets.
+- **Lock for Agent** — Explicit “lock for agent” flow and docs: ensure agents (CI, AI coders) never persist plaintext `.env`; use `up run --` and clear guidance for when to lock after agent edits.
+- **Ready-to-use CI/CD** — GitHub Actions, GitLab CI, and generic shell scripts that use `up run --` or decrypt with `UP_KEY` for tests and deploys, with no plaintext `.env` in logs or artifacts.
+
+See [Roadmap](docs/ROADMAP.md) for current priorities and extension hardening.
 
 ## License
 

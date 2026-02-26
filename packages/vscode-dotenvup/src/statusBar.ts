@@ -26,17 +26,19 @@ export function updateStatusBar(
 ): void {
   item.backgroundColor = undefined;
   if (isLocked) {
-    item.text = '$(lock) .env.up locked';
-    item.tooltip = 'Click to unlock .env.up';
+    item.text = '$(lock) All protected';
+    item.tooltip = 'All .env locations are locked. Click to unlock.';
   } else {
-    item.text = keyCount !== undefined ? `$(unlock) .env.up unlocked (${keyCount} keys)` : '$(unlock) .env.up unlocked';
+    item.text = keyCount !== undefined
+      ? `$(unlock) All protected (${keyCount} keys)`
+      : '$(unlock) All protected';
     if (expiresAt != null && expiresAt > Date.now()) {
       item.tooltip = formatCountdown(expiresAt) + ' — Click to lock';
       if (expiresAt - Date.now() < 60_000) {
         item.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
       }
     } else {
-      item.tooltip = 'Click to lock .env.up';
+      item.tooltip = 'All protected (unlocked). Click to lock.';
     }
   }
 }
