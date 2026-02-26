@@ -45,7 +45,7 @@
         },
         "codeRepository": "https://github.com/sarhej/dotenvup",
         "programmingLanguage": "TypeScript",
-        "softwareVersion": "0.4.1"
+        "softwareVersion": "0.4.5"
     }
     </script>
     <script type="application/ld+json">
@@ -367,10 +367,10 @@
                         </ol>
                         <div class="code-preview" style="margin: 0.5rem 0;">
 <pre><code><span class="comment"># VS Code</span>
-code --install-extension dotenvup-0.4.0.vsix
+code --install-extension dotenvup-0.4.5.vsix
 
 <span class="comment"># Cursor</span>
-cursor --install-extension dotenvup-0.4.0.vsix</code></pre>
+cursor --install-extension dotenvup-0.4.5.vsix</code></pre>
                         </div>
                     </div>
                     <div class="feature-card">
@@ -447,6 +447,29 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
                 </article>
             </section>
 
+            <section class="edit-in-place-section" aria-label="Edit in place — Safe Edit" style="margin: 4rem 0;">
+                <h2 style="text-align: center; font-size: 2rem; margin-bottom: 0.5rem; color: #fff;">Edit in place — no plaintext on disk</h2>
+                <p style="text-align: center; color: #94a3b8; max-width: 680px; margin: 0 auto 2rem;">
+                    Change secrets without ever writing a plaintext <code>.env</code> file. The extension opens <code>.env.up</code> in a virtual editor: decrypt on read, edit in memory, encrypt on save. Your disk only ever sees the encrypted file.
+                </p>
+                <div style="max-width: 820px; margin: 0 auto 2rem;">
+                    <img src="/assets/safe-edit-flow.svg" alt="Safe Edit flow: .env.up on disk → decrypt in memory → edit in editor → save → encrypt back to .env.up" width="820" height="280" style="width: 100%; height: auto; border-radius: 0.75rem; border: 1px solid var(--border);">
+                </div>
+                <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; max-width: 820px; margin: 0 auto 2rem;">
+                    <article class="feature-card" style="margin: 0;">
+                        <h3 style="margin-top: 0; color: #a5b4fc;">How it works</h3>
+                        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Right‑click <code>.env.up</code> in the explorer → <strong>Edit with DotEnvUp</strong>, or use the status bar. You get a normal-looking editor with decrypted key=value pairs. Edit, add, remove. Save (Cmd+S / Ctrl+S) — the extension re-encrypts and writes only to <code>.env.up</code>. No <code>.env</code> is created.</p>
+                    </article>
+                    <article class="feature-card" style="margin: 0;">
+                        <h3 style="margin-top: 0; color: #86efac;">Why it matters</h3>
+                        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Unlock → edit .env → import → lock works, but leaves plaintext on disk while you work. Safe Edit keeps plaintext only in the editor buffer and in memory. If you walk away or the app crashes, nothing sensitive is left in a file. Same workflow as editing a normal file — just safer.</p>
+                    </article>
+                </div>
+                <div style="max-width: 820px; margin: 0 auto;">
+                    <img src="/assets/safe-edit-memory-vs-disk.svg" alt="Comparison: plaintext only in memory with Safe Edit vs plaintext .env on disk" width="820" height="240" style="width: 100%; height: auto; border-radius: 0.75rem; border: 1px solid var(--border);">
+                </div>
+            </section>
+
             <section class="use-cases" aria-label="Supported use cases">
                 <h2 style="text-align: center; font-size: 2rem; margin: 4rem 0 2rem; color: #fff;">Supported use cases</h2>
                 <p style="text-align: center; color: #94a3b8; max-width: 640px; margin: 0 auto 2rem;">All of these work with the free, open-source model — no server, no account. Full steps are in the <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md" style="color: var(--primary);">User Guide</a>.</p>
@@ -469,7 +492,7 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
                     </li>
                     <li class="feature-card" style="margin-bottom: 1rem;">
                         <h3 style="margin-top: 0; color: #fff;">Editing secrets</h3>
-                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Run <code>up unlock</code>, edit <code>.env</code>, then run <code>up import .env</code> to save into <code>.env.up</code>, then <code>up lock</code>. If you lock without importing, the lock command will warn (drift detection).</p>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Run <code>up unlock</code>, edit <code>.env</code>, then run <code>up import .env</code> to save into <code>.env.up</code>, then <code>up lock</code>. Or use <strong>Edit with DotEnvUp (Safe Edit)</strong> in the extension: decrypt in memory, edit, save back to <code>.env.up</code> without writing plaintext to disk. If both <code>.env</code> and <code>.env.up</code> exist, the extension shows “Partially protected” and can merge on unlock or in Safe Edit.</p>
                     </li>
                     <li class="feature-card" style="margin-bottom: 1rem;">
                         <h3 style="margin-top: 0; color: #fff;">Sharing with one other person</h3>
@@ -485,7 +508,7 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
                     </li>
                     <li class="feature-card" style="margin-bottom: 1rem;">
                         <h3 style="margin-top: 0; color: #fff;">VS Code / Cursor extension</h3>
-                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Status bar: one-click lock/unlock. Command Palette: DotEnvUp Unlock, Lock, Import, Show Keys, Status, Key Management (backup/recovery), Recipients Add/List/Remove, Recover Key Mismatch. First Protect flow when you have only <code>.env</code>. Import All for multiple workspace folders. See extension README for settings (confirmOnLock, defaultUnlockDuration, createBackupBeforeLock, etc.).</p>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Status bar: one-click lock/unlock; shows “Partially protected” when both <code>.env</code> and <code>.env.up</code> exist. <strong>Edit with DotEnvUp (Safe Edit)</strong>: open <code>.env.up</code> in a virtual editor, decrypt in memory, save back encrypted — no plaintext on disk. Unlock and Safe Edit support merging when <code>.env</code> exists (prefer local or team). Command Palette: Unlock, Lock, Import, Show Keys, Status, Key Management, Recipients, Recover Key Mismatch. First Protect, Import All. See extension README for settings.</p>
                     </li>
                 </ul>
             </section>

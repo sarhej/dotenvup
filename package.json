@@ -12,9 +12,11 @@
     "lint": "npm run lint --workspaces",
     "test": "npm run test --workspaces",
     "package:extension": "npm run build && npm run package --workspace=dotenvup",
-    "publish:extension": "npm run build && (cd packages/vscode-dotenvup && npx @vscode/vsce publish --no-dependencies)"
+    "publish:extension": "npm run build && (cd packages/vscode-dotenvup && npx @vscode/vsce publish --no-dependencies)",
+    "publish:openvsx": "npm run build && (cd packages/vscode-dotenvup && npx ovsx publish --no-dependencies)"
   },
-  "devDependencies":{"vitest":"^2.0.0"
+  "devDependencies": {
+    "vitest": "^2.0.0"
   },
   "engines": {
     "node": ">=20.0.0"

@@ -57,7 +57,31 @@ This runs `npm run build` then `cd packages/vscode-dotenvup && npx @vscode/vsce 
 - **First time:** You may need to run `npx @vscode/vsce login <publisher>` (e.g. `dotenvup`) and complete the browser token flow.
 - If publish fails with "version X already exists", bump the version in `package.json` and `CHANGELOG.md` and repeat from step 1.
 
-## 5. GitHub release (optional)
+## 5. Publish to Open VSX Registry (VSCodium, etc.)
+
+[Open VSX](https://open-vsx.org/) is used by VSCodium and other VS Code–compatible editors.
+
+**Prerequisites:**
+
+1. Create an [Eclipse account](https://accounts.eclipse.org/) and sign the [Publisher Agreement](https://open-vsx.org/) at open-vsx.org.
+2. [Create a namespace](https://github.com/eclipse/openvsx/wiki/Namespace-Access) matching your `publisher` (e.g. `dotenvup`): on open-vsx.org go to your profile → Namespaces → create.
+3. [Create a personal access token](https://open-vsx.org/user-settings/tokens) and set it:
+   ```bash
+   export OVSX_PAT=your_token_here
+   ```
+
+From repo root:
+
+```bash
+npm run publish:openvsx
+```
+
+This runs `npm run build` then `ovsx publish --no-dependencies` in the extension package. You can also pass the token explicitly: `npx ovsx publish -p $OVSX_PAT` from `packages/vscode-dotenvup`.
+
+- First time: ensure the namespace (e.g. `dotenvup`) exists on open-vsx.org.
+- If the version already exists, bump version and repeat from step 1.
+
+## 6. GitHub release (optional)
 
 On GitHub → Releases → Draft a new release:
 
@@ -79,4 +103,5 @@ git tag -a v0.4.5 -m "Release v0.4.5 — Partially protected, merge flows, Safe 
 git push origin main
 git push origin v0.4.5
 npm run publish:extension
+npm run publish:openvsx
 ```

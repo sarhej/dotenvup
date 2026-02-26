@@ -16,7 +16,7 @@ The .env.up format is a "half-open envelope": key names, versions, timestamps, a
 - Multi-recipient: Encrypt for multiple users (@alice, @bob) and machines (@ci)
 - CI/CD ready: `up run -- npm test` decrypts at runtime with no file on disk
 - Zero code changes: Works with existing dotenv libraries and process.env
-- VS Code / Cursor extension: One-click lock/unlock from the status bar
+- VS Code / Cursor extension: One-click lock/unlock; Partially protected when both .env and .env.up exist; Edit with DotEnvUp (Safe Edit) for in-memory edit without plaintext on disk; merge on unlock/Safe Edit
 - CLI tool: `up init`, `up import`, `up lock`, `up unlock`, `up run`
 
 ## Format Specification
@@ -47,7 +47,7 @@ npm install -g @dotenvup/cli
 
 # VS Code / Cursor extension
 # Download .vsix from https://github.com/sarhej/dotenvup/releases
-code --install-extension dotenvup-0.4.0.vsix
+code --install-extension dotenvup-0.4.5.vsix
 
 # Node.js library (drop-in dotenv replacement)
 npm install @dotenvup/node
