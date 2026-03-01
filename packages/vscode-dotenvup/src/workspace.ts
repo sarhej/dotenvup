@@ -51,20 +51,12 @@ export function envRootDisplayName(root: string, workspaceFolders: readonly vsco
 }
 
 /**
- * When the workspace has multiple roots, return only the folder for the "current"
- * context so we don't show envs from other roots. Single-root: use that root.
- * With multiple roots: use the folder containing the active editor, or the first
- * root if no editor is focused.
+ * Return all workspace folders so every root is scanned for .env / .env.up.
+ * Previously this was scoped to the active editor's folder, which hid .env.up
+ * files in other roots of a multi-root workspace.
  */
 function getEffectiveWorkspaceFolders(): readonly vscode.WorkspaceFolder[] {
-  const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
-  if (workspaceFolders.length <= 1) return workspaceFolders;
-  const activeEditor = vscode.window.activeTextEditor;
-  if (activeEditor) {
-    const activeFolder = vscode.workspace.getWorkspaceFolder(activeEditor.document.uri);
-    if (activeFolder) return [activeFolder];
-  }
-  return [workspaceFolders[0]];
+  return vscode.workspace.workspaceFolders ?? [];
 }
 
 /**

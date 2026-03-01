@@ -389,6 +389,16 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('dotenvup.recipientsRemove', () => recipientsRemoveCmd.run()),
     vscode.commands.registerCommand('dotenvup.recipientsDiscover', () => recipientsDiscoverCmd.run()),
     vscode.commands.registerCommand('dotenvup.safeEdit', (uri?: vscode.Uri) => safeEditCmd.run(uri, keystore)),
+    vscode.commands.registerCommand('dotenvup.unlockFromContext', async (uri?: vscode.Uri) => {
+      const root = uri ? path.dirname(uri.fsPath) : undefined;
+      await unlockCmd.run(keystore, root);
+      await refreshStatusBarFromFs();
+    }),
+    vscode.commands.registerCommand('dotenvup.lockFromContext', async (uri?: vscode.Uri) => {
+      const root = uri ? path.dirname(uri.fsPath) : undefined;
+      await lockCmd.run(keystore, root);
+      await refreshStatusBarFromFs();
+    }),
   );
 
   const watcherEnvUp = vscode.workspace.createFileSystemWatcher('**/.env.up');
@@ -401,7 +411,6 @@ export function activate(context: vscode.ExtensionContext): void {
   watcherEnv.onDidChange(refresh);
   context.subscriptions.push(watcherEnvUp, watcherEnv);
 
-  // When workspace has multiple roots, status is scoped to the active editor's folder; refresh when that changes
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor(() => void refreshStatusBarFromFs()),
   );

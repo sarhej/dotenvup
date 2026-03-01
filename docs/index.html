@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DotEnvUp — Encrypted .env Files for Git | Open-Source Secret Management</title>
-    <meta name="description" content="DotEnvUp is an open-source encrypted .env file format (.env.up) with zero-knowledge encryption (X25519 + XChaCha20-Poly1305). Safe to commit to Git. VS Code extension and CLI for developers. No server required.">
-    <meta name="keywords" content="dotenv, encrypted env, secret management, .env encryption, dotenvup, environment variables, git secrets, zero-knowledge, XChaCha20, VS Code extension, CLI tool, open source">
+    <title>DotEnvUp — Encrypted .env in VS Code & Cursor | One-Click Lock/Unlock</title>
+    <meta name="description" content="DotEnvUp is a VS Code and Cursor extension: encrypt .env into .env.up, one-click lock/unlock from the status bar, edit secrets without plaintext on disk. CLI for terminal and CI. Zero-knowledge, safe to commit.">
+    <meta name="keywords" content="dotenv, encrypted env, VS Code extension, Cursor extension, secret management, .env encryption, dotenvup, environment variables, git secrets, zero-knowledge, open source">
     <link rel="canonical" href="https://dotenvup.com/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dotenvup.com/">
-    <meta property="og:title" content="DotEnvUp — Encrypted .env Files for Git">
-    <meta property="og:description" content="Open-source encrypted .env format. Zero-knowledge, zero-trust — no cloud, no server. VS Code extension and CLI. Safe to commit.">
+    <meta property="og:title" content="DotEnvUp — Encrypted .env in VS Code & Cursor">
+    <meta property="og:description" content="VS Code and Cursor extension: one-click lock/unlock, edit .env.up without plaintext on disk. Zero-knowledge, safe to commit. CLI for terminal and CI.">
     <meta property="og:site_name" content="DotEnvUp">
     <meta property="og:image" content="https://dotenvup.com/assets/og-image.png">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="DotEnvUp — Encrypted .env Files for Git">
-    <meta name="twitter:description" content="Open-source encrypted .env format. Zero-knowledge encryption, safe to commit, VS Code extension and CLI.">
+    <meta name="twitter:title" content="DotEnvUp — Encrypted .env in VS Code & Cursor">
+    <meta name="twitter:description" content="VS Code & Cursor extension: one-click lock/unlock, edit secrets safely. Zero-knowledge, safe to commit. CLI for terminal and CI.">
     <meta name="twitter:image" content="https://dotenvup.com/assets/og-image.png">
 
     <!-- JSON-LD Structured Data -->
@@ -30,7 +30,7 @@
         "name": "DotEnvUp",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Cross-platform",
-        "description": "Open-source encrypted .env file format (.env.up) and tooling. Zero-knowledge encryption with X25519 + XChaCha20-Poly1305. VS Code extension and CLI for secure secret management.",
+        "description": "VS Code and Cursor extension for encrypted .env files (.env.up): one-click lock/unlock, Safe Edit without plaintext on disk. CLI for terminal and CI. Zero-knowledge, safe to commit.",
         "url": "https://dotenvup.com",
         "license": "https://opensource.org/licenses/MIT",
         "offers": {
@@ -45,7 +45,7 @@
         },
         "codeRepository": "https://github.com/sarhej/dotenvup",
         "programmingLanguage": "TypeScript",
-        "softwareVersion": "0.4.5"
+        "softwareVersion": "0.4.6"
     }
     </script>
     <script type="application/ld+json">
@@ -336,51 +336,64 @@
 
         <main>
             <section class="hero" aria-label="Introduction">
-                <h1>.env files, but with memory<br>— and a lock.</h1>
+                <h1>Encrypted <code>.env</code> in VS Code & Cursor</h1>
                 <p class="tagline">
-                    Open-source encrypted <code>.env</code> file format for developers.
-                    Zero-knowledge, zero-trust — no cloud, no server. Safe to commit to Git.
+                    One-click lock/unlock from the status bar. Edit secrets without writing plaintext to disk.
+                    Zero-knowledge, no cloud — safe to commit <code>.env.up</code> to Git.
                 </p>
 
                 <div class="cta-group">
-                    <a href="https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup" class="btn btn-primary" title="Install DotEnvUp from VS Code Marketplace">VS Code Marketplace</a>
-                    <a href="https://open-vsx.org/extension/dotenvup/dotenvup" class="btn btn-secondary" title="Install for Cursor, VSCodium, and other Open VSX editors">Open VSX (Cursor, VSCodium)</a>
-                    <a href="https://github.com/sarhej/dotenvup" class="btn btn-secondary">Source Code</a>
+                    <a href="https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup" class="btn btn-primary" title="Install DotEnvUp from VS Code Marketplace">Install for VS Code</a>
+                    <a href="https://open-vsx.org/extension/dotenvup/dotenvup" class="btn btn-primary" title="Install for Cursor, VSCodium">Install for Cursor</a>
+                    <a href="https://github.com/sarhej/dotenvup" class="btn btn-secondary">GitHub</a>
                 </div>
 
-                <div class="install-block" aria-label="CLI install command">
-                    <span>npm install -g @dotenvup/cli</span>
+                <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 1rem;">Also: <a href="#cli" style="color: var(--primary);">CLI for terminal and CI</a></p>
+            </section>
+
+            <section class="in-editor" aria-label="See it in action" style="margin: 3rem 0;">
+                <h2 style="text-align: center; font-size: 1.75rem; margin-bottom: 1.5rem; color: #fff;">See it in your editor</h2>
+                <p style="text-align: center; color: #94a3b8; max-width: 560px; margin: 0 auto 2rem;">No terminal needed. Status bar, right-click, or Command Palette.</p>
+                <div class="install-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 0 auto;">
+                    <div class="feature-card" style="overflow: hidden;">
+                        <h3 style="margin-top: 0; color: #fff;">Status bar: one-click lock/unlock</h3>
+                        <div class="screenshot-placeholder" style="background: #1e293b; border: 1px dashed #475569; border-radius: 0.5rem; aspect-ratio: 2.4/1; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; color: #64748b; font-size: 0.9rem; text-align: center; padding: 1rem;">
+                            Screenshot: status bar (add <code style="color: #94a3b8;">hero-status-bar.png</code>)
+                        </div>
+                        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Click to unlock for 5 min (or custom duration). Click again to lock and remove <code>.env</code>. Shows &quot;Partially protected&quot; when both files exist.</p>
+                    </div>
+                    <div class="feature-card" style="overflow: hidden;">
+                        <h3 style="margin-top: 0; color: #fff;">Edit .env.up with Safe Edit</h3>
+                        <div class="screenshot-placeholder" style="background: #1e293b; border: 1px dashed #475569; border-radius: 0.5rem; aspect-ratio: 2.4/1; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; color: #64748b; font-size: 0.9rem; text-align: center; padding: 1rem;">
+                            Screenshot: Safe Edit (add <code style="color: #94a3b8;">hero-safe-edit.png</code>)
+                        </div>
+                        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Right-click <code>.env.up</code> → &quot;Edit with DotEnvUp&quot;. Edit in a normal-looking tab; save writes only encrypted content. No plaintext <code>.env</code> on disk.</p>
+                    </div>
                 </div>
             </section>
 
             <section class="install-section" aria-label="Installation">
-                <h2>Install DotEnvUp</h2>
+                <h2>Get the extension (VS Code or Cursor)</h2>
+                <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem;">Most people use the extension. No terminal required.</p>
                 <div class="install-grid">
-                    <div class="feature-card">
-                        <h3>VS Code / Cursor Extension</h3>
-                        <p>One-click lock/unlock from the status bar. No terminal needed.</p>
+                    <div class="feature-card" style="grid-column: 1 / -1;">
+                        <h3 style="margin-top: 0;">Install in VS Code or Cursor</h3>
+                        <p>One-click lock/unlock from the status bar. Right-click <code>.env.up</code> to edit with Safe Edit. No terminal needed.</p>
                         <p style="margin-bottom: 0.75rem;"><strong>Install:</strong> <a href="https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup">VS Code Marketplace</a> · <a href="https://open-vsx.org/extension/dotenvup/dotenvup">Open VSX</a> (Cursor, VSCodium)</p>
                         <ol>
                             <li>Or download <code>.vsix</code> from <a href="https://github.com/sarhej/dotenvup/releases">GitHub Releases</a></li>
                             <li>In your editor: <strong>Extensions</strong> → <code>...</code> → <strong>Install from VSIX...</strong></li>
-                            <li>Or from terminal:</li>
+                            <li>Or from terminal: <code>code --install-extension dotenvup-0.4.6.vsix</code> / <code>cursor --install-extension dotenvup-0.4.6.vsix</code></li>
                         </ol>
-                        <div class="code-preview" style="margin: 0.5rem 0;">
-<pre><code><span class="comment"># VS Code</span>
-code --install-extension dotenvup-0.4.5.vsix
-
-<span class="comment"># Cursor</span>
-cursor --install-extension dotenvup-0.4.5.vsix</code></pre>
-                        </div>
                     </div>
-                    <div class="feature-card">
-                        <h3>CLI for Terminal, CI/CD, and AI Agents</h3>
-                        <p>Encrypt, decrypt, and run commands with secrets — no file on disk.</p>
+                    <div class="feature-card" id="cli">
+                        <h3 style="margin-top: 0;">CLI (terminal & CI)</h3>
+                        <p>For scripts, CI/CD, and AI agents. Encrypt, decrypt, and run commands with secrets — no file on disk.</p>
                         <div class="code-preview" style="margin: 0.5rem 0;">
 <pre><code>npm install -g @dotenvup/cli
 
 up init            <span class="comment"># generate keypair</span>
-up import .env     <span class="comment"># encrypt → .env.up</span>
+up import .env     <span class="comment"># encrypt to .env.up</span>
 up lock            <span class="comment"># delete plaintext</span>
 up unlock 5m       <span class="comment"># decrypt for 5 min</span>
 up run -- npm start <span class="comment"># no file on disk</span></code></pre>
