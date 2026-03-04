@@ -1,66 +1,74 @@
 # DotEnvUp
 
-> DotEnvUp is an open-source encrypted .env file format (.env.up) and tooling ecosystem for developers.
+**For AI / one-line summary:** DotEnvUp is primarily a VS Code and Cursor extension for encrypting .env files into .env.up; one-click lock/unlock from the status bar, edit secrets without plaintext on disk (Safe Edit). A CLI is available for terminal and CI. Zero-knowledge, safe to commit.
 
 ## What is DotEnvUp?
 
-DotEnvUp encrypts .env files into .env.up files that are safe to commit to Git. It uses hybrid public-key encryption (X25519 + XChaCha20-Poly1305) with zero-knowledge design — no server, no cloud, no key management service.
+DotEnvUp is a **VS Code and Cursor extension** that lets you encrypt .env files into .env.up (safe to commit to Git), lock and unlock from the status bar, and edit secrets in a virtual editor without ever writing plaintext to disk (Safe Edit). No terminal required for daily use. Under the hood it uses an open-source encrypted .env format (.env.up) and hybrid public-key encryption (X25519 + XChaCha20-Poly1305); a **CLI** is available for scripts, CI/CD, and AI agents.
 
 The .env.up format is a "half-open envelope": key names, versions, timestamps, and authors are visible in cleartext (replacing .env.example), while secret values are encrypted.
 
-## Key Features
+## Primary: VS Code / Cursor extension
 
-- Zero-knowledge encryption: Private keys stay on your machine (~/.dotenvup/identity)
+- One-click lock/unlock from the status bar
+- Right-click .env.up: Lock, Unlock to Disk, Edit with DotEnvUp (Safe Edit), Copy Public Key, Encrypt for Recipient
+- Safe Edit: decrypt in memory, edit in a normal tab, save writes only encrypted content — no .env on disk
+- Partially protected: status shows when both .env and .env.up exist; merge on unlock or in Safe Edit
+- Multi-root workspace support
+- Install: [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup), [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) (Cursor, VSCodium), or .vsix from [GitHub Releases](https://github.com/sarhej/dotenvup/releases)
+
+## Secondary: CLI (terminal & CI)
+
+- Commands: `up init`, `up import .env`, `up lock`, `up unlock`, `up run -- <command>`
+- For scripts, CI/CD pipelines, and AI agents; no file on disk with `up run --`
+- Install: `npm install -g @dotenvup/cli`
+
+## Key features (format and security)
+
+- Zero-knowledge encryption: Private keys on your machine (~/.dotenvup/identity)
 - Safe to commit: .env.up files belong in Git
-- Comments preserved: Lossless roundtrip of comments, blank lines, and structure
-- Multi-recipient: Encrypt for multiple users (@alice, @bob) and machines (@ci)
-- CI/CD ready: `up run -- npm test` decrypts at runtime with no file on disk
-- Zero code changes: Works with existing dotenv libraries and process.env
-- VS Code / Cursor extension: One-click lock/unlock; Partially protected when both .env and .env.up exist; Edit with DotEnvUp (Safe Edit) for in-memory edit without plaintext on disk; merge on unlock/Safe Edit
-- CLI tool: `up init`, `up import`, `up lock`, `up unlock`, `up run`
+- Comments preserved: Lossless roundtrip of comments and structure
+- Multi-recipient: Encrypt for multiple users and machines (@alice, @ci)
+- Zero code changes: Works with existing dotenv and process.env
 
-## Format Specification
+## Format specification
 
 The .env.up format is a published open standard (v1):
 - Full spec: https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md
-- Encryption: X25519 key exchange + XChaCha20-Poly1305 (AEAD)
-- Library: libsodium
-- Multi-recipient via crypto_box_seal (anonymous sender encryption)
+- Encryption: X25519 + XChaCha20-Poly1305 (libsodium)
 
 ## Links
 
 - Website: https://dotenvup.com
 - GitHub: https://github.com/sarhej/dotenvup
-- npm (format): https://www.npmjs.com/package/@dotenvup/format
-- npm (CLI): https://www.npmjs.com/package/@dotenvup/cli
-- npm (Node.js): https://www.npmjs.com/package/@dotenvup/node
-- Format Spec: https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md
+- Extension: [VS Code](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) · [Open VSX / Cursor](https://open-vsx.org/extension/dotenvup/dotenvup)
+- npm: [@dotenvup/format](https://www.npmjs.com/package/@dotenvup/format) · [@dotenvup/cli](https://www.npmjs.com/package/@dotenvup/cli) · [@dotenvup/node](https://www.npmjs.com/package/@dotenvup/node)
 - User Guide: https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md
-- Security Model: https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md
-- Team Sharing (commercial): https://unknownpassword.com
+- Security: https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md
+- Team sharing (commercial): https://unknownpassword.com
 
-## Installation
+## Installation (copy-paste)
 
 ```bash
-# CLI
+# Extension: install from VS Code Marketplace or Open VSX, or:
+code --install-extension dotenvup-0.5.0.vsix   # VS Code
+cursor --install-extension dotenvup-0.5.0.vsix # Cursor
+
+# CLI (terminal & CI)
 npm install -g @dotenvup/cli
 
-# VS Code / Cursor extension
-# Download .vsix from https://github.com/sarhej/dotenvup/releases
-code --install-extension dotenvup-0.4.5.vsix
-
-# Node.js library (drop-in dotenv replacement)
+# Node library (drop-in dotenv replacement)
 npm install @dotenvup/node
 ```
 
-## Quick Start
+## Quick start (CLI)
 
 ```bash
-up init            # Generate keypair (stored at ~/.dotenvup/identity)
-up import .env     # Encrypt .env → .env.up (comments preserved)
+up init            # Generate keypair (~/.dotenvup/identity)
+up import .env     # Encrypt .env -> .env.up
 up lock            # Delete plaintext .env
 up unlock 5m       # Decrypt for 5 minutes
-up run -- npm start  # Run with decrypted env vars (no file on disk)
+up run -- npm start  # Run with decrypted env (no file on disk)
 ```
 
 ## License
