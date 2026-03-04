@@ -2,6 +2,33 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.5.0] - 2026-02-28
+
+### Added
+
+- **Copy My Public Key** — New command copies your base64 public key to the clipboard with key fingerprint. Share it with a teammate so they can encrypt for you.
+- **Encrypt for Recipient** — New command adds a recipient's public key to `.env.up` and re-encrypts. Works in both locked and unlocked states. Accepts key from clipboard (base64) or file.
+- **Context menu sharing** — Right-click any `.env.up` in the explorer → **Copy My Public Key** or **Encrypt for Recipient** (in a dedicated "Sharing" group).
+- **Status bar sharing options** — "Copy My Public Key" and "Encrypt for Recipient..." appear in the status bar Quick Pick menu (both single-location and multi-location).
+- **Always-visible status bar** — Status bar item is always visible, even when no `.env` or `.env.up` files exist. Shows an idle state with Init and Import options for new projects and monorepos.
+
+### Hardening
+
+- **Atomic re-encryption** — `reencryptLocked` writes to a temp file then renames, preventing partial writes on crash.
+- **Post-write verification** — After re-encrypting, the new file is verified (decryptable with your key) before replacing the original. If verification fails, the original `.env.up` is preserved.
+- **Zero-entries guard** — Re-encryption aborts if the decrypted content has zero entries, preventing silent data loss.
+
+## [0.4.6] - 2026-02-27
+
+### Added
+
+- **Context menu: Lock, Unlock, Safe Edit** — Right-click any `.env.up` in the explorer or editor tab → **Lock**, **Unlock to Disk**, or **Edit with DotEnvUp (Safe Edit)**. Each operates on the specific file you clicked.
+- **Full multi-root workspace scanning** — All workspace folders and subfolders are scanned for `.env` and `.env.up` files, not just the active editor's folder. Fixes files not appearing in the Quick Pick in large multi-root workspaces.
+
+### Fixed
+
+- `.env.up` files in subdirectories of multi-root workspaces (e.g. `avatarrooms-agent/`) now appear correctly in the status bar Quick Pick.
+
 ## [0.4.5] - 2026-02-26
 
 ### Added
