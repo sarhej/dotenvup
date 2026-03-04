@@ -126,7 +126,9 @@ async function refreshStatusBarFromFs(): Promise<void> {
         : `${unprotected.length} .env locations have no encryption. Click to protect.`;
       statusBarItem.show();
     } else {
-      statusBarItem.hide();
+      statusBarItem.text = '$(shield) DotEnvUp';
+      statusBarItem.tooltip = 'No .env or .env.up found. Click to init or import.';
+      statusBarItem.show();
     }
     return;
   }
@@ -231,11 +233,9 @@ export function activate(context: vscode.ExtensionContext): void {
         const envPath = path.join(root, '.env');
         const hasEnv = await fsP.access(envPath).then(() => true).catch(() => false);
         
-        // New Smart Menu for Single Location
         const items: vscode.QuickPickItem[] = [];
-        const itemData: { action: 'lock' | 'unlock' | 'safeEdit' }[] = [];
+        const itemData: { action: 'lock' | 'unlock' | 'safeEdit' | 'copyKey' | 'encryptFor' }[] = [];
 
-        // Always offer Safe Edit
         items.push({ 
           label: '$(edit) Safe Edit .env', 
           description: 'Edit secrets in memory without writing to disk',
@@ -259,6 +259,15 @@ export function activate(context: vscode.ExtensionContext): void {
           itemData.push({ action: 'unlock' });
         }
 
+        items.push({ label: 'Sharing', kind: vscode.QuickPickItemKind.Separator });
+        itemData.push({ action: 'copyKey' }); // placeholder for separator
+
+        items.push({ label: '$(key) Copy My Public Key', description: 'Copy to clipboard for sharing' });
+        itemData.push({ action: 'copyKey' });
+
+        items.push({ label: '$(person-add) Encrypt for Recipient...', description: 'Add a teammate\'s key and re-encrypt' });
+        itemData.push({ action: 'encryptFor' });
+
         const choice = await vscode.window.showQuickPick(items, {
           placeHolder: 'DotEnvUp Actions',
           title: 'DotEnvUp'
@@ -272,17 +281,42 @@ export function activate(context: vscode.ExtensionContext): void {
           await safeEditCmd.run(vscode.Uri.file(path.join(root, '.env.up')), keystore);
         } else if (action === 'lock') {
           await lockCmd.run(keystore, root);
-        } else {
+        } else if (action === 'unlock') {
           await unlockCmd.run(keystore, root);
+        } else if (action === 'copyKey') {
+          const copyKeyCmd = await import('./commands/copyMyPublicKey');
+          await copyKeyCmd.run(keystore);
+        } else if (action === 'encryptFor') {
+          const encryptForCmd = await import('./commands/encryptForRecipient');
+          await encryptForCmd.run(keystore, vscode.Uri.file(path.join(root, '.env.up')));
         }
         
         await refreshStatusBarFromFs();
         return;
       }
 
+      // No env files found anywhere → show init/import options
+      if (withEnvUp.length === 0 && unprotected.length === 0) {
+        const items: vscode.QuickPickItem[] = [
+          { label: '$(key) Init (generate keypair)', description: 'Create a new keypair to start using DotEnvUp' },
+          { label: '$(file-add) Import .env', description: 'Encrypt an existing .env file' },
+        ];
+        const choice = await vscode.window.showQuickPick(items, {
+          placeHolder: 'No .env or .env.up found',
+          title: 'DotEnvUp',
+        });
+        if (!choice) return;
+        if (choice.label.includes('Init')) {
+          await initCmd.run(keystore);
+        } else {
+          await importCmd.run(keystore);
+        }
+        await refreshStatusBarFromFs();
+        return;
+      }
+
       // No .env.up anywhere → protect flow (pick unprotected folder if multiple)
       if (withEnvUp.length === 0) {
-        if (unprotected.length === 0) return;
         const targetRoot = unprotected.length === 1
           ? unprotected[0].root
           : (await vscode.window.showQuickPick(
@@ -297,9 +331,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // Multiple locations and/or some unprotected → show pick: Unlock / Lock / Protect per location
       const items: vscode.QuickPickItem[] = [];
-      const itemData: { root: string; action: 'lock' | 'unlock' | 'protect' | 'safeEdit' }[] = [];
+      const itemData: { root: string; action: 'lock' | 'unlock' | 'protect' | 'safeEdit' | 'copyKey' | 'encryptFor' }[] = [];
       for (const s of withEnvUp) {
-        // Always offer Safe Edit for existing .env.up
         items.push({ label: '$(edit) Safe Edit', description: s.name, detail: s.root });
         itemData.push({ root: s.root, action: 'safeEdit' });
 
@@ -315,6 +348,16 @@ export function activate(context: vscode.ExtensionContext): void {
         items.push({ label: '$(warning) Protect', description: s.name, detail: s.root });
         itemData.push({ root: s.root, action: 'protect' });
       }
+
+      items.push({ label: 'Sharing', kind: vscode.QuickPickItemKind.Separator });
+      itemData.push({ root: '', action: 'copyKey' });
+
+      items.push({ label: '$(key) Copy My Public Key', description: 'Copy to clipboard for sharing' });
+      itemData.push({ root: '', action: 'copyKey' });
+
+      items.push({ label: '$(person-add) Encrypt for Recipient...', description: 'Add a teammate\'s key and re-encrypt' });
+      itemData.push({ root: '', action: 'encryptFor' });
+
       const choice = await vscode.window.showQuickPick(items, {
         placeHolder: 'Choose location to lock, unlock, or protect',
         title: 'DotEnvUp',
@@ -330,8 +373,14 @@ export function activate(context: vscode.ExtensionContext): void {
         await unlockCmd.run(keystore, data.root);
       } else if (data.action === 'lock') {
         await lockCmd.run(keystore, data.root);
-      } else {
+      } else if (data.action === 'protect') {
         await runProtectForRoot(context, workspace, data.root, fsP);
+      } else if (data.action === 'copyKey') {
+        const copyKeyCmd = await import('./commands/copyMyPublicKey');
+        await copyKeyCmd.run(keystore);
+      } else if (data.action === 'encryptFor') {
+        const encryptForCmd = await import('./commands/encryptForRecipient');
+        await encryptForCmd.run(keystore);
       }
       await refreshStatusBarFromFs();
     }),
@@ -397,6 +446,15 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('dotenvup.lockFromContext', async (uri?: vscode.Uri) => {
       const root = uri ? path.dirname(uri.fsPath) : undefined;
       await lockCmd.run(keystore, root);
+      await refreshStatusBarFromFs();
+    }),
+    vscode.commands.registerCommand('dotenvup.copyMyPublicKey', async () => {
+      const copyKeyCmd = await import('./commands/copyMyPublicKey');
+      await copyKeyCmd.run(keystore);
+    }),
+    vscode.commands.registerCommand('dotenvup.encryptForRecipient', async (uri?: vscode.Uri) => {
+      const encryptForCmd = await import('./commands/encryptForRecipient');
+      await encryptForCmd.run(keystore, uri);
       await refreshStatusBarFromFs();
     }),
   );
