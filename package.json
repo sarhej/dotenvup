@@ -11,12 +11,25 @@
     "clean": "npm run clean --workspaces",
     "lint": "npm run lint --workspaces",
     "test": "npm run test --workspaces",
+    "audit": "npm audit",
+    "audit:fix": "npm audit fix",
+    "security:check": "npm audit --audit-level=high",
+    "security:sast": "semgrep scan --config auto --error",
     "package:extension": "npm run build && npm run package --workspace=dotenvup",
     "publish:extension": "npm run build && (cd packages/vscode-dotenvup && npx @vscode/vsce publish --no-dependencies)",
     "publish:openvsx": "npm run build && (cd packages/vscode-dotenvup && npx ovsx publish --no-dependencies)"
   },
   "devDependencies": {
     "vitest": "^2.0.0"
+  },
+  "overrides": {
+    "diff": "8.0.3",
+    "serialize-javascript": "7.0.3",
+    "esbuild": ">=0.25.0",
+    "mocha": {
+      "diff": "8.0.3",
+      "serialize-javascript": "7.0.3"
+    }
   },
   "engines": {
     "node": ">=20.0.0"
