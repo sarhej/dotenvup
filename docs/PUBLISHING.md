@@ -2,6 +2,8 @@
 
 This guide walks through getting the DotEnvUp extension onto the [VS Code Marketplace](https://marketplace.visualstudio.com/) (and thus installable via **Extensions** in VS Code/Cursor).
 
+Before publishing, follow the release gate in [RELEASE.md](RELEASE.md).
+
 ## Prerequisites
 
 - Node.js 20+
@@ -49,14 +51,13 @@ npm run build --workspace=dotenvup
 # Optional: create .vsix locally to test
 cd packages/vscode-dotenvup && npx @vscode/vsce package --no-dependencies && cd ../..
 
-# Publish to the Marketplace (bumps version if you pass patch/minor/major)
+# Publish to the Marketplace
 cd packages/vscode-dotenvup
 vsce publish
-# or: vsce publish patch
 ```
 
-- **First publish:** `vsce publish` uploads the current version (e.g. `0.2.0`).
-- **Updates:** `vsce publish patch` (or `minor` / `major`) bumps the version in `package.json` and then publishes.
+- **First publish:** `vsce publish` uploads the current version from `package.json`.
+- **Preferred workflow:** bump the version and changelog yourself first, then run `vsce publish`.
 
 After a few minutes the extension will appear at:
 `https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup`
@@ -100,10 +101,10 @@ From the repo root, build and package the extension, then publish the `.vsix` to
 
 ```bash
 npm run package:extension
-npx ovsx publish packages/vscode-dotenvup/dotenvup-0.4.0.vsix -p <your-open-vsx-token>
+npx ovsx publish packages/vscode-dotenvup/dotenvup-X.Y.Z.vsix -p <your-open-vsx-token>
 ```
 
-Use the actual `.vsix` filename (it includes the version from `package.json`). After a short delay, the extension will appear at [open-vsx.org/extension/dotenvup/dotenvup](https://open-vsx.org/extension/dotenvup/dotenvup) and in **Cursor**, **Antigravity**, **VSCodium**, **Windsurf**, and other Open VSX–based editors.
+Use the actual `.vsix` filename for the version you just packaged. After a short delay, the extension will appear at [open-vsx.org/extension/dotenvup/dotenvup](https://open-vsx.org/extension/dotenvup/dotenvup) and in **Cursor**, **Antigravity**, **VSCodium**, **Windsurf**, and other Open VSX-based editors.
 
 **Optional (verified publisher):** To get a “verified” badge on Open VSX, [claim ownership of the namespace](https://github.com/eclipse/openvsx/wiki/Namespace-Access) (e.g. link the namespace to your GitHub org/repo).
 

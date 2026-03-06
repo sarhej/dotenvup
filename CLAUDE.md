@@ -2,7 +2,7 @@
 
 DotEnvUp is an open-source encrypted `.env` file format (`.env.up`) and tooling ecosystem.
 CLI and format are **implemented and production-ready** (except Windows testing).
-VS Code extension is MVP (lock/unlock, import, status, show keys).
+VS Code extension is published (Marketplace, Open VSX); lock/unlock, import, status, show keys, key management.
 
 For seamless team sharing: **[unknownpassword.com](https://unknownpassword.com)**.
 

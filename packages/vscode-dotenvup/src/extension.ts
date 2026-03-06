@@ -234,7 +234,7 @@ export function activate(context: vscode.ExtensionContext): void {
         const hasEnv = await fsP.access(envPath).then(() => true).catch(() => false);
         
         const items: vscode.QuickPickItem[] = [];
-        const itemData: { action: 'lock' | 'unlock' | 'safeEdit' | 'copyKey' | 'encryptFor' }[] = [];
+        const itemData: { action: 'lock' | 'unlock' | 'safeEdit' | 'copyKey' | 'encryptFor' | 'encryptForGitHub' | 'decryptSealed' }[] = [];
 
         items.push({ 
           label: '$(edit) Safe Edit .env', 
@@ -267,6 +267,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
         items.push({ label: '$(person-add) Encrypt for Recipient...', description: 'Add a teammate\'s key and re-encrypt' });
         itemData.push({ action: 'encryptFor' });
+        items.push({ label: '$(github) Encrypt for GitHub User...', description: 'Add GitHub user as recipient to .env.up' });
+        itemData.push({ action: 'encryptForGitHub' });
+        items.push({ label: '$(unlock) Decrypt Sealed File...', description: 'Decrypt a .sealed file' });
+        itemData.push({ action: 'decryptSealed' });
 
         const choice = await vscode.window.showQuickPick(items, {
           placeHolder: 'DotEnvUp Actions',
@@ -289,6 +293,12 @@ export function activate(context: vscode.ExtensionContext): void {
         } else if (action === 'encryptFor') {
           const encryptForCmd = await import('./commands/encryptForRecipient');
           await encryptForCmd.run(keystore, vscode.Uri.file(path.join(root, '.env.up')));
+        } else if (action === 'encryptForGitHub') {
+          const encryptForGitHubCmd = await import('./commands/encryptForGitHub');
+          await encryptForGitHubCmd.run(keystore, vscode.Uri.file(path.join(root, '.env.up')));
+        } else if (action === 'decryptSealed') {
+          const decryptSealedCmd = await import('./commands/decryptSealed');
+          await decryptSealedCmd.run(keystore);
         }
         
         await refreshStatusBarFromFs();
@@ -331,7 +341,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // Multiple locations and/or some unprotected → show pick: Unlock / Lock / Protect per location
       const items: vscode.QuickPickItem[] = [];
-      const itemData: { root: string; action: 'lock' | 'unlock' | 'protect' | 'safeEdit' | 'copyKey' | 'encryptFor' }[] = [];
+      const itemData: { root: string; action: 'lock' | 'unlock' | 'protect' | 'safeEdit' | 'copyKey' | 'encryptFor' | 'encryptForGitHub' | 'decryptSealed' }[] = [];
       for (const s of withEnvUp) {
         items.push({ label: '$(edit) Safe Edit', description: s.name, detail: s.root });
         itemData.push({ root: s.root, action: 'safeEdit' });
@@ -357,6 +367,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
       items.push({ label: '$(person-add) Encrypt for Recipient...', description: 'Add a teammate\'s key and re-encrypt' });
       itemData.push({ root: '', action: 'encryptFor' });
+      items.push({ label: '$(github) Encrypt for GitHub User...', description: 'Add GitHub user as recipient to .env.up' });
+      itemData.push({ root: '', action: 'encryptForGitHub' });
+      items.push({ label: '$(unlock) Decrypt Sealed File...', description: 'Decrypt a .sealed file' });
+      itemData.push({ root: '', action: 'decryptSealed' });
 
       const choice = await vscode.window.showQuickPick(items, {
         placeHolder: 'Choose location to lock, unlock, or protect',
@@ -381,6 +395,12 @@ export function activate(context: vscode.ExtensionContext): void {
       } else if (data.action === 'encryptFor') {
         const encryptForCmd = await import('./commands/encryptForRecipient');
         await encryptForCmd.run(keystore);
+      } else if (data.action === 'encryptForGitHub') {
+        const encryptForGitHubCmd = await import('./commands/encryptForGitHub');
+        await encryptForGitHubCmd.run(keystore);
+      } else if (data.action === 'decryptSealed') {
+        const decryptSealedCmd = await import('./commands/decryptSealed');
+        await decryptSealedCmd.run(keystore);
       }
       await refreshStatusBarFromFs();
     }),
@@ -456,6 +476,22 @@ export function activate(context: vscode.ExtensionContext): void {
       const encryptForCmd = await import('./commands/encryptForRecipient');
       await encryptForCmd.run(keystore, uri);
       await refreshStatusBarFromFs();
+    }),
+    vscode.commands.registerCommand('dotenvup.receiveShare', async () => {
+      const receiveShareCmd = await import('./commands/receiveShare');
+      await receiveShareCmd.run(keystore);
+    }),
+    vscode.commands.registerCommand('dotenvup.copyMcpConfig', async () => {
+      const { run } = await import('./commands/copyMcpConfig');
+      await run();
+    }),
+    vscode.commands.registerCommand('dotenvup.encryptForGitHub', async (uri?: vscode.Uri) => {
+      const cmd = await import('./commands/encryptForGitHub');
+      await cmd.run(keystore, uri);
+    }),
+    vscode.commands.registerCommand('dotenvup.decryptSealed', async (uri?: vscode.Uri) => {
+      const cmd = await import('./commands/decryptSealed');
+      await cmd.run(keystore, uri);
     }),
   );
 

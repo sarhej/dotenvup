@@ -57,6 +57,18 @@ export {
   resolveRecipientPublicKeys,
 } from './recipientsConfig.js';
 
+// SSH key utilities (Ed25519 → X25519 conversion for GitHub key-based encryption)
+export {
+  parseSshEd25519,
+  ed25519PubToX25519,
+  ed25519SecretToX25519,
+  fetchGitHubSshKeys,
+  fetchGitHubX25519Keys,
+} from './sshKeys.js';
+
+// Sealed share (Approach B: true recipient encryption via crypto_box_seal)
+export { sealedShareEncrypt, sealedShareDecrypt } from './sealedShare.js';
+
 /**
  * Decrypt the values for a specific recipient from an EnvUpFile.
  * Returns entries (key-value pairs) and optionally the raw .env content.

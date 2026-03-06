@@ -6,7 +6,7 @@
 
 > `.env` files, but with memory — and a lock.
 
-An encrypted `.env` file format (`.env.up`) and tooling that makes secrets safe by default — without changing how developers work.
+**.env encryption** — an encrypted `.env` format (`.env.up`) and tooling: **VS Code/Cursor extension** (one-click lock/unlock), **CLI** (`up`; `npm i -g @dotenvup/cli`), and **MCP server** for Cursor. Encrypt .env, lock/unlock, run with secrets without writing .env to disk. Zero-knowledge; no code changes.
 
 - **Encrypted at rest** — values, comments, and structure are encrypted on disk. No more plaintext secrets.
 - **Zero-knowledge, zero-trust** — No server, no cloud. Keys stay on your machine; nobody else ever sees your secrets.
@@ -116,7 +116,8 @@ Full flow (read/save sequences): [Safe Edit design](docs/design/SAFE_EDIT_FLOW.m
 | [`@dotenvup/format`](./packages/format) | Core `.env.up` format parser & writer | [![npm](https://img.shields.io/npm/v/@dotenvup/format)](https://www.npmjs.com/package/@dotenvup/format) |
 | [`@dotenvup/node`](./packages/node) | Drop-in `dotenv` replacement for Node.js | [![npm](https://img.shields.io/npm/v/@dotenvup/node)](https://www.npmjs.com/package/@dotenvup/node) |
 | [`@dotenvup/cli`](./packages/cli) | CLI tool (`up lock`, `up unlock`, `up run`) | [![npm](https://img.shields.io/npm/v/@dotenvup/cli)](https://www.npmjs.com/package/@dotenvup/cli) |
-| [DotEnvUp Extension](./packages/vscode-dotenvup) | VS Code / Cursor extension — local secret management | [Download .vsix (v0.4.0)](https://github.com/sarhej/dotenvup/releases/download/v0.4.0/dotenvup-0.4.0.vsix) |
+| [DotEnvUp Extension](./packages/vscode-dotenvup) | VS Code / Cursor extension — local secret management | [Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) · [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) · [.vsix](https://github.com/sarhej/dotenvup/releases) |
+| [@dotenvup/mcp](./packages/dotenvup-mcp) | MCP server — status, keys, run (for Cursor/AI) | In-repo; [design](docs/design/MCP_SERVER.md) |
 
 ## The `.env.up` Format — [Open Standard (v1)](docs/FORMAT_SPEC.md)
 
@@ -180,17 +181,9 @@ flowchart LR
 
 ### VS Code / Cursor Extension (recommended)
 
-Download the `.vsix` from [Releases](https://github.com/sarhej/dotenvup/releases) ([v0.4.0](https://github.com/sarhej/dotenvup/releases/tag/v0.4.0)), then:
+**Extension ID:** `dotenvup.dotenvup` — install from **[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup)** or **[Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup)** (Cursor, VSCodium). In the editor: **Extensions** → search “**.env**” or “DotEnvUp” or paste the extension ID. (Display name: “.env Up (DotEnvUp)” so search-from-start finds it.)
 
-```bash
-# VS Code
-code --install-extension dotenvup-0.4.0.vsix
-
-# Cursor
-cursor --install-extension dotenvup-0.4.0.vsix
-```
-
-Or in the editor: **Extensions** → `...` menu → **Install from VSIX...** → select the file.
+If search doesn’t find it, use the links above or see [AGENTS.md](AGENTS.md#discoverability-for-other-agents-and-chats). Alternatively, download a [.vsix from Releases](https://github.com/sarhej/dotenvup/releases) and use **Extensions** → `...` → **Install from VSIX...**.
 
 Once installed, click the status bar button to protect your `.env` — no CLI needed.
 
@@ -248,7 +241,7 @@ npm run test    # 110 tests across format, safety, and crypto
 Planned work (not yet scheduled):
 
 - **Kubernetes controller** — Cluster-side controller that decrypts `.env.up` (e.g. from a Custom Resource or annotated Secret) and creates/updates a standard Kubernetes `Secret`. Same idea as [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets): one format for local dev (DotEnvUp) and GitOps in-cluster.
-- **MCP (Model Context Protocol)** — MCP server or tools so AI assistants and IDEs can safely check lock state, run `up run`, or trigger lock/unlock without exposing secrets.
+- **MCP (Model Context Protocol)** — **Implemented.** [@dotenvup/mcp](packages/dotenvup-mcp) exposes `dotenvup_status`, `dotenvup_keys`, and `dotenvup_run` for Cursor and other MCP clients. Use **DotEnvUp: Copy MCP config for Cursor** from the command palette, or see [docs/design/MCP_SERVER.md](docs/design/MCP_SERVER.md).
 - **Lock for Agent** — Explicit “lock for agent” flow and docs: ensure agents (CI, AI coders) never persist plaintext `.env`; use `up run --` and clear guidance for when to lock after agent edits.
 - **Ready-to-use CI/CD** — GitHub Actions, GitLab CI, and generic shell scripts that use `up run --` or decrypt with `UP_KEY` for tests and deploys, with no plaintext `.env` in logs or artifacts.
 

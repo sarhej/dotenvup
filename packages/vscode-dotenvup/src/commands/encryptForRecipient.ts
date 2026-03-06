@@ -80,6 +80,7 @@ export async function run(keystore: ExtensionKeyStore, uri?: vscode.Uri): Promis
     }
   } else {
     try {
+      const { reencryptLocked } = await import('./reencryptEnvUp');
       await reencryptLocked(envUpPath, root, keystore);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -92,44 +93,4 @@ export async function run(keystore: ExtensionKeyStore, uri?: vscode.Uri): Promis
   vscode.window.showInformationMessage(
     `DotEnvUp: .env.up is now encrypted for ${recipientId} (${entry.keyId}). They can decrypt with their private key.`,
   );
-}
-
-async function reencryptLocked(
-  envUpPath: string,
-  root: string,
-  keystore: ExtensionKeyStore,
-): Promise<void> {
-  const { parse, decryptAny, create, serialize, resolveRecipientPublicKeys, isSafeToDelete } =
-    await import('@dotenvup/format');
-  const { getAuthor } = await import('../author');
-
-  const privateKey = await keystore.getPrivateKey();
-  const publicKey = await keystore.getPublicKey();
-  if (!privateKey || !publicKey) throw new Error('No keypair');
-
-  const content = await fs.readFile(envUpPath, 'utf8');
-  const file = parse(content);
-  const { entries, raw } = await decryptAny(file, privateKey, '@local');
-
-  if (Object.keys(entries).length === 0) {
-    throw new Error('Decrypted .env.up has zero entries — aborting to avoid data loss');
-  }
-
-  const author = await getAuthor(keystore.getIdentityDir());
-  const recipients = await resolveRecipientPublicKeys(root, publicKey);
-  const newFile = await create(entries, author, recipients, raw);
-  const serialized = serialize(newFile);
-
-  // Atomic write: temp file then rename to avoid partial writes
-  const tmpPath = envUpPath + '.tmp-' + Date.now();
-  await fs.writeFile(tmpPath, serialized, 'utf8');
-
-  // Verify the new file is decryptable before replacing the original
-  const verification = await isSafeToDelete(tmpPath, privateKey);
-  if (!verification.safe) {
-    await fs.unlink(tmpPath).catch(() => {});
-    throw new Error(`Re-encrypted file failed verification (${verification.reason}). Original .env.up preserved.`);
-  }
-
-  await fs.rename(tmpPath, envUpPath);
 }

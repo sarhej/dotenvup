@@ -330,6 +330,8 @@ The following are defined in v1 but reserved for future use:
 
 Parsers MUST ignore unknown header fields and unknown `key:value` pairs in `[encrypted]` blocks. This ensures forward compatibility.
 
+**Possible future extension (backward compatible):** Dedicated sealed files per recipient, e.g. `.env.up.<recipient>` (e.g. `.env.up.octocat`). Same crypto (sealed-box to one recipient); a separate file instead of an extra block in the main `.env.up`. Tools could emit or consume such files without changing the multi-recipient `.env.up` format; existing parsers simply ignore unknown files.
+
 ---
 
 ## 7. Implementation Notes

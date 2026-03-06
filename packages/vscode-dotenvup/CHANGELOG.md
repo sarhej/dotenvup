@@ -2,6 +2,29 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.6.0] - 2026-03-06
+
+### Added
+
+- **Encrypt for GitHub User** — Add a GitHub user's Ed25519 SSH key as a recipient for `.env.up` directly from the extension.
+- **Decrypt Sealed File** — Open and decrypt standalone `.sealed` files with your local DotEnvUp keypair.
+- **Receive Encrypted Share** — Guided receive flow for encrypted shares, including sealed-box share payloads.
+- **Copy MCP config for Cursor** — New helper command copies ready-to-paste Cursor MCP configuration for `@dotenvup/mcp`.
+
+### Changed
+
+- **GitHub recipient flow now follows the `.env.up` standard** — the command adds the GitHub user as a recipient and re-encrypts `.env.up` instead of creating a separate share file by default.
+
+### Tests
+
+- **Crypto/share coverage** — Added tests for sealed-share encryption/decryption, wrong-key failure, OpenSSH Ed25519 parsing, Ed25519-to-X25519 conversion, and command registration for the new extension commands.
+
+## [0.5.1] - 2026-03-05
+
+### Fixed
+
+- **Changelog packaging** — Previous VSIX was packaged before the changelog was updated. No code changes; this release fixes the bundled changelog on the marketplace.
+
 ## [0.5.0] - 2026-02-28
 
 ### Added

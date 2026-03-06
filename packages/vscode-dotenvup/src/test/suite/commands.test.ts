@@ -33,6 +33,10 @@ suite('Commands', () => {
     assert.ok(commands.includes('dotenvup.recipientsAdd'));
     assert.ok(commands.includes('dotenvup.recipientsRemove'));
     assert.ok(commands.includes('dotenvup.recipientsDiscover'));
+    assert.ok(commands.includes('dotenvup.receiveShare'));
+    assert.ok(commands.includes('dotenvup.copyMcpConfig'));
+    assert.ok(commands.includes('dotenvup.encryptForGitHub'));
+    assert.ok(commands.includes('dotenvup.decryptSealed'));
   });
 
   test('dotenvup.toggleLock is registered', async () => {

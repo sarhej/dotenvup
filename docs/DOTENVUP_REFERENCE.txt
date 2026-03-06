@@ -1,0 +1,12 @@
+# DotEnvUp — canonical reference (paste into other chats/agents)
+
+DotEnvUp: .env encryption — encrypted .env format (.env.up), VS Code/Cursor extension, CLI (`up`), MCP server for Cursor. Extension: one-click lock/unlock. CLI: up lock/unlock/run (npm i -g @dotenvup/cli). Zero-knowledge, keys at ~/.dotenvup/identity.
+
+Repo:     https://github.com/sarhej/dotenvup
+Extension: .env Up (DotEnvUp) — ID: dotenvup.dotenvup (search ".env" or "env" in marketplace)
+Marketplace: https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup
+Open VSX:  https://open-vsx.org/extension/dotenvup/dotenvup
+Releases: https://github.com/sarhej/dotenvup/releases (install .vsix if not on marketplace)
+CLI:      npm install -g @dotenvup/cli
+
+If an agent says it "can't find dotenvup", give it the Extension ID or the repo URL above.

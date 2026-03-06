@@ -19,6 +19,8 @@ Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.u
 - **Multi-root workspaces** — When you have multiple roots, only the current project’s envs are shown (the folder containing the active editor). Click the status bar to lock, unlock, or protect any location.
 - **All env locations** — The extension scans the workspace for every `.env` and `.env.up` (including subfolders like `worker-api/`), so the status reflects “All protected”, “Partially protected”, or “All unprotected” and you can protect any of them from one menu.
 - **Safety everywhere** — Every `.env` deletion path is guarded: decrypt verification, pre-deletion backups, TOCTOU checks.
+- **Recipient sharing** — Copy your public key, add recipients, or add a GitHub user as a `.env.up` recipient from the explorer or status bar.
+- **Encrypted share helpers** — Receive encrypted shares, decrypt standalone `.sealed` files, and copy ready-to-paste MCP config for Cursor.
 
 ### Lock command flow
 
@@ -49,14 +51,14 @@ With multiple roots, only the current project (the folder of the active editor) 
 - VS Code ^1.85.0 or Cursor
 - Node.js 20+
 
-## Install (from VSIX)
+## Install
 
-Download the latest [.vsix from Releases](https://github.com/sarhej/dotenvup/releases) (e.g. [v0.4.0](https://github.com/sarhej/dotenvup/releases/download/v0.4.0/dotenvup-0.4.0.vsix)), then **Extensions** → `...` → **Install from VSIX...**, or:
+**Extension ID:** `dotenvup.dotenvup`
 
-```bash
-code --install-extension dotenvup-0.4.0.vsix   # VS Code
-cursor --install-extension dotenvup-0.4.0.vsix # Cursor
-```
+- **VS Code:** [Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) — Extensions → search “DotEnvUp”
+- **Cursor / VSCodium:** [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) — or search “DotEnvUp” in Extensions
+
+Alternatively, download the latest [.vsix from Releases](https://github.com/sarhej/dotenvup/releases), then **Extensions** → `...` → **Install from VSIX...**, or run `code --install-extension <path-to-dotenvup-*.vsix>` (same for `cursor`).
 
 ## Extension Settings
 
@@ -89,6 +91,10 @@ cursor --install-extension dotenvup-0.4.0.vsix # Cursor
 | `DotEnvUp: Add recipient` | Add recipient public key (paste base64 or choose key file). |
 | `DotEnvUp: Remove recipient` | Remove a project recipient by key id/label. |
 | `DotEnvUp: Discover recipient keys` | Scan local files for candidate public keys and add one quickly. |
+| `DotEnvUp: Encrypt for GitHub User` | Fetch a GitHub user's Ed25519 SSH key, add them as a recipient, and re-encrypt `.env.up`. |
+| `DotEnvUp: Receive Encrypted Share` | Receive and decrypt encrypted shares from sharing flows that deliver share payloads directly. |
+| `DotEnvUp: Decrypt Sealed File` | Decrypt a standalone `.sealed` file with your local DotEnvUp keypair. |
+| `DotEnvUp: Copy MCP config for Cursor` | Copy a ready-to-paste Cursor MCP config for `@dotenvup/mcp`. |
 | `DotEnvUp: Show Keys (no decryption)` | List key metadata from the header. |
 | `DotEnvUp: Secret Status & Freshness` | Show lock state, drift, and stale keys. |
 

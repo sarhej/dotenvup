@@ -29,7 +29,7 @@ Last checked: 2026-02. Use this as a checklist and fix log.
 |------|--------|-------|
 | SoftwareApplication | OK | name, description, url, license, offers, author, codeRepository, softwareVersion. |
 | TechArticle (format spec) | OK | Links to FORMAT_SPEC.md. |
-| softwareVersion | Check | Must match actual release (e.g. 0.5.0). |
+| softwareVersion | Check | Must match actual release (for example 0.6.0 or the current X.Y.Z). |
 
 ### Content and structure
 | Item | Status | Notes |
@@ -49,7 +49,7 @@ Last checked: 2026-02. Use this as a checklist and fix log.
 
 ### Gaps to fix
 1. **og-image.png** — Present in `assets/og-image.png`. No action unless you want to add optional `<meta property="og:image:width">` / `og:image:height` for crawlers.
-2. Keep **softwareVersion** in JSON-LD in sync with `packages/vscode-dotenvup/package.json` on release.
+2. Keep **softwareVersion** in JSON-LD in sync with `packages/vscode-dotenvup/package.json` before each release.
 
 ---
 

@@ -1,21 +1,42 @@
 # Release checklist (DotEnvUp)
 
-Use this when cutting a new release of the **VS Code/Cursor extension** (and optionally tagging the repo).
+Follow this before every publish. Do not publish if any required item is unchecked.
 
-## Version number
+## 1. Choose the version
 
-- **Patch** (0.4.x → 0.4.x+1): Bug fixes, tests, docs, no new user-facing features.
-- **Minor** (0.4.x → 0.5.0): New features (e.g. new commands, status behavior, merge flows).
-- **Major** (0.x → 1.0): Breaking changes or major product shift.
+- [ ] Pick the right bump:
+  - patch = bug fixes, docs, tests, no meaningful user-facing feature
+  - minor = new commands, new workflows, new package, new store-visible feature
+  - major = breaking format or workflow change
+- [ ] Use the same version everywhere that ships together:
+  - `packages/vscode-dotenvup/package.json`
+  - website version mentions (`docs/index.html`, JSON-LD `softwareVersion`)
+  - Git tag and GitHub release title
 
-Current release: **0.4.5** (patch — Partially protected, merge UX, Safe Edit edge cases + tests).
+## 2. Update release notes and public surfaces
 
-## 1. Version and changelog (already done for 0.4.5)
+- [ ] Update `packages/vscode-dotenvup/CHANGELOG.md` with a new top section for the release.
+- [ ] Verify the extension README in `packages/vscode-dotenvup/README.md` matches the actual commands and behavior shown in the stores.
+- [ ] Verify root docs (`README.md`, `docs/SECURITY.md`, `docs/USER_GUIDE.md`, `docs/FORMAT_SPEC.md`) match the shipped behavior if anything changed.
+- [ ] Update website copy in `docs/index.html` if install steps, feature set, or version changed.
+- [ ] Prepare the GitHub release body from the same release summary used in the changelog.
 
-- Bump `packages/vscode-dotenvup/package.json` → `"version": "0.4.5"`.
-- Add a `## [0.4.5] - YYYY-MM-DD` section in `packages/vscode-dotenvup/CHANGELOG.md` with Added/Fixed/Changed notes.
+## 3. Security and release hygiene
 
-## 2. Build and test
+- [ ] Confirm no plaintext secrets are staged:
+  - `.env`
+  - `.env.*`
+  - key bundles, private keys, credentials, tokens
+- [ ] Confirm `.env.up` is staged only if intentionally part of the release.
+- [ ] Delete temp/editor junk before publish (for example `.!*`, backup junk, accidental exports).
+- [ ] Re-read `docs/SECURITY.md` and confirm it still describes the current implementation.
+- [ ] Verify any new crypto/share flow has tests for:
+  - roundtrip success
+  - wrong-key failure
+  - malformed/tampered input failure if applicable
+  - no secret leakage in logs or tool responses
+
+## 4. Build and test gates
 
 From repo root:
 
@@ -24,84 +45,71 @@ npm run build
 npm test
 ```
 
-All workspace tests must pass (CLI, format, extension).
+- [ ] `npm run build` passes.
+- [ ] `npm test` passes from the repo root.
+- [ ] Every workspace that participates in the monorepo test run has a `test` script.
+- [ ] Run targeted smoke tests for new features, especially security-sensitive ones.
 
-## 3. Commit all changes and tag
+### Required manual smoke tests for extension releases
 
-Commit **all** modified and new files for this release (features, tests, docs, version, changelog). Do not commit only the version bump — the tag should point at the full release.
+- [ ] Lock / Unlock `.env.up`
+- [ ] Import `.env` -> `.env.up`
+- [ ] Recipient flow (`Copy My Public Key` + `Encrypt for Recipient`)
+- [ ] GitHub recipient flow if touched
+- [ ] Safe Edit if touched
+- [ ] MCP config copy if touched
+- [ ] Receive/decrypt share flows if touched
 
-```bash
-# Add everything except .env.up (optional: add .env.up if you intend to commit it)
-git add README.md docs/ packages/format/package.json packages/vscode-dotenvup/
-git status   # verify; add .env.up only if you want that change in the release
-git commit -m "Release v0.4.5 — Partially protected, merge flows, Safe Edit edge cases"
-git tag -a v0.4.5 -m "Release v0.4.5 — Partially protected, merge flows, Safe Edit edge cases"
-git push origin main
-git push origin v0.4.5
-```
+## 5. Git worktree must be release-shaped
 
-Use the same version in the tag as in `package.json` (e.g. `v0.4.5`).
+- [ ] `git status` is understood.
+- [ ] Only intended release files are included.
+- [ ] No unrelated local experiments are mixed into the release tag.
+- [ ] Commit message and tag message match the release contents.
 
-## 4. Publish extension to Marketplace
-
-**Prerequisites:** [vsce](https://code.visualstudio.com/api/working-with-extensions/publishing-extension) and a valid [Azure DevOps / Marketplace publisher](https://marketplace.visualstudio.com/manage) token (or login).
-
-From repo root:
-
-```bash
-npm run publish:extension
-```
-
-This runs `npm run build` then `cd packages/vscode-dotenvup && npx @vscode/vsce publish --no-dependencies`.
-
-- **First time:** You may need to run `npx @vscode/vsce login <publisher>` (e.g. `dotenvup`) and complete the browser token flow.
-- If publish fails with "version X already exists", bump the version in `package.json` and `CHANGELOG.md` and repeat from step 1.
-
-## 5. Publish to Open VSX Registry (VSCodium, etc.)
-
-[Open VSX](https://open-vsx.org/) is used by VSCodium and other VS Code–compatible editors.
-
-**Prerequisites:**
-
-1. Create an [Eclipse account](https://accounts.eclipse.org/) and sign the [Publisher Agreement](https://open-vsx.org/) at open-vsx.org.
-2. [Create a namespace](https://github.com/eclipse/openvsx/wiki/Namespace-Access) matching your `publisher` (e.g. `dotenvup`): on open-vsx.org go to your profile → Namespaces → create.
-3. [Create a personal access token](https://open-vsx.org/user-settings/tokens) and set it:
-   ```bash
-   export OVSX_PAT=your_token_here
-   ```
-
-From repo root:
+Suggested sequence:
 
 ```bash
-npm run publish:openvsx
-```
-
-This runs `npm run build` then `ovsx publish --no-dependencies` in the extension package. You can also pass the token explicitly: `npx ovsx publish -p $OVSX_PAT` from `packages/vscode-dotenvup`.
-
-- First time: ensure the namespace (e.g. `dotenvup`) exists on open-vsx.org.
-- If the version already exists, bump version and repeat from step 1.
-
-## 6. GitHub release (optional)
-
-On GitHub → Releases → Draft a new release:
-
-- **Tag:** `v0.4.5` (select the tag you pushed).
-- **Title:** `v0.4.5`
-- **Description:** Paste the `## [0.4.5]` section from `CHANGELOG.md` (or a short summary).
-
-Publishing the GitHub release is optional; the VS Code Marketplace is the main distribution.
-
----
-
-**Quick copy-paste (from repo root):**
-
-```bash
-git add README.md docs/ packages/format/package.json packages/vscode-dotenvup/
 git status
-git commit -m "Release v0.4.5 — Partially protected, merge flows, Safe Edit edge cases"
-git tag -a v0.4.5 -m "Release v0.4.5 — Partially protected, merge flows, Safe Edit edge cases"
+git add README.md docs/ packages/
+git status
+git commit -m "Release vX.Y.Z - short summary"
+git tag -a vX.Y.Z -m "Release vX.Y.Z - short summary"
 git push origin main
-git push origin v0.4.5
+git push origin vX.Y.Z
+```
+
+## 6. Publish to stores
+
+### VS Code Marketplace
+
+- [ ] Publisher login/token is valid.
+- [ ] Run:
+
+```bash
 npm run publish:extension
+```
+
+### Open VSX
+
+- [ ] Namespace/token is valid.
+- [ ] Run:
+
+```bash
 npm run publish:openvsx
 ```
+
+## 7. Publish GitHub release
+
+- [ ] Draft GitHub release for tag `vX.Y.Z`.
+- [ ] Title is `vX.Y.Z`.
+- [ ] Body matches the changelog summary.
+- [ ] Attach `.vsix` or other shipped artifacts if used for distribution.
+
+## 8. Post-publish verification
+
+- [ ] Marketplace page shows the new version and updated README/changelog.
+- [ ] Open VSX shows the new version.
+- [ ] `docs/index.html` deployed version matches the shipped release.
+- [ ] Install from Marketplace/Open VSX/VSIX works.
+- [ ] GitHub release page is live and links are correct.
