@@ -2,6 +2,12 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.6.1] - 2026-03-06
+
+### Fixed
+
+- **Marketplace/Open VSX packaging metadata** — Replace an invalid extension keyword tag so the release can be published successfully to the stores.
+
 ## [0.6.0] - 2026-03-06
 
 ### Added
