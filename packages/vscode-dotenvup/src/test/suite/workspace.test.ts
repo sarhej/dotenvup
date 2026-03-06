@@ -8,11 +8,14 @@
  * - Neither → state 'none'.
  * - getTargetWorkspaceRoot returns null when no folder has .env.up (so toggleLock can show get-started flow).
  * - Scan all env locations: any directory with .env or .env.up is included (not only workspace roots).
+ * - Workspace folder roots are always checked via fs (not only findFiles), so root-level .env is detected
+ *   even when excluded from search (e.g. .gitignore, search.exclude).
  */
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 import {
   getWorkspaceEnvStates,
   getTargetWorkspaceRoot,
@@ -71,6 +74,39 @@ suite('Workspace helpers', () => {
       assert.ok(
         hasUnprotected || states.every((s) => s.state === 'none'),
         'folders with .env but no .env.up must be unprotected (or none if no .env)',
+      );
+    }
+  });
+
+  test('workspace folder roots are always checked via fs (root .env detected even if excluded from search)', async () => {
+    const folders = vscode.workspace.workspaceFolders ?? [];
+    if (folders.length === 0) return;
+
+    const expectedByRoot = new Map<string, { hasEnv: boolean; hasEnvUp: boolean }>();
+    for (const folder of folders) {
+      const root = path.normalize(folder.uri.fsPath);
+      let hasEnv = false;
+      let hasEnvUp = false;
+      try {
+        await fs.access(path.join(root, '.env'));
+        hasEnv = true;
+      } catch {}
+      try {
+        await fs.access(path.join(root, '.env.up'));
+        hasEnvUp = true;
+      } catch {}
+      if (hasEnv || hasEnvUp) expectedByRoot.set(root, { hasEnv, hasEnvUp });
+    }
+
+    const states = await getWorkspaceEnvStates();
+    for (const [root, { hasEnv, hasEnvUp }] of expectedByRoot) {
+      const entry = states.find((s) => path.normalize(s.root) === root);
+      assert.ok(entry, `getWorkspaceEnvStates must include workspace root that has .env or .env.up: ${root}`);
+      const expectedState = computeFolderState(hasEnv, hasEnvUp);
+      assert.strictEqual(
+        entry!.state,
+        expectedState,
+        `root ${root}: expected state ${expectedState} (hasEnv=${hasEnv}, hasEnvUp=${hasEnvUp}), got ${entry!.state}`,
       );
     }
   });

@@ -114,6 +114,20 @@ export async function getWorkspaceEnvStates(): Promise<WorkspaceEnvState[]> {
 
   const dirsWithEnv = new Set(envUris.map((u) => path.normalize(path.dirname(u.fsPath))));
   const dirsWithEnvUp = new Set(envUpUris.map((u) => path.normalize(path.dirname(u.fsPath))));
+
+  // findFiles can omit files in .gitignore or search.exclude; always check workspace roots with fs
+  for (const folder of effectiveFolders) {
+    const root = path.normalize(folder.uri.fsPath);
+    try {
+      await fs.access(path.join(root, '.env'));
+      dirsWithEnv.add(root);
+    } catch {}
+    try {
+      await fs.access(path.join(root, '.env.up'));
+      dirsWithEnvUp.add(root);
+    } catch {}
+  }
+
   const allDirs = new Set<string>([...dirsWithEnv, ...dirsWithEnvUp]);
 
   const result: WorkspaceEnvState[] = [];

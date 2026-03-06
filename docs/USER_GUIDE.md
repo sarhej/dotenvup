@@ -239,6 +239,7 @@ Use this when you want a single collaborator (or a deploy key, CI key, etc.) to 
 
 If you use the DotEnvUp extension in VS Code or Cursor:
 
+- **Open as folder** — Open your project with **File → Open Folder** (not a single file) so the extension can detect `.env` and `.env.up`. Root-level files are always detected even when excluded from search (e.g. in `.gitignore`).
 - **Status bar** — Click to lock or unlock; the label shows current state (Locked / Unlocked, drift).
 - **Command Palette** — Run **DotEnvUp: Unlock**, **DotEnvUp: Lock**, **DotEnvUp: Import**, **DotEnvUp: Show Keys**, **DotEnvUp: Status**, **DotEnvUp: Key Management** (webview for backup/recovery and key discovery), **DotEnvUp: Recipients: Add / List / Remove**, **DotEnvUp: Recover Key Mismatch** (when `.env.up` was encrypted with another key).
 - **First Protect** — When the workspace has only `.env` and no `.env.up`, the extension can guide you to encrypt it for the first time.

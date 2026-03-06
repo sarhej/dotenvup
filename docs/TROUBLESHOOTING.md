@@ -1,5 +1,17 @@
 # DotEnvUp Troubleshooting
 
+## VS Code / Cursor Extension
+
+### Extension doesn't show my `.env` (status bar doesn't react)
+
+If you have a plain `.env` file in your project root but the DotEnvUp status bar does not show "All unprotected" or any lock/unlock options:
+
+1. **Open the project as a folder** — Use **File → Open Folder** and select your project root. The extension only runs when at least one workspace folder is open (not when you open a single file).
+2. **Reload the window** — After installing or updating the extension: **Developer: Reload Window** from the Command Palette.
+3. **Root is always checked (v0.6.2+)** — The extension now always detects `.env` and `.env.up` in workspace folder roots using the filesystem, so they are found even when excluded from search (e.g. in `.gitignore` or `search.exclude`). If you still don't see the status bar, ensure the folder is opened as above and reload.
+
+Click the status bar item to run the protect flow (Import `.env` → create `.env.up` → lock).
+
 ## Common Errors
 
 ### "No keypair found. Run: up init"

@@ -2,6 +2,16 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.6.2] - 2026-03-06
+
+### Fixed
+
+- **Root-level `.env` always detected** — The extension now always checks each workspace folder root for `.env` and `.env.up` using the filesystem, in addition to workspace search. Previously, root-level `.env` could be missed when it was excluded from search (for example in `.gitignore` or `search.exclude`), so the status bar did not show unprotected state or the protect flow. Opening a project with only a plain `.env` in the root now reliably shows the status bar and protect action.
+
+### Tests
+
+- **Workspace detection** — Added test coverage for workspace-root `.env` and `.env.up` detection even when search misses root files.
+
 ## [0.6.1] - 2026-03-06
 
 ### Fixed
