@@ -27,10 +27,22 @@ Run these locally before pushing. Copy the scripts and ideas into any Node/npm, 
 npm run security:check && npm run build && npm test
 ```
 
+Equivalent convenience script in this repo:
+
+```bash
+npm run release:verify
+```
+
 **With SAST (after installing Semgrep):**
 
 ```bash
 npm run security:check && npm run security:sast && npm run build && npm test
+```
+
+Equivalent convenience script in this repo:
+
+```bash
+npm run release:verify:full
 ```
 
 ---

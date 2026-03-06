@@ -41,14 +41,24 @@ Follow this before every publish. Do not publish if any required item is uncheck
 From repo root:
 
 ```bash
-npm run build
-npm test
+npm run release:verify
 ```
 
+- [ ] `npm run release:verify` passes.
 - [ ] `npm run build` passes.
 - [ ] `npm test` passes from the repo root.
 - [ ] Every workspace that participates in the monorepo test run has a `test` script.
 - [ ] Run targeted smoke tests for new features, especially security-sensitive ones.
+- [ ] If Semgrep is installed locally, run `npm run release:verify:full`.
+
+### CI release gate
+
+- [ ] The GitHub `Extension` workflow is green for:
+  - `Release verify`
+  - `Semgrep (SAST)`
+  - `OpenSSF Scorecard`
+  - `CodeQL (SAST)`
+- [ ] Do not attach/package/publish the extension unless those jobs pass.
 
 ### Required manual smoke tests for extension releases
 
@@ -90,6 +100,8 @@ git push origin vX.Y.Z
 npm run publish:extension
 ```
 
+This command now runs `npm run release:verify` automatically before publish.
+
 ### Open VSX
 
 - [ ] Namespace/token is valid.
@@ -98,6 +110,8 @@ npm run publish:extension
 ```bash
 npm run publish:openvsx
 ```
+
+This command now runs `npm run release:verify` automatically before publish.
 
 ## 7. Publish GitHub release
 

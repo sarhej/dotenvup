@@ -6,7 +6,9 @@ on:
     types: [published]
 
 jobs:
-  lint-build-test:
+  release-verify:
+    name: Release verify
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,14 +17,74 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run build --workspace=@dotenvup/format
-      - run: npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=dotenvup
-      - run: npm run lint --workspace=dotenvup
-      - run: xvfb-run -a npm run test --workspace=dotenvup
+      - run: xvfb-run -a npm run release:verify
+
+  semgrep:
+    name: Semgrep (SAST)
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python -m pip install --upgrade pip semgrep
+      - run: npm run security:sast
+
+  scorecard:
+    name: OpenSSF Scorecard
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: read
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: OpenSSF Scorecard
+        uses: ossf/scorecard-action@v2.4.1
+        with:
+          results_format: sarif
+          results_file: scorecard.sarif
+          publish_results: true
+      - name: Upload Scorecard SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: scorecard.sarif
+          category: scorecard
+
+  codeql:
+    name: CodeQL (SAST)
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: security-extended
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript
 
   package-on-release:
-    needs: lint-build-test
-    if: github.event_name == 'release'
+    needs: [release-verify, semgrep, scorecard, codeql]
+    if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,8 +93,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run build --workspace=@dotenvup/format
-      - run: npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=dotenvup
+      - run: npm run build
       - run: npx @vscode/vsce package --no-dependencies -o dotenvup-${{ github.event.release.tag_name }}.vsix
         working-directory: packages/vscode-dotenvup
       - uses: softprops/action-gh-release@v2
