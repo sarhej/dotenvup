@@ -22,7 +22,7 @@
     "publish:openvsx": "npm run release:verify && (cd packages/vscode-dotenvup && npx ovsx publish --no-dependencies)"
   },
   "devDependencies": {
-    "vitest": "^2.0.0"
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "diff": "8.0.3",
