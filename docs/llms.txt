@@ -17,6 +17,10 @@ The .env.up format is a "half-open envelope": key names, versions, timestamps, a
 - Multi-root workspace support
 - Install: [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup), [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) (Cursor, VSCodium), or .vsix from [GitHub Releases](https://github.com/sarhej/dotenvup/releases)
 
+## Claude Code (plugin and skill)
+
+- **DotEnvUp plugin for Claude Code** (Anthropic CLI): add marketplace `sarhej/dotenvup`, install plugin `dotenvup`. Claude then uses `up run -- <command>` for env-dependent commands and never assumes .env exists. Full guide: https://github.com/sarhej/dotenvup/blob/main/docs/CLAUDE_CODE.md
+
 ## CLI (terminal, CI, agents)
 
 - **Same product as the extension** — `up` is the command-line interface. Commands: `up init`, `up import .env`, `up lock`, `up unlock`, `up run -- <command>` (run with decrypted env, no .env file on disk).

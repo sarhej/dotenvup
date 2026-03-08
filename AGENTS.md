@@ -89,6 +89,10 @@ All commands work in non-TTY (pipes, CI, agents) with the right flags:
 | `--duration <time>` | unlock | Set auto-lock timer (5m, 15m, 1h, etc.) |
 | `--json` | status, keys | Machine-readable JSON output |
 
+## Using with Claude Code
+
+If you use **Claude Code** (Anthropic’s CLI), see [docs/CLAUDE_CODE.md](docs/CLAUDE_CODE.md) for how Claude Code users work with env/secrets and how to make `up` practical: use `up run --` for any command that needs env, add the [example DotEnvUp skill](docs/claude-code/dotenvup.skill.md) to your project’s `.claude/skills/`, and optionally a one-liner in `CLAUDE.md`.
+
 ## Using with App Builders (e.g. Lovable)
 
 If you use an AI app builder that needs environment variables:

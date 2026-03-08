@@ -329,6 +329,7 @@
             <nav aria-label="Main navigation">
                 <a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md" title="DotEnvUp v1 encrypted .env format specification">.env.up Format Spec (v1)</a>
                 <a href="#mcp" title="Use DotEnvUp via MCP (Cursor, AI agents)">MCP</a>
+                <a href="#claude-code" title="DotEnvUp plugin for Claude Code">Claude Code</a>
                 <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md" title="DotEnvUp documentation and user guide">Documentation</a>
                 <a href="https://github.com/sarhej/dotenvup" title="DotEnvUp source code on GitHub">GitHub</a>
                 <a href="https://unknownpassword.com" title="UnknownPassword — team secret sharing built on DotEnvUp">UnknownPassword</a>
@@ -349,7 +350,7 @@
                     <a href="https://github.com/sarhej/dotenvup" class="btn btn-secondary">GitHub</a>
                 </div>
 
-                <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 1rem;">Also: <a href="#cli" style="color: var(--primary);">CLI</a> · <a href="#mcp" style="color: var(--primary);">MCP for Cursor</a></p>
+                <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 1rem;">Also: <a href="#cli" style="color: var(--primary);">CLI</a> · <a href="#mcp" style="color: var(--primary);">MCP for Cursor</a> · <a href="#claude-code" style="color: var(--primary);">Claude Code</a></p>
             </section>
 
             <section class="in-editor" aria-label="See it in action" style="margin: 3rem 0;">
@@ -458,6 +459,22 @@ up run -- npm start <span class="comment"># no file on disk</span></code></pre>
 }</code></pre>
                         </div>
                         <p style="margin-bottom: 0;">Requires <code>@dotenvup/cli</code> (same keys as the extension). Full design and tools: <a href="https://github.com/sarhej/dotenvup/blob/main/docs/design/MCP_SERVER.md" style="color: var(--primary);">MCP server design (GitHub)</a>.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="claude-code" class="install-section" aria-label="Claude Code — DotEnvUp plugin and skill">
+                <h2>Claude Code — DotEnvUp plugin and skill</h2>
+                <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem;">Use DotEnvUp from <strong>Claude Code</strong> (Anthropic’s CLI). The plugin adds a skill so Claude never assumes <code>.env</code> exists and runs env-dependent commands via <code>up run -- &lt;command&gt;</code> — no plaintext on disk.</p>
+                <div class="install-grid" style="grid-template-columns: 1fr;">
+                    <div class="feature-card" style="grid-column: 1 / -1;">
+                        <h3 style="margin-top: 0;">Install the plugin</h3>
+                        <p>Add this repo as a Claude Code plugin marketplace, then install the <strong>dotenvup</strong> plugin. The skill is then available (Claude uses it automatically in projects that have <code>.env.up</code>).</p>
+                        <div class="code-preview" style="margin: 0.75rem 0;">
+<pre><code>/plugin marketplace add sarhej/dotenvup
+/plugin install dotenvup@sarhej-dotenvup</code></pre>
+                        </div>
+                        <p style="margin-bottom: 0;">Scope: choose <em>user</em> (all projects), <em>project</em> (this repo only), or <em>local</em>. Full guide — workflow, hooks, and manual skill copy — in the <a href="https://github.com/sarhej/dotenvup/blob/main/docs/CLAUDE_CODE.md" style="color: var(--primary);">Claude Code doc (GitHub)</a>.</p>
                     </div>
                 </div>
             </section>

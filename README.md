@@ -226,7 +226,7 @@ up status --json        # Machine-readable lock state
 
 For scripts, CI, and AI coding agents, see **[AGENTS.md](AGENTS.md)**.
 
-Agent-specific context files: **[CLAUDE.md](CLAUDE.md)** (Claude Code), **[GEMINI.md](GEMINI.md)** (Google Gemini).
+Agent-specific context files: **[CLAUDE.md](CLAUDE.md)** (Claude Code), **[GEMINI.md](GEMINI.md)** (Google Gemini). **Claude Code plugin:** add this repo as a marketplace and install the dotenvup plugin — see [docs/CLAUDE_CODE.md](docs/CLAUDE_CODE.md#how-claude-users-can-discover-and-install).
 
 ## Development
 

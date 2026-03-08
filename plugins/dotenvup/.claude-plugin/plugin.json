@@ -1,0 +1,9 @@
+{
+  "name": "dotenvup",
+  "description": "Use DotEnvUp in Claude Code: run commands with decrypted env via up run --, never assume .env exists.",
+  "version": "1.0.0",
+  "author": { "name": "DotEnvUp" },
+  "repository": "https://github.com/sarhej/dotenvup",
+  "homepage": "https://github.com/sarhej/dotenvup#readme",
+  "license": "MIT"
+}

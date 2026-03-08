@@ -16,7 +16,7 @@ For seamless team sharing: **[unknownpassword.com](https://unknownpassword.com)*
 
 ## For AI Agents
 
-See [AGENTS.md](AGENTS.md) for the full automation guide. Key points:
+See [AGENTS.md](AGENTS.md) for the full automation guide. **Claude Code users:** [docs/CLAUDE_CODE.md](docs/CLAUDE_CODE.md) and the [DotEnvUp skill](docs/claude-code/dotenvup.skill.md) for your project’s `.claude/skills/`. Key points:
 
 - **Never assume `.env` exists** — it may be locked. Use `up run -- <command>` to inject env.
 - `up status` or `up status --json` to check lock state and drift.

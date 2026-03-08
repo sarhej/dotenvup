@@ -1,0 +1,21 @@
+{
+  "name": "dotenvup",
+  "owner": {
+    "name": "DotEnvUp"
+  },
+  "metadata": {
+    "description": "DotEnvUp plugin: use encrypted .env.up in Claude Code without assuming .env exists."
+  },
+  "plugins": [
+    {
+      "name": "dotenvup",
+      "source": "./plugins/dotenvup",
+      "description": "Use DotEnvUp in Claude Code: run commands with decrypted env via `up run --`, never assume .env exists. Use when the project uses .env.up.",
+      "version": "1.0.0",
+      "repository": "https://github.com/sarhej/dotenvup",
+      "homepage": "https://github.com/sarhej/dotenvup#readme",
+      "license": "MIT",
+      "keywords": ["dotenv", "secrets", "env", "encryption", "claude-code"]
+    }
+  ]
+}
