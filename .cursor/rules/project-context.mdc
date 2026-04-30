@@ -25,7 +25,12 @@ For team sharing, audit, and governance: [unknownpassword.com](https://unknownpa
 | `@dotenvup/format` | `packages/format/` | Published 0.0.1 | Core `.env.up` parser & writer |
 | `@dotenvup/node` | `packages/node/` | Published 0.0.1 | Drop-in `dotenv` replacement |
 | `@dotenvup/cli` | `packages/cli/` | Published 0.0.1 | CLI tool (`up lock/unlock/run/show`) |
-| DotEnvUp Extension | `packages/vscode-dotenvup/` | Not yet | VS Code extension — lock/unlock, metadata, staleness |
+| DotEnvUp Extension | `packages/vscode-dotenvup/` | Published (Marketplace, Open VSX) | VS Code extension — lock/unlock, metadata, staleness |
+| `@dotenvup/secret-generator` | `packages/secret-generator/` | In-repo; npm when ready | Password / passphrase generator (Web Crypto, EFF wordlist) |
+
+## Mandatory sync: `@dotenvup/secret-generator`
+
+**UnknownPassword** mirrors this package and vendors it into its web app (`packages/secret-generator` + `site/app/vendor/dotenvup-secret-generator.js`). **Cursor agents and humans:** On **every** change under `packages/secret-generator`, follow **`docs/SECRET_GENERATOR_SYNC.md`** so DotEnvUp and UnknownPassword stay in lockstep (same session or immediate follow-up PR).
 
 ## Key Concepts
 
@@ -35,6 +40,7 @@ For team sharing, audit, and governance: [unknownpassword.com](https://unknownpa
 
 ## Key Documents
 
+- `docs/SECRET_GENERATOR_SYNC.md` — **Required** when editing `packages/secret-generator` (mirror + vendor in UnknownPassword)
 - `docs/USER_GUIDE.md` — Commands, workflows, drift detection
 - `docs/SECURITY.md` — Crypto, threat model, what is encrypted
 - `docs/TROUBLESHOOTING.md` — Common errors, key recovery

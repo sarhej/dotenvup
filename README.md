@@ -120,6 +120,8 @@ Full flow (read/save sequences): [Safe Edit design](docs/design/SAFE_EDIT_FLOW.m
 | [@dotenvup/mcp](./packages/dotenvup-mcp) | MCP server — status, keys, run (for Cursor/AI) | In-repo; [design](docs/design/MCP_SERVER.md) |
 | [@dotenvup/secret-generator](./packages/secret-generator) | Password / passphrase generator (Web Crypto, EFF wordlist) — browsers & tooling | In-repo; npm publish when ready |
 
+**Cross-repo duty:** Changing `packages/secret-generator` requires **[docs/SECRET_GENERATOR_SYNC.md](./docs/SECRET_GENERATOR_SYNC.md)** (UnknownPassword mirror + vendor). Cursor **`project-context.mdc`** enforces this.
+
 ## The `.env.up` Format — [Open Standard (v1)](docs/FORMAT_SPEC.md)
 
 An encrypted `.env` with visible metadata — a "half-open envelope":

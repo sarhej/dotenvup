@@ -127,6 +127,10 @@ DotEnvUp can be used via MCP so AI assistants (e.g. Cursor) can check lock state
 - **Cursor:** Add the server to MCP settings; or run **DotEnvUp: Copy MCP config for Cursor** from the command palette to copy the config snippet.
 - **Design:** [docs/design/MCP_SERVER.md](docs/design/MCP_SERVER.md).
 
+## `@dotenvup/secret-generator` (UnknownPassword vendor)
+
+When editing **`packages/secret-generator`**, follow **[docs/SECRET_GENERATOR_SYNC.md](docs/SECRET_GENERATOR_SYNC.md)** on every change. UnknownPassword mirrors that package and vendors the build into its web app; Cursor **`project-context.mdc`** repeats this duty.
+
 ## Links
 
 - [User Guide](docs/USER_GUIDE.md) — Commands, workflows, drift explained
