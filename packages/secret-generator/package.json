@@ -1,0 +1,44 @@
+{
+  "name": "@dotenvup/secret-generator",
+  "version": "0.1.0",
+  "description": "MIT password and passphrase generator using Web Crypto (getRandomValues)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --platform=neutral --format=esm --outfile=dist/index.js --legal-comments=none",
+    "test": "npm run build && node --test test/*.test.js"
+  },
+  "keywords": [
+    "password",
+    "passphrase",
+    "diceware",
+    "eff",
+    "crypto",
+    "webcrypto",
+    "dotenvup"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarhej/dotenvup.git",
+    "directory": "packages/secret-generator"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

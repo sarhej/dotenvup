@@ -118,6 +118,7 @@ Full flow (read/save sequences): [Safe Edit design](docs/design/SAFE_EDIT_FLOW.m
 | [`@dotenvup/cli`](./packages/cli) | CLI tool (`up lock`, `up unlock`, `up run`) | [![npm](https://img.shields.io/npm/v/@dotenvup/cli)](https://www.npmjs.com/package/@dotenvup/cli) |
 | [DotEnvUp Extension](./packages/vscode-dotenvup) | VS Code / Cursor extension — local secret management | [Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) · [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) · [.vsix](https://github.com/sarhej/dotenvup/releases) |
 | [@dotenvup/mcp](./packages/dotenvup-mcp) | MCP server — status, keys, run (for Cursor/AI) | In-repo; [design](docs/design/MCP_SERVER.md) |
+| [@dotenvup/secret-generator](./packages/secret-generator) | Password / passphrase generator (Web Crypto, EFF wordlist) — browsers & tooling | In-repo; npm publish when ready |
 
 ## The `.env.up` Format — [Open Standard (v1)](docs/FORMAT_SPEC.md)
 

@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@dotenvup/format && npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=@dotenvup/mcp --workspace=dotenvup",
+    "build": "npm run build --workspace=@dotenvup/format && npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=@dotenvup/mcp --workspace=@dotenvup/secret-generator --workspace=dotenvup",
     "clean": "npm run clean --workspaces",
     "lint": "npm run lint --workspaces",
     "test": "npm run test --workspaces",
