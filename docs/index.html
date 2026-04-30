@@ -87,9 +87,32 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1152px;
             margin: 0 auto;
             padding: 2rem;
+        }
+
+        /* Full-width stacked screenshots — readable on large / retina displays */
+        .editor-showcase {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.25rem;
+            max-width: min(1024px, 100%);
+            margin: 0 auto;
+        }
+
+        .editor-showcase .feature-shot {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+            background: #1e293b;
+        }
+
+        .editor-showcase .feature-shot img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         header {
@@ -357,25 +380,25 @@
             <section class="in-editor" aria-label="See it in action" style="margin: 3rem 0;">
                 <h2 style="text-align: center; font-size: 1.75rem; margin-bottom: 1.5rem; color: #fff;">See it in your editor</h2>
                 <p style="text-align: center; color: #94a3b8; max-width: 560px; margin: 0 auto 2rem;">No terminal needed. Status bar, right-click, or Command Palette.</p>
-                <div class="install-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 0 auto;">
+                <div class="editor-showcase">
                     <div class="feature-card" style="overflow: hidden;">
                         <h3 style="margin-top: 0; color: #fff;">Status bar: one-click lock/unlock</h3>
-                        <div style="border-radius: 0.5rem; overflow: hidden; margin-bottom: 0.75rem; border: 1px solid #334155; aspect-ratio: 2.4/1; background: #1e293b;">
-                            <img src="/assets/hero-status-bar.png" alt="VS Code status bar showing DotEnvUp lock state" width="960" height="360" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy" decoding="async">
+                        <div class="feature-shot">
+                            <img src="/assets/hero-status-bar.png" alt="VS Code status bar showing DotEnvUp lock state" width="1920" height="720" loading="lazy" decoding="async">
                         </div>
                         <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Click to unlock for 5 min (or custom duration). Click again to lock and remove <code>.env</code>. Shows &quot;Partially protected&quot; when both files exist.</p>
                     </div>
                     <div class="feature-card" style="overflow: hidden;">
                         <h3 style="margin-top: 0; color: #fff;">Right-click: Lock, Unlock, Safe Edit</h3>
-                        <div style="border-radius: 0.5rem; overflow: hidden; margin-bottom: 0.75rem; border: 1px solid #334155; aspect-ratio: 2.4/1; background: #1e293b;">
-                            <img src="/assets/hero-context-menu.png" alt="Explorer context menu with DotEnvUp Lock, Unlock, and Safe Edit" width="960" height="360" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy" decoding="async">
+                        <div class="feature-shot">
+                            <img src="/assets/hero-context-menu.png" alt="Explorer context menu with DotEnvUp Lock, Unlock, and Safe Edit" width="1920" height="720" loading="lazy" decoding="async">
                         </div>
                         <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Right-click any <code>.env.up</code> in the explorer → <strong>Lock</strong>, <strong>Unlock to Disk</strong>, or <strong>Edit with DotEnvUp (Safe Edit)</strong>. Works across all folders in multi-root workspaces.</p>
                     </div>
                     <div class="feature-card" style="overflow: hidden;">
                         <h3 style="margin-top: 0; color: #fff;">Safe Edit: edit without plaintext on disk</h3>
-                        <div style="border-radius: 0.5rem; overflow: hidden; margin-bottom: 0.75rem; border: 1px solid #334155; aspect-ratio: 2.4/1; background: #1e293b;">
-                            <img src="/assets/hero-safe-edit.png" alt="Editor tab in Safe Edit mode with decrypted key-value lines" width="960" height="360" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy" decoding="async">
+                        <div class="feature-shot">
+                            <img src="/assets/hero-safe-edit.png" alt="Editor tab in Safe Edit mode with decrypted key-value lines" width="1920" height="720" loading="lazy" decoding="async">
                         </div>
                         <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Edit in a normal-looking tab; save writes only encrypted content. No plaintext <code>.env</code> on disk — ever.</p>
                     </div>
