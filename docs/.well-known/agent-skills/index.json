@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "dotenvup",
+      "type": "skill-md",
+      "description": "Use when the project uses DotEnvUp (.env.up). Never assume .env exists; run env-dependent commands via up run --.",
+      "url": "https://raw.githubusercontent.com/sarhej/dotenvup/main/plugins/dotenvup/skills/dotenvup/SKILL.md",
+      "digest": "sha256:851a7c373ed5241c41192c6b0f28efd9c8498e7c5fe869785aa09ce70c861b9a"
+    },
+    {
+      "name": "dotenvup-claude-code",
+      "type": "skill-md",
+      "description": "Claude Code skill copy for DotEnvUp workflows (up run --, lock state).",
+      "url": "https://raw.githubusercontent.com/sarhej/dotenvup/main/docs/claude-code/dotenvup.skill.md",
+      "digest": "sha256:09004129a61cc595fcfca5d938c0ff9d074bc934bf1e25ce4941ec91591c789e"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://dotenvup.com/",
+      "service-desc": [
+        {
+          "href": "https://dotenvup.com/.well-known/openapi/dotenvup.json",
+          "type": "application/json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md",
+          "type": "text/markdown"
+        },
+        {
+          "href": "https://github.com/sarhej/dotenvup/blob/main/AGENTS.md",
+          "type": "text/markdown"
+        },
+        {
+          "href": "https://dotenvup.com/",
+          "type": "text/html"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.npmjs.com/package/@dotenvup/mcp",
+      "service-desc": [
+        {
+          "href": "https://dotenvup.com/.well-known/openapi/dotenvup.json",
+          "type": "application/json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://github.com/sarhej/dotenvup/blob/main/packages/dotenvup-mcp/README.md",
+          "type": "text/markdown"
+        }
+      ]
+    }
+  ]
+}

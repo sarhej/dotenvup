@@ -1,0 +1,32 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json",
+  "serverInfo": {
+    "name": "@dotenvup/mcp",
+    "version": "0.1.0",
+    "title": "DotEnvUp MCP"
+  },
+  "name": "com.dotenvup/mcp",
+  "version": "0.1.0",
+  "title": "DotEnvUp MCP",
+  "description": "Local MCP server for Cursor and other assistants: lock state and drift (dotenvup_status), key metadata without values (dotenvup_keys), and run commands with decrypted env (dotenvup_run) without returning stdout/stderr to the model.",
+  "websiteUrl": "https://dotenvup.com/",
+  "repository": {
+    "url": "https://github.com/sarhej/dotenvup",
+    "source": "github",
+    "subfolder": "packages/dotenvup-mcp"
+  },
+  "capabilities": {
+    "tools": {}
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@dotenvup/mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

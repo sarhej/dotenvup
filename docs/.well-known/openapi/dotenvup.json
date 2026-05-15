@@ -1,0 +1,49 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "DotEnvUp",
+    "version": "1.0.0",
+    "description": "DotEnvUp is distributed as npm packages, a VS Code/Cursor extension, and a local stdio MCP server (@dotenvup/mcp). There is no hosted REST API on dotenvup.com; this document describes discoverable surfaces and install entrypoints for automation.",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "contact": {
+      "name": "DotEnvUp",
+      "url": "https://github.com/sarhej/dotenvup"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://dotenvup.com",
+      "description": "Project website (static)"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Marketing homepage",
+        "description": "HTML homepage. A Markdown-oriented summary is linked with rel=alternate from the HTML document and served at /markdown.md.",
+        "responses": {
+          "200": {
+            "description": "Homepage HTML"
+          }
+        }
+      }
+    },
+    "/.well-known/api-catalog": {
+      "get": {
+        "summary": "API catalog (RFC 9727 linkset)",
+        "responses": {
+          "200": {
+            "description": "application/linkset+json catalog"
+          }
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Format specification (v1)",
+    "url": "https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md"
+  }
+}

@@ -7,6 +7,14 @@
     <meta name="description" content=".env encryption: encrypt your .env into .env.up (VS Code/Cursor extension + CLI). One-click lock/unlock, up run -- for CI/agents. Zero-knowledge, safe to commit. CLI: npm i -g @dotenvup/cli.">
     <meta name="keywords" content=".env, .env encryption, encrypt .env, encrypted .env, dotenv, VS Code extension, Cursor extension, CLI, MCP, secret management, environment variables encryption, dotenvup, zero-knowledge, open source">
     <link rel="canonical" href="https://dotenvup.com/">
+    <!-- RFC 8288 HTML link relations; mirror as HTTP Link response headers on your CDN when supported -->
+    <link rel="api-catalog" href="https://dotenvup.com/.well-known/api-catalog" type="application/linkset+json">
+    <link rel="service-desc" href="https://dotenvup.com/.well-known/openapi/dotenvup.json" type="application/json">
+    <link rel="service-doc" href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">
+    <link rel="service-doc" href="https://github.com/sarhej/dotenvup/blob/main/AGENTS.md">
+    <link rel="describedby" href="https://dotenvup.com/llms.txt" type="text/plain">
+    <link rel="describedby" href="https://dotenvup.com/.well-known/agent-skills/index.json" type="application/json">
+    <link rel="alternate" type="text/markdown" href="https://dotenvup.com/markdown.md" title="DotEnvUp homepage (Markdown)">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
@@ -633,5 +641,64 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
             <p><a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md">.env.up Format Specification</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/design/MCP_SERVER.md">MCP Server</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md">Security Model</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">User Guide</a> · <a href="/privacy.html">Privacy</a> · <a href="https://www.npmjs.com/package/@dotenvup/format">npm: @dotenvup/format</a></p>
         </footer>
     </div>
+    <script>
+    (function () {
+        var mc = typeof navigator !== "undefined" && navigator.modelContext;
+        if (!mc || typeof mc.registerTool !== "function") {
+            return;
+        }
+        var ac = new AbortController();
+        window.addEventListener("pagehide", function () { ac.abort(); }, { once: true });
+        function reg(tool) {
+            try {
+                mc.registerTool(tool, { signal: ac.signal });
+            } catch (e) {
+                /* WebMCP preview / evolving API */
+            }
+        }
+        reg({
+            name: "dotenvup_open_section",
+            title: "Open DotEnvUp section",
+            description: "Scrolls the DotEnvUp homepage to a section by id (cli, mcp, or claude-code).",
+            inputSchema: {
+                type: "object",
+                properties: {
+                    sectionId: { type: "string", enum: ["cli", "mcp", "claude-code"] }
+                },
+                required: ["sectionId"]
+            },
+            execute: function (input) {
+                var el = document.getElementById(input.sectionId);
+                if (!el) {
+                    return Promise.resolve({ ok: false, error: "unknown_section" });
+                }
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+                return Promise.resolve({ ok: true, sectionId: input.sectionId });
+            },
+            annotations: { readOnlyHint: true }
+        });
+        reg({
+            name: "dotenvup_get_install_snippets",
+            title: "DotEnvUp install snippets",
+            description: "Returns canonical install commands for the DotEnvUp CLI and MCP (npx) without running them.",
+            inputSchema: { type: "object", properties: {} },
+            execute: function () {
+                return Promise.resolve({
+                    cliGlobal: "npm install -g @dotenvup/cli",
+                    mcpCursor: JSON.stringify({
+                        mcpServers: {
+                            dotenvup: {
+                                command: "npx",
+                                args: ["-y", "@dotenvup/mcp"],
+                                cwd: "${workspaceFolder}"
+                            }
+                        }
+                    }, null, 2)
+                });
+            },
+            annotations: { readOnlyHint: true }
+        });
+    })();
+    </script>
 </body>
 </html>
