@@ -1,0 +1,6 @@
+{
+  "resource": "https://dotenvup.com/",
+  "resource_name": "DotEnvUp website",
+  "resource_documentation": "https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md",
+  "scopes_supported": []
+}

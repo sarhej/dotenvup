@@ -1,0 +1,20 @@
+# DotEnvUp edge: Link headers, Markdown negotiation for /, correct api-catalog MIME,
+# and OAuth/OIDC discovery delegation to UnknownPassword (real issuer).
+#
+# Deploy (pick account that owns zone dotenvup.com):
+#   cd workers/dotenvup-edge && npm install && npx wrangler deploy
+#
+# After deploy, attach route dotenvup.com/* to this Worker in the Cloudflare dashboard
+# if wrangler.toml routes are not used (zone_id varies per account).
+
+name = "dotenvup-edge"
+main = "src/index.ts"
+compatibility_date = "2025-05-15"
+
+[vars]
+GITHUB_REF = "main"
+
+# Uncomment and set zone_name when your Wrangler account can manage dotenvup.com:
+# [[routes]]
+# pattern = "dotenvup.com/*"
+# zone_name = "dotenvup.com"
