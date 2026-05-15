@@ -54,6 +54,7 @@ function upstreamPath(pathname: string): string {
 }
 
 function contentTypeForPath(pathname: string): string | undefined {
+  if (pathname === "/" || pathname === "/index.html") return "text/html; charset=utf-8";
   if (pathname === "/.well-known/api-catalog" || pathname.endsWith("/api-catalog")) {
     return 'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"';
   }
