@@ -45,6 +45,6 @@
   },
   "dependencies": {
     "libsodium-wrappers": "^0.8.2",
-    "dotenv": "^16.4.5"
+    "dotenv": "^17.3.1"
   }
 }
