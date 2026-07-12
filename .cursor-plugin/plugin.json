@@ -1,0 +1,15 @@
+{
+  "name": "dotenvup",
+  "displayName": "DotEnvUp",
+  "version": "1.0.0",
+  "description": "Encrypted .env files (.env.up) in Cursor: never assume .env exists, run env-dependent commands via `up run --`, bootstrap and rotate secrets safely.",
+  "author": {
+    "name": "DotEnvUp"
+  },
+  "homepage": "https://github.com/sarhej/dotenvup#readme",
+  "repository": "https://github.com/sarhej/dotenvup",
+  "license": "MIT",
+  "keywords": ["dotenv", "secrets", "env", "encryption", "security", "cursor"],
+  "logo": "packages/vscode-dotenvup/icon-256.png",
+  "skills": "plugins/dotenvup/skills"
+}

@@ -93,6 +93,10 @@ All commands work in non-TTY (pipes, CI, agents) with the right flags:
 
 If you use **Claude Code** (Anthropic’s CLI), see [docs/CLAUDE_CODE.md](docs/CLAUDE_CODE.md) for how Claude Code users work with env/secrets and how to make `up` practical: use `up run --` for any command that needs env, add the [example DotEnvUp skill](docs/claude-code/dotenvup.skill.md) to your project’s `.claude/skills/`, and optionally a one-liner in `CLAUDE.md`.
 
+## Using with Cursor
+
+If you use **Cursor**, see [docs/CURSOR.md](docs/CURSOR.md). This repo ships a Cursor plugin (`.cursor-plugin/plugin.json`) bundling the [DotEnvUp skill](plugins/dotenvup/skills/dotenvup/SKILL.md) — install it from the Cursor Marketplace, or copy the skill into `.cursor/skills/dotenvup/` in your project. The suggested `.cursor/rules/dotenvup.mdc` snippet below works as a lightweight alternative.
+
 ## Using with App Builders (e.g. Lovable)
 
 If you use an AI app builder that needs environment variables:

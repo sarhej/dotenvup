@@ -1,18 +1,87 @@
 ---
 name: dotenvup
-description: Use when the project uses DotEnvUp (.env.up). Never assume .env exists; run env-dependent commands via `up run -- <command>` (e.g. up run -- npm test). Check state with `up status` or `up status --json`.
+description: >-
+  Manage local development secrets with DotEnvUp (.env encrypted as .env.up).
+  Use when the project uses .env.up, when the user asks where to put passwords,
+  API keys, or staging credentials, when bootstrapping env files, or when a
+  command needs environment variables. Never assume .env exists; run
+  env-dependent commands via `up run -- <command>` and check state with
+  `up status --json`.
 ---
 
-# DotEnvUp: env and commands
+# DotEnvUp: encrypted .env for projects and agents
 
-This project uses DotEnvUp: secrets live in `.env.up` (encrypted). The plaintext `.env` may not exist (locked).
+This project uses DotEnvUp: secrets live in `.env.up` (encrypted, safe to commit). The plaintext `.env` may not exist on disk (it is "locked").
 
-- **Never assume `.env` exists.** Before running tests, build, or start, check with `up status` (or `up status --json`).
-- **When a command needs environment variables**, run it via: `up run -- <command>`. Examples:
-  - `up run -- npm test`
-  - `up run -- npm run build`
-  - `up run -- npm start`
-- **Do not** run `npm test` or similar directly if the app expects env from `.env` — use `up run --` so env is injected without writing `.env` to disk.
-- **Editing secrets:** `up unlock` → edit `.env` → `up import .env` → `up lock`.
+## Core rules
+
+1. **Never assume `.env` exists.** Check with `up status` (or `up status --json`) first.
+2. **When a command needs environment variables**, run it via `up run -- <command>`:
+   - `up run -- npm test`
+   - `up run -- npm run build`
+   - `up run -- npm start`
+3. **Never** print, commit, or paste decrypted secret values into chat, docs, or git.
+4. `.env.up` is safe to commit; `.env`, `.env.local`, and `*.local` are not.
+5. **Never** put secrets under a browser-exposed prefix like `VITE_`, `NEXT_PUBLIC_`, or `REACT_APP_` — bundlers ship those to the client. Server-only secrets get no prefix (e.g. `OPENAI_API_KEY`, `STAGING_OPERATOR_PASSWORD`).
+6. Agents must **not invent secret values** — the user fills them in locally.
+
+## Command reference
+
+| Command | Purpose |
+|---------|---------|
+| `up status` / `up status --json` | Lock state, `.env.up` presence, keypair, drift |
+| `up init` | Create keypair in `~/.dotenvup/identity` (once per machine) |
+| `up import .env [--delete]` | Encrypt `.env` → `.env.up` (`--delete` removes plaintext) |
+| `up unlock [--duration 15m]` | Decrypt `.env.up` → `.env` with auto-lock timer |
+| `up lock [--yes] [--force]` | Delete plaintext `.env` (`--force` discards drift) |
+| `up run -- <cmd>` | Inject decrypted env into a process; no `.env` written |
+| `up show [KEY]` | Print decrypted value(s) — for the user, never echo in chat |
+| `up keys` / `up keys --json` | Key metadata (names, versions) without decrypting |
+
+Exit codes: `0` success, `1` user/usage error, `2` system error.
+
+## Workflows
+
+**Bootstrap a repo:**
+
+```bash
+up init                    # once per machine
+cp .env.example .env       # user fills in real values — do not invent them
+up import .env --delete
+git add .env.up            # encrypted; safe to commit
+```
+
+Commit `.env.example` (key names, no values) and `.env.up`. Keep `.env` and `.env.local` gitignored.
+
+**Add or rotate a secret:**
+
+```bash
+up unlock --duration 15m   # writes plaintext .env
+# edit .env
+up import .env --delete    # refresh .env.up
+up lock --yes
+```
+
+**Daily development:**
+
+```bash
+up run -- npm run dev      # preferred: no plaintext file on disk
+# or, if the dev server reads env files from disk (see below):
+up unlock --duration 30m && npm run dev
+```
+
+## Vite and other file-based bundlers
+
+`up run --` injects `process.env`, but Vite reads `import.meta.env` from `.env*` files on disk. For Vite SPAs, prefer `up unlock` + `.env` over `up run --`.
+
+Vite load order: `.env` → `.env.local` → `.env.[mode]` → `.env.[mode].local` (later overrides earlier). DotEnvUp manages **`.env` only** — consolidate any `.env.local` into `.env`, run `up import .env --delete`, and delete the redundant `.env.local` so it cannot shadow managed values.
+
+## Anti-patterns
+
+- Running `npm test` or similar directly when the app expects env — use `up run --`.
+- Secrets under `VITE_` / `NEXT_PUBLIC_` (or any client-bundled prefix).
+- Committing `.env` or `.env.local` with real values.
+- Asking the user to paste secret values into chat.
+- Assuming `.env` exists when `up status` reports locked.
 
 Full automation guide: [AGENTS.md](https://github.com/sarhej/dotenvup/blob/main/AGENTS.md) in the DotEnvUp repo.
