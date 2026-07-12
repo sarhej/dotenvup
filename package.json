@@ -22,12 +22,11 @@
     "publish:openvsx": "npm run release:verify && (cd packages/vscode-dotenvup && npx ovsx publish --no-dependencies)"
   },
   "devDependencies": {
-    "vitest": "^2.0.0"
+    "vitest": "^4.1.10"
   },
   "overrides": {
     "diff": "8.0.3",
     "serialize-javascript": "7.0.5",
-    "esbuild": "0.28.0",
     "mocha": {
       "diff": "8.0.3",
       "serialize-javascript": "7.0.5"
