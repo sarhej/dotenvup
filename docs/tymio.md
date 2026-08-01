@@ -64,7 +64,7 @@ Libraries (not products): `@dotenvup/format`, `@dotenvup/node`, `@dotenvup/mcp`,
 | `@dotenvup/format`, `cli`, `node` | **0.2.0** (Keychain wave; publish via [PUBLISH_KEYCHAIN.md](PUBLISH_KEYCHAIN.md)) |
 | `@dotenvup/keychain-darwin` | **0.1.0** (first publish) |
 | `@dotenvup/mcp` | **0.2.0** |
-| Extension Marketplace + Open VSX | **0.6.4** (pending publish; local VSIX OK) |
+| Extension Marketplace + Open VSX | **0.6.4** published |
 | Last GitHub release | [v0.6.3](https://github.com/sarhej/dotenvup/releases/tag/v0.6.3) |
 
 Active design: [docs/design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).  

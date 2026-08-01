@@ -15,37 +15,37 @@ Ship order matters: npm packages first (CLI/format pull the helper), then extens
 
 ## Preflight
 
-- [ ] `npm run build && npm test` (Ubuntu CI + local macOS helper probe)
+- [x] `npm run build` + format/cli/keychain tests (local macOS)
 - [ ] Manual checklist [KEYCHAIN_M3_MANUAL_TEST.md](design/KEYCHAIN_M3_MANUAL_TEST.md) on a migrated Mac
-- [ ] Local VSIX smoke: Safe Edit / Unlock / Key Management warm+lock session
-- [ ] Do **not** commit `.env` or re-encrypted demo `.env.up` from personal keys
+- [x] Local VSIX smoke: installed `dotenvup-0.6.4.vsix` into Cursor
+- [x] Do **not** commit `.env` or re-encrypted demo `.env.up` from personal keys
 
 ## npm
+
+**Pending OTP** (logged in as `supersergio`; `npm publish` needs browser/OTP once):
 
 ```bash
 # From repo root, after build. keychain-darwin first (format optionalDependency).
 npm publish --workspace=@dotenvup/keychain-darwin --access public
 npm publish --workspace=@dotenvup/format --access public
+npm publish --workspace=@dotenvup/node --access public
 npm publish --workspace=@dotenvup/cli --access public
 npm publish --workspace=@dotenvup/mcp --access public
-# node if version bumped:
-# npm publish --workspace=@dotenvup/node --access public
 ```
 
 Complete OTP / browser auth if npm prompts. macOS-only package: publish from darwin or ensure `bin/dotenvup-keychain` is in the tarball (`files` + built binary).
 
 ## Extension
 
+- [x] VS Code Marketplace **0.6.4** published (2026-08-01)
+- [x] Open VSX **0.6.4** published (2026-08-01)
+
 ```bash
 npm run build --workspace=@dotenvup/keychain-darwin --workspace=@dotenvup/format --workspace=dotenvup
 cd packages/vscode-dotenvup && npx vsce package --no-dependencies
-# Marketplace
 npx @vscode/vsce publish --no-dependencies
-# Open VSX
-npx ovsx publish dotenvup-0.6.4.vsix -p "$OVSX_PAT"
+npx ovsx publish --no-dependencies
 ```
-
-Or root scripts: `npm run publish:extension` / `npm run publish:openvsx` if configured.
 
 ## CI notarization secrets (optional; local notary profile already works)
 
