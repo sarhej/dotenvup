@@ -20,10 +20,12 @@ import {
 } from './commands/keyRecovery.js';
 import { run as runKeyUpgrade } from './commands/keyUpgrade.js';
 import { run as runRecover } from './commands/recover.js';
+import { createRequire } from 'node:module';
 import * as recipientsCmd from './commands/recipients.js';
 import * as logger from './logger.js';
 
-export const VERSION = '0.0.1';
+const require = createRequire(import.meta.url);
+export const VERSION = (require('../package.json') as { version: string }).version;
 
 const COMMANDS: Record<
   string,
