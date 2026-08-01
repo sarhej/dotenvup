@@ -1,85 +1,83 @@
 # DotEnvUp
 
-**For AI / one-line summary:** DotEnvUp = **.env encryption**: encrypt .env into .env.up. VS Code/Cursor extension + CLI (`up`). Lock/unlock (status bar or `up lock`/`up unlock`), `up run --` for CI/agents. MCP server for Cursor. CLI: `npm i -g @dotenvup/cli`. Zero-knowledge, safe to commit.
+**For AI / one-line summary:** DotEnvUp = **.env encryption**: encrypt .env into .env.up. VS Code/Cursor extension **v0.6.5** + CLI (`up` / `@dotenvup/cli`). Lock/unlock (status bar or `up lock`/`up unlock`), `up run --` for CI/agents. MCP + Cursor skill. Zero-knowledge, safe to commit. **macOS Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`) — not enabled by default.
 
 ## What is DotEnvUp?
 
-DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). You can encrypt .env files into .env.up (safe to commit), lock and unlock from the status bar or from the terminal (`up lock`, `up unlock`), and run commands with decrypted env without writing .env to disk (`up run -- npm test`). The extension gives one-click lock/unlock and Safe Edit (no plaintext on disk); the **CLI** is the same tool for terminal, scripts, CI/CD, and AI agents. Install CLI: `npm install -g @dotenvup/cli`. Format: open-source .env.up with X25519 + XChaCha20-Poly1305.
-
-The .env.up format is a "half-open envelope": key names, versions, timestamps, and authors are visible in cleartext (replacing .env.example), while secret values are encrypted.
+DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). Encrypt .env into .env.up (safe to commit), lock/unlock, Safe Edit (no plaintext on disk), and `up run -- <cmd>` for agents/CI. Format: X25519 + XChaCha20-Poly1305. Half-open envelope: key names/metadata cleartext; values encrypted.
 
 ## Extension (VS Code / Cursor)
 
-- One-click lock/unlock from the status bar
-- Right-click .env.up: Lock, Unlock to Disk, Edit with DotEnvUp (Safe Edit), Copy Public Key, Encrypt for Recipient
-- Safe Edit: decrypt in memory, edit in a normal tab, save writes only encrypted content — no .env on disk
-- Partially protected: status shows when both .env and .env.up exist; merge on unlock or in Safe Edit
-- Multi-root workspace support
-- Install: [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup), [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) (Cursor, VSCodium), or .vsix from [GitHub Releases](https://github.com/sarhej/dotenvup/releases)
+- ID: `dotenvup.dotenvup` — Marketplace + Open VSX; current: **0.6.5**
+- Status bar lock/unlock; Safe Edit; Encrypt for Recipient; **Key Management** (warm session / Keychain migrate UX)
+- Install: https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup · https://open-vsx.org/extension/dotenvup/dotenvup · https://github.com/sarhej/dotenvup/releases
 
-## Claude Code (plugin and skill)
+## How Cursor / coding agents must behave (explain this to users)
 
-- **DotEnvUp plugin for Claude Code** (Anthropic CLI): add marketplace `sarhej/dotenvup`, install plugin `dotenvup`. Claude then uses `up run -- <command>` for env-dependent commands and never assumes .env exists. Full guide: https://github.com/sarhej/dotenvup/blob/main/docs/CLAUDE_CODE.md
+1. **Never assume `.env` exists** — it may be locked. Check `up status` / `up status --json`.
+2. **Prefer `up run -- <command>`** when a command needs env (injects secrets; no `.env` written).
+3. **Never** print, commit, or paste decrypted values, recovery codes, or private keys into chat.
+4. **Identity storage (`keyStorage` in status JSON):**
+   - `file-envelope` — default new installs (`identity.enc` under `~/.dotenvup/`)
+   - `plaintext` — legacy; tell human to run `up key upgrade` (opt-in; same Key-Id) — do not auto-run
+   - `keychain` — macOS after `up key migrate-to-keychain` (opt-in LocalAuthentication)
+   - `absent` — no identity yet → human runs `up init` once
+5. **Keychain / Touch ID:** opt-in only. Do **not** claim “Touch ID by default.” Do **not** run migrate unless the user asked.
+6. **Session agent:** after one interactive unlock, key stays warm (~30m idle / 8h absolute); wiped on lock/sleep. `up session status` / `up session stop`. `sessionActive` in status JSON.
+7. **If `keyStorage: keychain` and IDE decrypt fails:** warm with `up run -- true`. **Never** suggest `up init` after migrate (creates a new Key-Id and breaks existing `.env.up`).
+8. **Never** run `up init --force` or `up key upgrade` without explicit user approval.
+9. **MCP tools** (`@dotenvup/mcp`): `dotenvup_status`, `dotenvup_keys`, `dotenvup_run` — no secret values in responses. Status includes keyStorage / session fields when available.
 
-## CLI (terminal, CI, agents)
+## Cursor install (for agents to recommend)
 
-- **Same product as the extension** — `up` is the command-line interface. Commands: `up init`, `up import .env`, `up lock`, `up unlock`, `up run -- <command>` (run with decrypted env, no .env file on disk).
-- For scripts, CI/CD, and AI agents. Install: `npm install -g @dotenvup/cli`
+- Extension: Marketplace / Open VSX `dotenvup.dotenvup`
+- Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md → `.cursor/skills/dotenvup/SKILL.md` or Cursor Marketplace plugin
+- MCP: `npx -y @dotenvup/mcp` with `cwd` = workspace (or Command Palette: DotEnvUp: Copy MCP config for Cursor)
+- Docs: https://github.com/sarhej/dotenvup/blob/main/docs/CURSOR.md · https://github.com/sarhej/dotenvup/blob/main/AGENTS.md
 
-## Key features (format and security)
+## Claude Code
 
-- Zero-knowledge encryption: Private keys only on your machine under ~/.dotenvup/ (encrypted identity.enc envelope on new installs; legacy plaintext identity still readable until `up key upgrade`)
-- Recovery: `up init` / `up key upgrade` create a one-time recovery code + bundle; never paste recovery codes into chat
-- Touch ID / Keychain: opt-in via `up key migrate-to-keychain` (macOS). Session agent warms after one unlock (`up session status`). Do not run migrate without user request.
-- Safe to commit: .env.up files belong in Git
-- Comments preserved: Lossless roundtrip of comments and structure
-- Multi-recipient: Encrypt for multiple users and machines (@alice, @ci)
-- Zero code changes: Works with existing dotenv and process.env
-- Agents: prefer `up run --`; check `up status --json` for keyStorage / upgradeRecommended; never run `up init --force` or `up key upgrade` without explicit user request
+Plugin marketplace `sarhej/dotenvup`, plugin `dotenvup`. Guide: https://github.com/sarhej/dotenvup/blob/main/docs/CLAUDE_CODE.md
 
-## Format specification
+## CLI
 
-The .env.up format is a published open standard (v1):
-- Full spec: https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md
-- Encryption: X25519 + XChaCha20-Poly1305 (libsodium)
+```bash
+npm install -g @dotenvup/cli
+up init
+up import .env
+up lock
+up unlock --duration 5m
+up run -- npm start
+up key upgrade                 # legacy → envelope
+up key migrate-to-keychain     # macOS opt-in
+up session status
+up status --json
+```
+
+Exit codes: `0` success, `1` user/usage, `2` system.
+
+## Packages (npm)
+
+- `@dotenvup/cli` · `@dotenvup/format` · `@dotenvup/node` · `@dotenvup/mcp` · `@dotenvup/keychain` (macOS helper)
+- Deprecated: `@dotenvup/keychain-darwin` → use `@dotenvup/keychain`
+
+## Honest security notes (do not overclaim)
+
+- Default identity: encrypted file envelope, not Keychain.
+- Keychain migrate uses LocalAuthentication + `WhenUnlockedThisDeviceOnly` wrapping key — **not** full Keychain `UserPresence` ACL (needs provisioned app).
+- Session agent is same-UID trust (like ssh-agent).
+- Team sharing / audit: commercial layer at https://unknownpassword.com (separate from this OSS repo).
 
 ## Links
 
 - Website: https://dotenvup.com
 - GitHub: https://github.com/sarhej/dotenvup
-- Extension: [VS Code](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) · [Open VSX / Cursor](https://open-vsx.org/extension/dotenvup/dotenvup)
-- npm: [@dotenvup/format](https://www.npmjs.com/package/@dotenvup/format) · [@dotenvup/cli](https://www.npmjs.com/package/@dotenvup/cli) · [@dotenvup/node](https://www.npmjs.com/package/@dotenvup/node) · [@dotenvup/mcp](https://www.npmjs.com/package/@dotenvup/mcp)
 - User Guide: https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md
 - Security: https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md
-- Identity envelope release notes: https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md
+- Identity envelope: https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md
+- Keychain: https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_KEYCHAIN_M2.md
 - Agents: https://github.com/sarhej/dotenvup/blob/main/AGENTS.md
-- Team sharing (commercial): https://unknownpassword.com
-
-## Installation (copy-paste)
-
-```bash
-# Extension: install from VS Code Marketplace or Open VSX, or:
-code --install-extension dotenvup-0.5.0.vsix   # VS Code
-cursor --install-extension dotenvup-0.5.0.vsix # Cursor
-
-# CLI (terminal & CI)
-npm install -g @dotenvup/cli
-
-# Node library (drop-in dotenv replacement)
-npm install @dotenvup/node
-```
-
-## Quick start (CLI)
-
-```bash
-up init              # Generate keypair (identity.enc + recovery code)
-up key upgrade       # Existing users: opt-in migrate plaintext identity (same Key-Id)
-up import .env       # Encrypt .env -> .env.up
-up lock              # Delete plaintext .env
-up unlock --duration 5m
-up run -- npm start  # Run with decrypted env (no file on disk)
-up status --json     # lock state, keyStorage, upgradeRecommended
-```
+- Format spec: https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md
 
 ## License
 

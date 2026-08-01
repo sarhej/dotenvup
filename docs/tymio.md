@@ -35,16 +35,16 @@ Libraries (not products): `@dotenvup/format`, `@dotenvup/node`, `@dotenvup/mcp`,
 - **Developer Surfaces** — extension, Cursor plugin
 - **Growth & Docs** — website / edge
 
-## Key initiatives (as of 2026-08-01 evening)
+## Key initiatives (as of 2026-08-02)
 
 | Initiative | Product | Status |
 |------------|---------|--------|
 | DotEnvUp — workspace & product map | (workspace-level) | DONE |
-| macOS Touch ID Keychain (envelope + session agent) | `cli` | DONE (P0) — **M0–M4** in tree; publish via [PUBLISH_KEYCHAIN.md](PUBLISH_KEYCHAIN.md) |
-| Cursor Marketplace plugin listing | `cursor-plugin` | IN_PROGRESS — MCP on npm; listing follow-up |
+| macOS Touch ID Keychain (envelope + session agent) | `cli` | DONE — published (opt-in Keychain + session) |
+| Cursor Marketplace plugin listing | `cursor-plugin` | IN_PROGRESS — skill/MCP ready; listing follow-up |
 | Homebrew tap for `up` CLI | `cli` | PLANNED (P2) — after SEA binaries |
 | Extension production hardening | `vscode-extension` | PLANNED |
-| Website & edge Worker upkeep | `website` | PLANNED — docs on `main` auto-serve via Worker→GitHub raw |
+| Website & edge Worker upkeep | `website` | IN_PROGRESS — landing + llms.txt + skill digests for **0.6.5** |
 
 ### Keychain epic feature board
 
@@ -53,26 +53,28 @@ Libraries (not products): `@dotenvup/format`, `@dotenvup/node`, `@dotenvup/mcp`,
 | M0 Design + wireframes | DONE |
 | M1 File envelope + recovery | DONE (PRODUCTION) |
 | M1b Existing-user `up key upgrade` | DONE (PRODUCTION) |
-| M2 Swift Keychain helper | DONE (opt-in / experimental) |
+| M2 Swift Keychain helper | DONE (opt-in) |
 | M3 Session agent | DONE |
-| M4 Extension Touch ID UX | DONE (in tree; Marketplace **0.6.4** when published) |
+| M4 Extension Touch ID UX | DONE (Marketplace **0.6.5**) |
 
 ### Published artifacts
 
 | Artifact | Version |
 |----------|---------|
-| `@dotenvup/format`, `cli`, `node` | **0.2.0** (Keychain wave; publish via [PUBLISH_KEYCHAIN.md](PUBLISH_KEYCHAIN.md)) |
-| `@dotenvup/keychain` | **0.1.0** (first publish) |
-| `@dotenvup/mcp` | **0.2.0** |
-| Extension Marketplace + Open VSX | **0.6.4** published |
-| Last GitHub release | [v0.6.3](https://github.com/sarhej/dotenvup/releases/tag/v0.6.3) |
+| `@dotenvup/format`, `@dotenvup/cli` | **0.2.1** |
+| `@dotenvup/node` | **0.2.0** |
+| `@dotenvup/keychain` | **0.1.1** (notarized) |
+| `@dotenvup/mcp` | **0.2.1** |
+| Extension Marketplace + Open VSX | **0.6.5** |
+| Last GitHub release | [v0.6.5](https://github.com/sarhej/dotenvup/releases/tag/v0.6.5) |
 
 Active design: [docs/design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).  
-Ship messaging: [docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md](RELEASE_NOTES_IDENTITY_ENVELOPE.md).
+Ship messaging: [docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md](RELEASE_NOTES_IDENTITY_ENVELOPE.md), [RELEASE_NOTES_KEYCHAIN_M2.md](RELEASE_NOTES_KEYCHAIN_M2.md).
+Cursor agents: [CURSOR.md](CURSOR.md), [skills/dotenvup/SKILL.md](../skills/dotenvup/SKILL.md), [llms.txt](llms.txt).
 
 ### M2 / M3 status
 
-**M2–M4 done in tree** (opt-in Keychain + session agent + Key Management UX). Local sign + notarize proven. Automated edge tests in CI (Ubuntu + macOS). Interactive checklist: [KEYCHAIN_M3_MANUAL_TEST.md](design/KEYCHAIN_M3_MANUAL_TEST.md). Publish: [PUBLISH_KEYCHAIN.md](PUBLISH_KEYCHAIN.md).
+**M2–M4 shipped** (opt-in Keychain + session agent + Key Management UX). Interactive checklist: [KEYCHAIN_M3_MANUAL_TEST.md](design/KEYCHAIN_M3_MANUAL_TEST.md). Publish: [PUBLISH_KEYCHAIN.md](PUBLISH_KEYCHAIN.md).
 
 CI `.p12` notarization secrets still optional follow-up for release builds.
 

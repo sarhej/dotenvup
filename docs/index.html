@@ -53,7 +53,7 @@
         },
         "codeRepository": "https://github.com/sarhej/dotenvup",
         "programmingLanguage": "TypeScript",
-        "softwareVersion": "0.6.3"
+        "softwareVersion": "0.6.5"
     }
     </script>
     <script type="application/ld+json">
@@ -440,32 +440,54 @@
                 </div>
             </section>
 
-            <section id="identity" class="install-section" aria-label="Encrypted local identity — what shipped">
-                <h2>Encrypted local identity + recovery</h2>
-                <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem; max-width: 720px; margin-left: auto; margin-right: auto;">
-                    Your private key stays on your machine — encrypted envelope on disk, with a one-time recovery code.
-                    <strong style="color: #e2e8f0;">macOS Keychain is opt-in</strong> (<code>up key migrate-to-keychain</code>) with Touch ID / password prompts and a warm session agent — not enabled by default.
+            <section id="identity" class="install-section" aria-label="Encrypted local identity and opt-in Keychain">
+                <h2>Encrypted identity · opt-in Keychain · warm session</h2>
+                <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem; max-width: 760px; margin-left: auto; margin-right: auto;">
+                    Extension <strong style="color: #e2e8f0;">0.6.5</strong> + CLI <code>@dotenvup/cli</code> —
+                    private key on your machine only. Default is an encrypted file envelope.
+                    <strong style="color: #e2e8f0;">macOS Keychain / Touch ID is opt-in</strong>, not on by default.
                 </p>
                 <div class="install-grid">
                     <div class="feature-card" style="margin: 0;">
-                        <h3 style="margin-top: 0; color: #86efac;">What you get today</h3>
+                        <h3 style="margin-top: 0; color: #86efac;">Default (all platforms)</h3>
                         <ul style="color: #94a3b8; font-size: 0.95rem; margin: 0; padding-left: 1.2rem;">
                             <li><code>identity.enc</code> + wrapping key under <code>~/.dotenvup/</code> (new installs)</li>
-                            <li>Automatic recovery bundle + code at <code>up init</code></li>
-                            <li>Existing users: opt-in <code>up key upgrade</code> — same Key-Id, no silent migrate</li>
-                            <li>Opt-in macOS Keychain: <code>up key migrate-to-keychain</code> + session agent</li>
+                            <li>Recovery code + bundle at <code>up init</code> — save offline; never paste into chat</li>
+                            <li>Legacy plaintext identity: opt-in <code>up key upgrade</code> (same Key-Id)</li>
                             <li>Same lock/unlock / <code>up run --</code> / Safe Edit workflows</li>
                         </ul>
                     </div>
-                    <div class="feature-card" style="margin: 0;">
-                        <h3 style="margin-top: 0; color: #fbbf24;">Existing installs</h3>
-                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0 0 0.75rem;">If <code>up status</code> still shows plaintext identity storage:</p>
+                    <div class="feature-card" style="margin: 0;" id="keychain">
+                        <h3 style="margin-top: 0; color: #93c5fd;">macOS Keychain (opt-in)</h3>
+                        <ul style="color: #94a3b8; font-size: 0.95rem; margin: 0 0 0.75rem; padding-left: 1.2rem;">
+                            <li><code>up key migrate-to-keychain</code> — LocalAuthentication (Touch ID / password)</li>
+                            <li>Wrapping key in Keychain (<code>WhenUnlockedThisDeviceOnly</code>) — not a full OS UserPresence ACL yet</li>
+                            <li>Session agent: unlock once, stay warm ~30m idle / 8h absolute; wiped on lock/sleep</li>
+                            <li>If IDE decrypt fails after migrate: warm with <code>up run -- true</code> — <strong>never</strong> <code>up init</code> (new Key-Id)</li>
+                            <li>UI: <strong>DotEnvUp: Key Management</strong> in VS Code / Cursor</li>
+                        </ul>
+                        <div class="code-preview" style="margin: 0;">
+<pre><code>up key migrate-to-keychain
+up session status
+up status --json   <span class="comment"># keyStorage, sessionActive</span></code></pre>
+                        </div>
+                    </div>
+                    <div class="feature-card" style="margin: 0; grid-column: 1 / -1;">
+                        <h3 style="margin-top: 0; color: #fbbf24;">Existing installs · agents</h3>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0 0 0.75rem;">If <code>up status --json</code> shows plaintext storage or <code>upgradeRecommended</code>:</p>
                         <div class="code-preview" style="margin: 0;">
 <pre><code>up key upgrade
 up key recovery status
 up status --json</code></pre>
                         </div>
-                        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0.75rem 0 0;">Save the recovery code somewhere durable. Full notes: <a href="https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md" style="color: var(--primary);">Identity envelope release notes</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md" style="color: var(--primary);">Security model</a>.</p>
+                        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0.75rem 0 0;">
+                            Cursor / agents: use <a href="https://github.com/sarhej/dotenvup/blob/main/AGENTS.md" style="color: var(--primary);">AGENTS.md</a>,
+                            the <a href="https://github.com/sarhej/dotenvup/blob/main/skills/dotenvup/SKILL.md" style="color: var(--primary);">DotEnvUp skill</a>,
+                            and <a href="#cursor" style="color: var(--primary);">Cursor setup</a> below — never assume <code>.env</code> exists; prefer <code>up run --</code>.
+                            Notes: <a href="https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md" style="color: var(--primary);">identity envelope</a> ·
+                            <a href="https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_KEYCHAIN_M2.md" style="color: var(--primary);">Keychain</a> ·
+                            <a href="https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md" style="color: var(--primary);">security</a>.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -481,7 +503,7 @@ up status --json</code></pre>
                         <ol>
                             <li>Or download <code>.vsix</code> from <a href="https://github.com/sarhej/dotenvup/releases">GitHub Releases</a></li>
                             <li>In your editor: <strong>Extensions</strong> → <code>...</code> → <strong>Install from VSIX...</strong></li>
-                            <li>Or from terminal: <code>code --install-extension dotenvup-0.6.4.vsix</code> / <code>cursor --install-extension dotenvup-0.6.4.vsix</code></li>
+                            <li>Or from terminal: <code>code --install-extension dotenvup-0.6.5.vsix</code> / <code>cursor --install-extension dotenvup-0.6.5.vsix</code></li>
                         </ol>
                     </div>
                     <div class="feature-card" id="cli">
@@ -490,13 +512,42 @@ up status --json</code></pre>
                         <div class="code-preview" style="margin: 0.5rem 0;">
 <pre><code>npm install -g @dotenvup/cli
 
-up init                 <span class="comment"># identity.enc + recovery code</span>
-up import .env          <span class="comment"># encrypt to .env.up</span>
-up lock                 <span class="comment"># delete plaintext</span>
+up init                      <span class="comment"># identity.enc + recovery code</span>
+up import .env               <span class="comment"># encrypt to .env.up</span>
+up lock                      <span class="comment"># delete plaintext</span>
 up unlock --duration 5m
-up run -- npm start     <span class="comment"># no file on disk</span>
-up key upgrade          <span class="comment"># existing users (opt-in)</span></code></pre>
+up run -- npm start          <span class="comment"># no file on disk</span>
+up key upgrade               <span class="comment"># legacy plaintext → envelope</span>
+up key migrate-to-keychain   <span class="comment"># macOS opt-in</span>
+up session status</code></pre>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="cursor" class="install-section" aria-label="Cursor — skill, MCP, and how agents explain DotEnvUp">
+                <h2>Cursor — so your AI knows DotEnvUp</h2>
+                <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem; max-width: 760px; margin-left: auto; margin-right: auto;">
+                    Install the plugin / skill so Cursor agents never invent secrets, never assume <code>.env</code> exists,
+                    and can explain Keychain vs file identity correctly to you.
+                </p>
+                <div class="install-grid" style="grid-template-columns: 1fr;">
+                    <div class="feature-card" style="grid-column: 1 / -1;">
+                        <h3 style="margin-top: 0;">What Cursor should tell you</h3>
+                        <ul style="color: #94a3b8; font-size: 0.95rem; margin: 0 0 1rem; padding-left: 1.2rem;">
+                            <li><strong style="color: #e2e8f0;">Prefer</strong> <code>up run -- &lt;cmd&gt;</code> when a command needs env (no plaintext <code>.env</code> written).</li>
+                            <li><strong style="color: #e2e8f0;">Check</strong> <code>up status --json</code> for lock state, <code>keyStorage</code>, <code>sessionActive</code>, <code>upgradeRecommended</code>.</li>
+                            <li><strong style="color: #e2e8f0;">Keychain is opt-in</strong> — only run <code>up key migrate-to-keychain</code> if you asked; do not claim “Touch ID by default.”</li>
+                            <li><strong style="color: #e2e8f0;">After Keychain migrate</strong>, cold IDE → warm with <code>up run -- true</code>; never suggest <code>up init</code> (creates a new Key-Id).</li>
+                            <li><strong style="color: #e2e8f0;">Never</strong> print recovery codes, <code>up show</code> output, or private keys into chat.</li>
+                        </ul>
+                        <h3 style="margin-top: 1rem;">Install for Cursor</h3>
+                        <ol style="color: #94a3b8; font-size: 0.95rem; margin: 0 0 0.75rem; padding-left: 1.2rem;">
+                            <li><strong style="color: #e2e8f0;">Extension</strong> — Marketplace / Open VSX ID <code>dotenvup.dotenvup</code> (v0.6.5+)</li>
+                            <li><strong style="color: #e2e8f0;">Plugin / skill</strong> — Cursor Marketplace “dotenvup”, or copy <a href="https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md" style="color: var(--primary);">SKILL.md</a> into <code>.cursor/skills/dotenvup/</code></li>
+                            <li><strong style="color: #e2e8f0;">MCP</strong> — Command Palette → <strong>DotEnvUp: Copy MCP config for Cursor</strong> (tools return status/keys/exit code only — no secrets)</li>
+                        </ol>
+                        <p style="margin-bottom: 0; color: #94a3b8; font-size: 0.9rem;">Guides: <a href="https://github.com/sarhej/dotenvup/blob/main/docs/CURSOR.md" style="color: var(--primary);">CURSOR.md</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/AGENTS.md" style="color: var(--primary);">AGENTS.md</a> · site LLM digest <a href="/llms.txt" style="color: var(--primary);">llms.txt</a>.</p>
                     </div>
                 </div>
             </section>
@@ -576,7 +627,7 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
             <section class="features" aria-label="Features">
                 <article class="feature-card">
                     <h3>Zero-Knowledge Encryption</h3>
-                    <p>No server, no cloud. Your private key stays only on your machine under <code>~/.dotenvup/</code> (encrypted <code>identity.enc</code> envelope on new installs). Encrypt and decrypt locally with X25519 + XChaCha20-Poly1305.</p>
+                    <p>No server, no cloud. Your private key stays only on your machine under <code>~/.dotenvup/</code> (encrypted <code>identity.enc</code> by default; opt-in macOS Keychain). Encrypt and decrypt locally with X25519 + XChaCha20-Poly1305.</p>
                 </article>
                 <article class="feature-card">
                     <h3>Encrypted at Rest — Safe to Commit</h3>
@@ -669,7 +720,7 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
 
         <footer>
             <p>DotEnvUp is an <a href="https://github.com/sarhej/dotenvup">open-source project</a> by <a href="https://unknownpassword.com">UnknownPassword</a>. Released under the <a href="https://github.com/sarhej/dotenvup/blob/main/LICENSE">MIT License</a>.</p>
-            <p><a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md">.env.up Format Specification</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/design/MCP_SERVER.md">MCP Server</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md">Security Model</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md">Identity envelope notes</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">User Guide</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/AGENTS.md">For AI agents</a> · <a href="/privacy.html">Privacy</a> · <a href="https://www.npmjs.com/package/@dotenvup/format">npm: @dotenvup/format</a></p>
+            <p><a href="https://github.com/sarhej/dotenvup/blob/main/docs/FORMAT_SPEC.md">.env.up Format Specification</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/design/MCP_SERVER.md">MCP Server</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md">Security Model</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md">Identity envelope</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_KEYCHAIN_M2.md">Keychain notes</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">User Guide</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/CURSOR.md">Cursor</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/AGENTS.md">For AI agents</a> · <a href="/llms.txt">llms.txt</a> · <a href="/privacy.html">Privacy</a> · <a href="https://www.npmjs.com/package/@dotenvup/format">npm: @dotenvup/format</a></p>
         </footer>
     </div>
     <script>
@@ -690,11 +741,11 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
         reg({
             name: "dotenvup_open_section",
             title: "Open DotEnvUp section",
-            description: "Scrolls the DotEnvUp homepage to a section by id (cli, mcp, or claude-code).",
+            description: "Scrolls the DotEnvUp homepage to a section by id (identity, keychain, cli, cursor, mcp, or claude-code).",
             inputSchema: {
                 type: "object",
                 properties: {
-                    sectionId: { type: "string", enum: ["cli", "mcp", "claude-code"] }
+                    sectionId: { type: "string", enum: ["identity", "keychain", "cli", "cursor", "mcp", "claude-code"] }
                 },
                 required: ["sectionId"]
             },
