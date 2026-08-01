@@ -137,6 +137,32 @@ stateDiagram-v2
 
 `up init --force` archives the previous identity to `~/.dotenvup/archive/<keyId>/` before replacing it, so an agent that runs init cannot silently orphan existing `.env.up` files.
 
+### Existing users (Phase A — file envelope, no Touch ID)
+
+Current installs keep a plaintext `~/.dotenvup/identity`. Readers keep accepting plaintext forever. **Nothing auto-migrates** (agents/CI must not hang or rewrite keys).
+
+| Command | Role |
+|---------|------|
+| `up key upgrade` | **Canonical** opt-in path for humans |
+| `up key migrate-envelope` | Alias of the envelope step (prefer `upgrade` so recovery is created first) |
+| `up status` | Soft nudge when `keyStorage=plaintext` or recovery missing |
+
+**`up key upgrade` fail-safe order (no key loss):**
+
+1. Load plaintext keypair; reject if pub/priv inconsistent.
+2. If no recovery bundle for this Key-Id: generate 8-word code → write `recovery/<keyId>.dotenvup-key` → **verify** `importKeyBundle` round-trips **before** touching envelope files.
+3. Write `identity.bak-<keyId>` (extra copy of plaintext).
+4. Write `wrapping-key` + `identity.enc` **while plaintext `identity` still exists**.
+5. Verify envelope decrypts to the **same** key bytes.
+6. Only then unlink plaintext `identity`.
+7. Show recovery code once; confirm “saved” on TTY (skip with `--yes`).
+
+**Read fallback (critical):** `FileProvider.getKeypair` tries a valid envelope first, then falls back to plaintext if the envelope is missing or unreadable. A partial/corrupt `identity.enc` must never hide a still-present plaintext key. `detectKeyStorageMode` reports `file-envelope` only when the envelope loads successfully.
+
+**Already on envelope, missing recovery:** `up key upgrade` only creates/verifies a recovery bundle (does not rotate keys).
+
+**Phase B (M2 Touch ID):** require a verified recovery bundle, then move the wrapping key into Keychain with verify + rollback per the state machine above. Same Key-Id; existing `.env.up` files keep working.
+
 ## Threat model delta
 
 | Scenario | Today | After |

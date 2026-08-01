@@ -10,6 +10,9 @@
  *
  * Legacy (still readable):
  *   ~/.dotenvup/identity       — plaintext base64 private key (mode 0o600)
+ *
+ * Safety: if identity.enc exists but cannot be opened, fall back to plaintext
+ * so a failed migration never hides the only remaining key.
  */
 
 import * as os from 'os';
@@ -17,7 +20,6 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import type { KeyProvider, Keypair } from '../keyProvider.js';
 import {
-  detectKeyStorageMode,
   loadKeypairEnvelope,
   PLAINTEXT_IDENTITY_FILE,
   PUBLIC_IDENTITY_FILE,
@@ -53,14 +55,9 @@ export class FileProvider implements KeyProvider {
   }
 
   async getKeypair(): Promise<Keypair | null> {
-    const mode = await detectKeyStorageMode(this.dir);
-    if (mode === 'file-envelope') {
-      return loadKeypairEnvelope(this.dir);
-    }
-    if (mode === 'plaintext') {
-      return this.loadPlaintextKeypair();
-    }
-    return null;
+    const fromEnvelope = await loadKeypairEnvelope(this.dir);
+    if (fromEnvelope) return fromEnvelope;
+    return this.loadPlaintextKeypair();
   }
 
   private async loadPlaintextKeypair(): Promise<Keypair | null> {

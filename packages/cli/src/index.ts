@@ -18,6 +18,7 @@ import {
   runStatus as runKeyRecoveryStatus,
   runMigrateEnvelope as runKeyMigrateEnvelope,
 } from './commands/keyRecovery.js';
+import { run as runKeyUpgrade } from './commands/keyUpgrade.js';
 import { run as runRecover } from './commands/recover.js';
 import * as recipientsCmd from './commands/recipients.js';
 import * as logger from './logger.js';
@@ -87,10 +88,13 @@ const COMMANDS: Record<
       console.error('Usage: up key recovery status [--json]');
       process.exit(1);
     }
-    if (sub === 'migrate-envelope') {
-      return runKeyMigrateEnvelope();
+    if (sub === 'upgrade') {
+      return runKeyUpgrade({ yes: opts?.yes as boolean });
     }
-    console.error('Usage: up key <export|import|recovery|migrate-envelope> [args]');
+    if (sub === 'migrate-envelope') {
+      return runKeyMigrateEnvelope({ yes: opts?.yes as boolean });
+    }
+    console.error('Usage: up key <export|import|upgrade|recovery|migrate-envelope> [args]');
     process.exit(1);
   },
 };
@@ -165,8 +169,9 @@ Commands:
   unlock               Decrypt .env.up, write .env (prompts for duration, default 5m)
   key export [file]    Export keypair to encrypted bundle (.dotenvup-key)
   key import <file>    Import keypair from encrypted bundle
+  key upgrade          Opt-in: recovery code + migrate plaintext → identity.enc (safe)
   key recovery status  Whether a recovery bundle exists for the active Key-Id
-  key migrate-envelope Migrate plaintext ~/.dotenvup/identity → identity.enc
+  key migrate-envelope Alias of key upgrade
   show [key]           Print decrypted values (all or one key)
   run -- <cmd>         Run command with decrypted env (no .env written)
   keys                 List key metadata (no decryption)

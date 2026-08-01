@@ -8,13 +8,14 @@ DotEnvUp encrypts your `.env` file into a `.env.up` format. **Zero-knowledge, ze
 
 ### up init
 
-Generate a keypair and store it in `~/.dotenvup/identity`.
+Generate a keypair and store it under `~/.dotenvup/` as an encrypted envelope (`identity.enc` + wrapping key), plus a one-time recovery code.
 
 ```bash
 up init
+up init --yes     # Skip the "I saved the recovery code" prompt
 ```
 
-Use `--force` to overwrite an existing keypair.
+Use `--force` to overwrite an existing keypair (previous Key-Id is archived under `~/.dotenvup/archive/`).
 
 ### up import [file]
 
@@ -109,6 +110,17 @@ up recipients discover --deep
 ```
 
 Recipients are stored in project file `.dotenvup.recipients.json` (public keys only, no private keys).
+
+### up key upgrade
+
+For existing installs that still have a plaintext `~/.dotenvup/identity`: opt-in migration that **does not change your Key-Id** (existing `.env.up` files keep working).
+
+```bash
+up key upgrade
+up key upgrade --yes
+```
+
+Safe order: create + verify a recovery bundle → write `identity.bak-<keyId>` → write envelope → verify decrypt → only then remove plaintext. `up status` nudges you when an upgrade is recommended. Touch ID / Keychain is a later step (macOS); this command is disk encryption + recovery only.
 
 ### up key export [file]
 

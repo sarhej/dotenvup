@@ -13,6 +13,8 @@ import {
   detectKeyStorageMode,
   archiveIdentity,
   parseIdentityEnvelope,
+  FileProvider,
+  IDENTITY_ENVELOPE_FILE,
 } from '../index.js';
 
 let tmpDir: string;
@@ -96,5 +98,45 @@ describe('identity envelope', () => {
     const archived = await fs.readFile(path.join(dest, 'identity.enc'), 'utf8');
     const env = parseIdentityEnvelope(archived);
     expect(env.keyId).toBe(keyId);
+  });
+
+  it('falls back to plaintext when envelope is corrupt (no key loss)', async () => {
+    const kp = await generateKeypair();
+    await fs.writeFile(path.join(tmpDir, 'identity'), Buffer.from(kp.privateKey).toString('base64') + '\n', {
+      mode: 0o600,
+    });
+    await fs.writeFile(path.join(tmpDir, 'identity.pub'), Buffer.from(kp.publicKey).toString('base64') + '\n', {
+      mode: 0o644,
+    });
+    await fs.writeFile(path.join(tmpDir, IDENTITY_ENVELOPE_FILE), '{ "format": "dotenvup-identity-envelope", "bogus": true }\n', {
+      mode: 0o600,
+    });
+
+    expect(await detectKeyStorageMode(tmpDir)).toBe('plaintext');
+    const fp = new FileProvider(tmpDir);
+    const loaded = await fp.getKeypair();
+    expect(loaded).not.toBeNull();
+    expect(Buffer.from(loaded!.privateKey)).toEqual(Buffer.from(kp.privateKey));
+  });
+
+  it('migrate keeps plaintext until envelope verifies; bak remains', async () => {
+    const kp = await generateKeypair();
+    await fs.writeFile(path.join(tmpDir, 'identity'), Buffer.from(kp.privateKey).toString('base64') + '\n', {
+      mode: 0o600,
+    });
+    await fs.writeFile(path.join(tmpDir, 'identity.pub'), Buffer.from(kp.publicKey).toString('base64') + '\n', {
+      mode: 0o644,
+    });
+
+    const result = await migratePlaintextToEnvelope(tmpDir);
+    expect(result).not.toBeNull();
+    await expect(fs.access(path.join(tmpDir, 'identity'))).rejects.toThrow();
+    const bak = await fs.readFile(result!.bakPath, 'utf8');
+    expect(Buffer.from(bak.trim(), 'base64')).toEqual(Buffer.from(kp.privateKey));
+
+    const fp = new FileProvider(tmpDir);
+    const loaded = await fp.getKeypair();
+    expect(Buffer.from(loaded!.privateKey)).toEqual(Buffer.from(kp.privateKey));
+    expect(await keyFingerprint(loaded!.publicKey)).toBe(await keyFingerprint(kp.publicKey));
   });
 });

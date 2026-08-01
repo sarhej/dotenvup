@@ -217,19 +217,21 @@ export async function readIdentityEnvelope(identityDir: string): Promise<Identit
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
     if (code === 'ENOENT') return null;
-    throw err;
+    // Corrupt / unsupported envelope must not brick plaintext fallback.
+    return null;
   }
 }
 
 export type KeyStorageMode = 'plaintext' | 'file-envelope' | 'absent';
 
+/**
+ * Reports the *usable* storage mode.
+ * Envelope wins only if it decrypts; otherwise plaintext is reported if present
+ * so a broken mid-migrate envelope never looks like "no key".
+ */
 export async function detectKeyStorageMode(identityDir: string): Promise<KeyStorageMode> {
-  try {
-    await fs.access(path.join(identityDir, IDENTITY_ENVELOPE_FILE));
-    return 'file-envelope';
-  } catch {
-    // continue
-  }
+  const fromEnvelope = await loadKeypairEnvelope(identityDir);
+  if (fromEnvelope) return 'file-envelope';
   try {
     await fs.access(path.join(identityDir, PLAINTEXT_IDENTITY_FILE));
     return 'plaintext';
@@ -238,17 +240,40 @@ export async function detectKeyStorageMode(identityDir: string): Promise<KeyStor
   }
 }
 
+async function assertKeypairConsistent(publicKey: Uint8Array, privateKey: Uint8Array): Promise<void> {
+  await initSodium();
+  const s = await getSodium();
+  if (privateKey.length !== 32 || publicKey.length !== 32) {
+    throw new Error('Keypair must contain 32-byte public and private keys.');
+  }
+  const derived = s.crypto_scalarmult_base(privateKey) as Uint8Array;
+  for (let i = 0; i < 32; i++) {
+    if (derived[i] !== publicKey[i]) {
+      throw new Error('Keypair integrity check failed (public/private mismatch).');
+    }
+  }
+}
+
+function keysEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i]! ^ b[i]!;
+  return diff === 0;
+}
+
 /**
  * Persist keypair as identity.enc + file wrapping key + identity.pub.
- * Does not leave a plaintext identity file.
+ * By default removes plaintext `identity` only after the envelope is written.
  */
 export async function saveKeypairEnvelope(
   identityDir: string,
   publicKey: Uint8Array,
   privateKey: Uint8Array,
+  options?: { removePlaintext?: boolean },
 ): Promise<IdentityEnvelopeV1> {
   await initSodium();
   const s = await getSodium();
+  await assertKeypairConsistent(publicKey, privateKey);
   await fs.mkdir(identityDir, { recursive: true, mode: 0o700 });
 
   const wrappingKey = s.randombytes_buf(32) as Uint8Array;
@@ -264,11 +289,13 @@ export async function saveKeypairEnvelope(
     0o644,
   );
 
-  // Remove plaintext private key if present (after envelope is durable).
-  try {
-    await fs.unlink(path.join(identityDir, PLAINTEXT_IDENTITY_FILE));
-  } catch {
-    // absent is fine
+  const removePlaintext = options?.removePlaintext !== false;
+  if (removePlaintext) {
+    try {
+      await fs.unlink(path.join(identityDir, PLAINTEXT_IDENTITY_FILE));
+    } catch {
+      // absent is fine
+    }
   }
 
   return envelope;
@@ -309,8 +336,17 @@ export async function loadKeypairEnvelope(identityDir: string): Promise<Keypair 
 }
 
 /**
- * Migrate plaintext identity → file envelope. Renames plaintext to identity.bak-<keyId>.
- * No-op if envelope already present. Returns null if nothing to migrate.
+ * Migrate plaintext identity → file envelope without losing the only copy.
+ *
+ * Order (fail-safe):
+ * 1. Load + integrity-check plaintext keypair
+ * 2. Write `identity.bak-<keyId>` (extra copy)
+ * 3. Write envelope + wrapping-key while plaintext still present
+ * 4. Verify envelope decrypts to the same keypair
+ * 5. Only then unlink plaintext `identity`
+ *
+ * On verify failure: plaintext is left untouched; partial envelope files may exist
+ * but the original key remains usable.
  */
 export async function migratePlaintextToEnvelope(identityDir: string): Promise<{
   keyId: string;
@@ -320,20 +356,35 @@ export async function migratePlaintextToEnvelope(identityDir: string): Promise<{
   if (mode === 'file-envelope') return null;
   if (mode !== 'plaintext') return null;
 
-  const privRaw = await fs.readFile(path.join(identityDir, PLAINTEXT_IDENTITY_FILE), 'utf8');
+  const plaintextPath = path.join(identityDir, PLAINTEXT_IDENTITY_FILE);
+  const privRaw = await fs.readFile(plaintextPath, 'utf8');
   const pubRaw = await fs.readFile(path.join(identityDir, PUBLIC_IDENTITY_FILE), 'utf8');
   const privateKey = new Uint8Array(Buffer.from(privRaw.trim(), 'base64'));
   const publicKey = new Uint8Array(Buffer.from(pubRaw.trim(), 'base64'));
   if (privateKey.length !== 32 || publicKey.length !== 32) {
     throw new Error('Cannot migrate: plaintext identity is invalid.');
   }
+  await assertKeypairConsistent(publicKey, privateKey);
 
   const keyId = await keyFingerprint(publicKey);
   const bakPath = path.join(identityDir, `identity.bak-${keyId}`);
-  // Keep a bak copy before envelope replace (never delete the only copy).
   await writeAtomic(bakPath, privRaw.endsWith('\n') ? privRaw : privRaw + '\n', 0o600);
-  await saveKeypairEnvelope(identityDir, publicKey, privateKey);
 
+  // Keep plaintext until envelope round-trips successfully.
+  await saveKeypairEnvelope(identityDir, publicKey, privateKey, { removePlaintext: false });
+
+  const loaded = await loadKeypairEnvelope(identityDir);
+  if (
+    !loaded ||
+    !keysEqual(loaded.privateKey, privateKey) ||
+    !keysEqual(loaded.publicKey, publicKey)
+  ) {
+    throw new Error(
+      'Cannot migrate: envelope verification failed. Plaintext identity was left unchanged.',
+    );
+  }
+
+  await fs.unlink(plaintextPath);
   return { keyId, bakPath };
 }
 
