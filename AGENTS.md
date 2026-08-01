@@ -25,8 +25,8 @@ For seamless team sharing on top of this open format: **[unknownpassword.com](ht
 | **npm (CLI)** | https://www.npmjs.com/package/@dotenvup/cli |
 | **npm (format)** | https://www.npmjs.com/package/@dotenvup/format |
 
-**Paste into another chat:**  
-*"DotEnvUp = extension + CLI. Encrypted .env format (.env.up). VS Code/Cursor extension (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli — commands: up lock, up unlock, up run -- <cmd>. Repo: https://github.com/sarhej/dotenvup."*
+**Paste into another chat:**
+*"DotEnvUp = extension v0.6.5 + CLI. Encrypted .env format (.env.up). VS Code/Cursor extension (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli — up lock/unlock/run. Default identity.enc; macOS Keychain/Touch ID is OPT-IN (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
 
 See also [docs/DOTENVUP_REFERENCE.txt](docs/DOTENVUP_REFERENCE.txt) for a copy-paste blob.
 
@@ -139,7 +139,9 @@ Suggested Cursor rule for consumer repos (`.cursor/rules/dotenvup.mdc`, `alwaysA
 ```
 This project uses DotEnvUp. Never assume .env exists (it may be locked).
 Use `up run -- <command>` when a command needs environment variables.
-Use `up status` to check lock state. See AGENTS.md in the dotenvup repo.
+Use `up status --json` for lock state, keyStorage, and sessionActive.
+macOS Keychain/Touch ID is opt-in only — do not claim it is default.
+Never paste recovery codes or secrets into chat. See AGENTS.md / dotenvup.com/llms.txt.
 ```
 
 ## MCP (Model Context Protocol)

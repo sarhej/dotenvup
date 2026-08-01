@@ -4,16 +4,16 @@
     {
       "name": "dotenvup",
       "type": "skill-md",
-      "description": "Use when the project uses DotEnvUp (.env.up). Never assume .env exists; run env-dependent commands via up run --.",
+      "description": "Use when the project uses DotEnvUp (.env.up). Never assume .env exists; prefer up run --. Explain identity.enc vs opt-in macOS Keychain/session honestly.",
       "url": "https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md",
-      "digest": "sha256:ea8b7e8d4833de1640475b82bd6358334ca8d2509af11ca03efe758a2e867141"
+      "digest": "sha256:c58a6b0cbf0caf94cb309c032fd561dd0ee6c9275a4f40f0a942b7be35200b80"
     },
     {
       "name": "dotenvup-claude-code",
       "type": "skill-md",
-      "description": "Claude Code skill copy for DotEnvUp workflows (up run --, lock state).",
+      "description": "Claude Code skill copy for DotEnvUp workflows (up run --, Keychain honesty, lock state).",
       "url": "https://raw.githubusercontent.com/sarhej/dotenvup/main/docs/claude-code/dotenvup.skill.md",
-      "digest": "sha256:ea8b7e8d4833de1640475b82bd6358334ca8d2509af11ca03efe758a2e867141"
+      "digest": "sha256:c58a6b0cbf0caf94cb309c032fd561dd0ee6c9275a4f40f0a942b7be35200b80"
     }
   ]
 }

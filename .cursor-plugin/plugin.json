@@ -1,8 +1,8 @@
 {
   "name": "dotenvup",
   "displayName": "DotEnvUp",
-  "version": "1.1.0",
-  "description": ".env files with a lock — encrypted .env.up, agent-safe `up run --`, MCP status/run, never assume plaintext exists. macOS Touch ID Keychain unlock via CLI session (see docs/design/KEYCHAIN_TOUCHID.md).",
+  "version": "1.1.1",
+  "description": ".env files with a lock — encrypted .env.up, agent-safe `up run --`, MCP status/run, never assume plaintext exists. Default identity.enc; macOS Keychain/Touch ID is opt-in (up key migrate-to-keychain), not default.",
   "author": {
     "name": "DotEnvUp"
   },
