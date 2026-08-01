@@ -1,12 +1,6 @@
 ---
 name: dotenvup
-description: >-
-  Manage local development secrets with DotEnvUp (.env encrypted as .env.up).
-  Use when the project uses .env.up, when the user asks where to put passwords,
-  API keys, or staging credentials, when bootstrapping env files, or when a
-  command needs environment variables. Never assume .env exists; run
-  env-dependent commands via `up run -- <command>` and check state with
-  `up status --json`.
+description: "Manages DotEnvUp encrypted env files (.env.up). Use for .env.up projects, API keys, staging credentials, bootstrap/rotate secrets, or any command that needs env — prefer `up run --`, check `up status --json`, never assume .env exists."
 ---
 
 # DotEnvUp: encrypted .env for projects and agents

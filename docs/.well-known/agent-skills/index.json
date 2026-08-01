@@ -6,14 +6,14 @@
       "type": "skill-md",
       "description": "Use when the project uses DotEnvUp (.env.up). Never assume .env exists; run env-dependent commands via up run --.",
       "url": "https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md",
-      "digest": "sha256:050eec37351f85870de85ffa224c748206550c76750339be56beeef66ccc0d10"
+      "digest": "sha256:ea8b7e8d4833de1640475b82bd6358334ca8d2509af11ca03efe758a2e867141"
     },
     {
       "name": "dotenvup-claude-code",
       "type": "skill-md",
       "description": "Claude Code skill copy for DotEnvUp workflows (up run --, lock state).",
       "url": "https://raw.githubusercontent.com/sarhej/dotenvup/main/docs/claude-code/dotenvup.skill.md",
-      "digest": "sha256:050eec37351f85870de85ffa224c748206550c76750339be56beeef66ccc0d10"
+      "digest": "sha256:ea8b7e8d4833de1640475b82bd6358334ca8d2509af11ca03efe758a2e867141"
     }
   ]
 }
