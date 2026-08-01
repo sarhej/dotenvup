@@ -9,6 +9,7 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { ExtensionKeyStore } from './keystore';
 import { createStatusBar, updateStatusBar } from './statusBar';
 import * as initCmd from './commands/init';
@@ -84,8 +85,7 @@ async function runProtectForRoot(
       const { parse, decrypt } = await import('@dotenvup/format');
       const envUpContent = await fsP.readFile(outPath, 'utf8');
       const file = parse(envUpContent);
-      const privKey = await keystore.getPrivateKey();
-      if (!privKey) throw new Error('No private key');
+      const privKey = await keystore.requirePrivateKey();
       const decryptResult = await decrypt(file, '@local', privKey);
       if (Object.keys(decryptResult.entries).length === 0) throw new Error('No entries');
     } catch {
@@ -185,6 +185,26 @@ async function refreshStatusBarFromFs(): Promise<void> {
 
 export function activate(context: vscode.ExtensionContext): void {
   logger.debug('Activating DotEnvUp extension');
+  // Extension host has no TTY; still allow Keychain / LocalAuthentication prompts (M2/M3).
+  // Bundled CJS empties import.meta — point helpers at files shipped under extensionPath/bin.
+  process.env.DOTENVUP_ALLOW_PROMPT = '1';
+  try {
+    const helperCandidate = path.join(context.extensionPath, 'bin', 'dotenvup-keychain');
+    if (fs.existsSync(helperCandidate)) {
+      process.env.DOTENVUP_KEYCHAIN_HELPER = helperCandidate;
+    }
+    const agentMain = path.join(context.extensionPath, 'bin', 'sessionAgentMain.js');
+    if (fs.existsSync(agentMain)) {
+      process.env.DOTENVUP_SESSION_AGENT_MAIN = agentMain;
+    }
+    const sessionCfg = vscode.workspace.getConfiguration('dotenvup');
+    const idleTtl = sessionCfg.get<string>('session.idleTtl');
+    const absoluteTtl = sessionCfg.get<string>('session.absoluteTtl');
+    if (idleTtl) process.env.DOTENVUP_SESSION_IDLE_TTL = idleTtl;
+    if (absoluteTtl) process.env.DOTENVUP_SESSION_ABSOLUTE_TTL = absoluteTtl;
+  } catch {
+    // optional
+  }
   keystore = new ExtensionKeyStore(context);
 
   statusBarItem = createStatusBar(() => {
@@ -531,14 +551,20 @@ export function deactivate(): void {
         logger.error('DotEnvUp: Left .env in place on close — file has unsaved changes. Save and use DotEnvUp: Import, then lock.');
         continue;
       }
-      const privateKey = await keystore.getPrivateKey();
+      let privateKey: Uint8Array | null = null;
+      try {
+        privateKey = await keystore.requirePrivateKey();
+      } catch (err) {
+        logger.error('DotEnvUp: Left .env in place on close — could not load private key for safety check.', err);
+        continue;
+      }
       const safeCheck = await isSafeToDelete(envUpPath, privateKey);
       if (!safeCheck.safe) {
         logger.error(`DotEnvUp: BLOCKED delete during deactivate — ${safeCheck.reason}`);
         continue;
       }
       // Never delete .env if it has changes not saved to .env.up (drift on disk)
-      if (privateKey && (await lockCmd.envHasDrift(envPath, envUpPath, privateKey))) {
+      if (await lockCmd.envHasDrift(envPath, envUpPath, privateKey)) {
         logger.error('DotEnvUp: Left .env in place on close — it has changes not saved to .env.up. Save with DotEnvUp: Import, then lock.');
         continue;
       }

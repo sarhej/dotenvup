@@ -11,6 +11,7 @@ async function main() {
     format: 'cjs',
     platform: 'node',
     target: 'node18',
+    // Bundle @dotenvup/format + keychain-darwin JS bridge; native helper is copied to bin/
     external: ['vscode'],
     sourcemap: true,
     outExtension: { '.js': '.js' },

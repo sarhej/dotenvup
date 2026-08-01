@@ -5,5 +5,7 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.ts'],
     exclude: ['dist/**', 'node_modules/**'],
+    // Session agent tests spawn real processes; serialize files to avoid races.
+    fileParallelism: false,
   },
 });

@@ -1,8 +1,8 @@
 {
   "name": "dotenvup",
   "displayName": ".env Up (DotEnvUp)",
-  "version": "0.6.3",
-  "description": ".env encryption: encrypt .env into .env.up. VS Code/Cursor extension + CLI (up). Encrypted local identity (identity.enc) + recovery codes; lock/unlock, up run --, MCP. Zero-knowledge. Touch ID not yet. CLI: npm i -g @dotenvup/cli.",
+  "version": "0.6.4",
+  "description": ".env encryption: encrypt .env into .env.up. VS Code/Cursor extension + CLI (up). Encrypted local identity; opt-in macOS Keychain + session agent; lock/unlock, Safe Edit, up run --, MCP. Zero-knowledge. CLI: npm i -g @dotenvup/cli.",
   "publisher": "dotenvup",
   "keywords": [
     ".env",
@@ -61,8 +61,8 @@
   ],
   "main": "./dist/extension.js",
   "scripts": {
-    "build": "tsc && node esbuild.mjs",
-    "clean": "rm -rf dist",
+    "build": "tsc && node esbuild.mjs && node scripts/copy-keychain-helper.mjs",
+    "clean": "rm -rf dist bin/dotenvup-keychain",
     "lint": "tsc --noEmit",
     "test": "DOTENVUP_TEST=1 HOME=$PWD/.vscode-test/home USERPROFILE=$PWD/.vscode-test/home DOTENVUP_IDENTITY_DIR=$PWD/.vscode-test/.dotenvup-test-identity DOTENVUP_TEST_IDENTITY_DIR=$PWD/.vscode-test/.dotenvup-test-identity vscode-test",
     "package": "npx @vscode/vsce package --no-dependencies"
@@ -236,10 +236,21 @@
         "dotenvup.keyStorageMode": {
           "type": "string",
           "enum": [
-            "user-file"
+            "user-file",
+            "keychain"
           ],
           "default": "user-file",
-          "description": "Key storage backend mode. Currently supported: user-file (~/.dotenvup/identity)."
+          "description": "Preferred key storage label for UI. Actual storage is detected from ~/.dotenvup (file-envelope or Keychain after `up key migrate-to-keychain`). Keychain is macOS opt-in."
+        },
+        "dotenvup.session.idleTtl": {
+          "type": "string",
+          "default": "30m",
+          "description": "Session agent idle TTL after last use (e.g. 30m). Wiped earlier on screen lock / sleep / logout."
+        },
+        "dotenvup.session.absoluteTtl": {
+          "type": "string",
+          "default": "8h",
+          "description": "Session agent absolute TTL hard cap (max 12h)."
         },
         "dotenvup.onlyWorkspaceRoot": {
           "type": "boolean",

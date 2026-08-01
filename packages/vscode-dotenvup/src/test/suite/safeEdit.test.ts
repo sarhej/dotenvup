@@ -24,6 +24,10 @@ class MockKeyStore extends ExtensionKeyStore {
   async hasKeypair(): Promise<boolean> { return !!this.keys; }
   async getPublicKey(): Promise<Uint8Array | null> { return this.keys?.publicKey ?? null; }
   async getPrivateKey(): Promise<Uint8Array | null> { return this.keys?.privateKey ?? null; }
+  async requirePrivateKey(): Promise<Uint8Array> {
+    if (!this.keys?.privateKey) throw new Error('No keypair');
+    return this.keys.privateKey;
+  }
   async storeKeypair(publicKey: Uint8Array, privateKey: Uint8Array): Promise<void> {
     this.keys = { publicKey, privateKey };
   }

@@ -19,6 +19,11 @@ import {
   runMigrateEnvelope as runKeyMigrateEnvelope,
 } from './commands/keyRecovery.js';
 import { run as runKeyUpgrade } from './commands/keyUpgrade.js';
+import { run as runKeyMigrateToKeychain } from './commands/keyMigrateToKeychain.js';
+import {
+  runStatus as runSessionStatus,
+  runStop as runSessionStop,
+} from './commands/session.js';
 import { run as runRecover } from './commands/recover.js';
 import { createRequire } from 'node:module';
 import * as recipientsCmd from './commands/recipients.js';
@@ -96,7 +101,19 @@ const COMMANDS: Record<
     if (sub === 'migrate-envelope') {
       return runKeyMigrateEnvelope({ yes: opts?.yes as boolean });
     }
-    console.error('Usage: up key <export|import|upgrade|recovery|migrate-envelope> [args]');
+    if (sub === 'migrate-to-keychain') {
+      return runKeyMigrateToKeychain({ yes: opts?.yes as boolean });
+    }
+    console.error(
+      'Usage: up key <export|import|upgrade|recovery|migrate-envelope|migrate-to-keychain> [args]',
+    );
+    process.exit(1);
+  },
+  session: async (args, opts) => {
+    const sub = args[0] ?? 'status';
+    if (sub === 'status') return runSessionStatus({ json: opts?.json as boolean });
+    if (sub === 'stop') return runSessionStop();
+    console.error('Usage: up session <status|stop> [--json]');
     process.exit(1);
   },
 };
@@ -174,6 +191,9 @@ Commands:
   key upgrade          Opt-in: recovery code + migrate plaintext → identity.enc (safe)
   key recovery status  Whether a recovery bundle exists for the active Key-Id
   key migrate-envelope Alias of key upgrade
+  key migrate-to-keychain  macOS opt-in: move wrapping key into Keychain (experimental)
+  session status       Whether the in-memory session agent holds a key (M3)
+  session stop         Wipe session agent cache
   show [key]           Print decrypted values (all or one key)
   run -- <cmd>         Run command with decrypted env (no .env written)
   keys                 List key metadata (no decryption)
@@ -251,6 +271,15 @@ export async function run(argv: string[]): Promise<void> {
     await handler(args, options);
     logger.debug(`Command completed: ${command}`);
   } catch (err) {
+    const { AuthCancelledError, NonInteractiveKeychainError } = await import('@dotenvup/format');
+    if (err instanceof AuthCancelledError) {
+      logger.error('Authentication cancelled');
+      process.exit(1);
+    }
+    if (err instanceof NonInteractiveKeychainError) {
+      logger.error(err.message);
+      process.exit(1);
+    }
     logger.error(`Command failed: ${command}`, err);
     process.exit(1);
   }

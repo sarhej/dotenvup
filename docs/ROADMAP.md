@@ -1,6 +1,6 @@
 # DotEnvUp Roadmap
 
-> Last updated: 2026-02-15
+> Last updated: 2026-08-01
 
 ## Status Summary
 
@@ -127,6 +127,42 @@ These items activate once native installers exist. Canonical identifiers are alr
 - [ ] **Update check** — `up` binary checks GitHub Releases API on first run per day. Notifies if newer version available.
 - [ ] **Self-update command** — `up update` downloads and replaces the binary in-place.
 - [ ] **Homebrew users** — Skip self-update, defer to `brew upgrade`.
+
+---
+
+## Priority 3 (Backlog): Newbie onboarding & secret intake
+
+Ideas for first-time users who do not yet have a clean `.env` workflow. **Constraint:** no remote LLMs for parsing or OCR — clipboard / image intake must stay on-device (local Vision / Tesseract / regex heuristics only). Cloud sync of secrets remains out of scope for OSS DotEnvUp (see UnknownPassword for team sharing).
+
+### 3.1 “Where do I get this secret?”
+
+- [ ] **Per-key origin notes** — Store optional cleartext metadata on each key (or beside `.env.example`): where to create it (URL), account required, and short steps. Shown in Key Management / `up keys` without decrypting values.
+- [ ] **“Open provider” actions** — From a missing/empty key, open the docs or console URL (e.g. OpenAI API keys page) in the browser.
+- [ ] **Export setup checklist to Notes** — Generate a plain-text / Markdown checklist (“Create OPENAI_API_KEY at …, paste into DotEnvUp”) the user can copy into Apple Notes, Notion, etc. Instructions only — never the secret value.
+- [ ] **Template packs for common stacks** — One-click `.env.example` scaffolds (Next.js, Vite, Supabase, Stripe, etc.) with origin notes prefilled; user fills values locally.
+
+### 3.2 Paste (and optional screenshot) → `.env` entry
+
+- [ ] **Paste secret → guided import** — User pastes `sk-…` or `KEY=value`; extension/CLI proposes a key name (editable), appends/updates `.env`, then offers `import` + lock. No network.
+- [ ] **Multi-line paste** — Accept a pasted block of several `KEY=value` lines (or common export formats) and merge with conflict prompts.
+- [ ] **Local screenshot / image OCR (optional)** — User drops a PNG/JPEG of a provider “API key created” screen; **on-device only** OCR extracts candidate secrets; user confirms before write. Explicitly **no** remote vision/LLM APIs. Behind a setting; fail closed if OCR unavailable.
+- [ ] **Clipboard hygiene** — After successful import, optional prompt to clear clipboard if it still holds the pasted secret.
+
+### 3.3 Any secrets file, not only `.env`
+
+- [ ] **Configurable env file name(s)** — Support `.env.local`, `.env.production`, `.env.development`, and custom paths; map each to a corresponding `.env.up` (or a single multi-file envelope — design TBD).
+- [ ] **`up import <file>` / extension “Import this file”** — Already partially true for path args; harden UX so non-`.env` basenames are first-class (status bar, lock/unlock target, drift).
+- [ ] **Non-dotenv formats (later)** — Optional import from simple `KEY: value` YAML/JSON maps into `.env.up` metadata+values (still encrypted values). Keep export as dotenv for zero app changes.
+- [ ] **Multi-file project status** — Status / Key Management lists all managed secret files and lock state per file.
+
+### 3.4 More newbie-friendly UX
+
+- [ ] **First-run wizard** — Expand welcome walkthrough: Init → pick template or existing file → paste/fill keys → import → lock → “run with `up run --`”. Link to Cursor plugin / skill install.
+- [ ] **Empty-state copy that teaches** — When unlocked with empty values, show “This key is empty — here’s where to get it” instead of only a blank input.
+- [ ] **Safe demo mode** — Sample `.env.example` + fake values so users can practice lock/unlock/import without real credentials.
+- [ ] **Recovery codes → printable / Notes export** — One-click “Save recovery instructions” after `up key upgrade` / init (codes shown once; file is user-managed).
+- [ ] **Glossary tooltips** — In-extension explanations of lock, drift, identity, `.env.up` vs `.env` for non-security people.
+- [ ] **CLI coach mode** — `up doctor` / `up guide`: checks identity, `.env.up`, gitignore, and prints next best command for newbies.
 
 ---
 

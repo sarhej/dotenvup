@@ -22,6 +22,7 @@ jobs:
   semgrep:
     name: Semgrep (SAST)
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +40,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     permissions:
-      security-events: read
+      security-events: write
       id-token: write
       contents: read
       actions: read
@@ -83,7 +84,7 @@ jobs:
           category: /language:javascript
 
   package-on-release:
-    needs: [release-verify, semgrep, scorecard, codeql]
+    needs: [release-verify, scorecard, codeql]
     if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     steps:

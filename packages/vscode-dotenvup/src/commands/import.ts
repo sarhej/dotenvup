@@ -33,7 +33,9 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
 
   const publicKey = await keystore.getPublicKey();
   if (!publicKey) {
-    logger.error('DotEnvUp: No keypair. Run "DotEnvUp: Init" first.');
+    logger.error(
+      'DotEnvUp: No public key found. Run "DotEnvUp: Init" only if you have never set up a key (Keychain users: identity.pub should already exist).',
+    );
     return false;
   }
 
@@ -136,7 +138,12 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
   await fs.writeFile(outPath, output, 'utf8');
 
   // Verify the written .env.up is decryptable before offering to delete source
-  const privateKey = await keystore.getPrivateKey();
+  const { requirePrivateKeyOrNotify } = await import('../keyErrors');
+  const privateKey = await requirePrivateKeyOrNotify(keystore, 'Import');
+  if (!privateKey) {
+    logger.error(`DotEnvUp: Import wrote ${path.basename(outPath)} but could not verify (no private key). Source preserved.`);
+    return false;
+  }
   const { isSafeToDelete } = await import('@dotenvup/format');
   const safeCheck = await isSafeToDelete(outPath, privateKey);
   if (!safeCheck.safe) {

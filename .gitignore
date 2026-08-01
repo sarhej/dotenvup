@@ -9,6 +9,10 @@ dist/
 out/
 *.tsbuildinfo
 
+# Native helper binary (built locally / CI; published in npm tarball)
+packages/keychain-darwin/bin/
+packages/vscode-dotenvup/bin/
+
 # Environment files (the whole point of this project)
 .env
 .env.local

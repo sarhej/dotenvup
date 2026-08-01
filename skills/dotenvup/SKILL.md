@@ -19,7 +19,7 @@ This project uses DotEnvUp: secrets live in `.env.up` (encrypted, safe to commit
 5. **Never** put secrets under a browser-exposed prefix like `VITE_`, `NEXT_PUBLIC_`, or `REACT_APP_` — bundlers ship those to the client. Server-only secrets get no prefix (e.g. `OPENAI_API_KEY`, `STAGING_OPERATOR_PASSWORD`).
 6. Agents must **not invent secret values** — the user fills them in locally.
 7. **Never** ask the user to paste a recovery code or `up show` output into chat. Point them at Key Management UI or the terminal.
-8. **Local identity:** New installs use encrypted `identity.enc` under `~/.dotenvup/`. If `up status --json` has `upgradeRecommended: true`, tell the human to run `up key upgrade` (opt-in; do not auto-run). **Touch ID / Keychain is not shipped yet** — do not claim biometrics work.
+8. **Local identity:** New installs use encrypted `identity.enc` under `~/.dotenvup/`. If `up status --json` has `upgradeRecommended: true`, tell the human to run `up key upgrade` (opt-in; do not auto-run). **macOS Keychain is opt-in** (`up key migrate-to-keychain`); prompts use LocalAuthentication (Touch ID / password). Do **not** claim “Touch ID by default.” If `keyStorage: keychain` and decrypt fails in the IDE, warm with `up run -- true` — never suggest `up init` (new Key-Id).
 9. **Never** run `up init --force` without explicit user approval (replaces identity after archive).
 
 ## Command reference

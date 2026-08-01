@@ -11,6 +11,10 @@ import {
   detectKeyStorageMode,
   keyFingerprint,
   recoveryBundleExists,
+  keychainHelperAvailable,
+  sessionStatus,
+  AuthCancelledError,
+  NonInteractiveKeychainError,
 } from '@dotenvup/format';
 import * as keystore from '../keystore.js';
 import { parseEnvFile, entriesMatch } from '../envParser.js';
@@ -24,13 +28,39 @@ export async function run(options?: { json?: boolean }): Promise<void> {
 
   const hasEnv = fs.existsSync(envPath);
   const hasEnvUp = fs.existsSync(envUpPath);
-  const hasKeypair = await keystore.hasKeypair();
   const identityDir = keystore.getIdentityDir();
   const keyStorage = await detectKeyStorageMode(identityDir);
-  const pub = hasKeypair ? await keystore.getPublicKey() : null;
+  // Avoid Keychain prompt: status must not call getKeypair when wrap.source=keychain.
+  let hasKeypair = keyStorage !== 'absent';
+  let pub: Uint8Array | null = null;
+  if (hasKeypair) {
+    const pubPath = keystore.getPublicKeyPath();
+    if (fs.existsSync(pubPath)) {
+      try {
+        pub = new Uint8Array(Buffer.from(fs.readFileSync(pubPath, 'utf8').trim(), 'base64'));
+        if (pub.length !== 32) pub = null;
+      } catch {
+        pub = null;
+      }
+    }
+  }
+  if (!hasKeypair) {
+    try {
+      const kp = await keystore.getKeypair();
+      hasKeypair = !!kp;
+      pub = kp?.publicKey ?? pub;
+    } catch (err) {
+      if (!(err instanceof AuthCancelledError || err instanceof NonInteractiveKeychainError)) {
+        // ignore
+      }
+    }
+  }
   const keyId = pub ? await keyFingerprint(pub) : null;
   const hasRecoveryBundle = keyId ? await recoveryBundleExists(identityDir, keyId) : false;
   const upgradeRecommended = keyStorage === 'plaintext' || (hasKeypair && !hasRecoveryBundle);
+  const keychainHelper = process.platform === 'darwin' ? await keychainHelperAvailable() : false;
+  const keychainMigrateRecommended =
+    keyStorage === 'file-envelope' && keychainHelper && hasRecoveryBundle;
 
   let keyCount = 0;
   let staleCount = 0;
@@ -51,9 +81,18 @@ export async function run(options?: { json?: boolean }): Promise<void> {
     }
   }
 
-  // Drift indicator: when both .env and .env.up exist and we have keypair
+  const session = await sessionStatus();
+  const sessionActive = session.active;
+
+  // Drift indicator: when both .env and .env.up exist and we have keypair.
+  // Skip when Keychain is cold (would prompt); warm session or non-keychain OK.
   let drift = false;
-  if (hasEnv && hasEnvUp && hasKeypair) {
+  const canDecryptForDrift =
+    hasEnv &&
+    hasEnvUp &&
+    hasKeypair &&
+    (keyStorage !== 'keychain' || sessionActive);
+  if (canDecryptForDrift) {
     const stat = fs.statSync(envPath);
     if (stat.isFile()) {
       try {
@@ -66,13 +105,22 @@ export async function run(options?: { json?: boolean }): Promise<void> {
             drift = true;
           }
         }
-      } catch {
+      } catch (err) {
+        if (err instanceof AuthCancelledError || err instanceof NonInteractiveKeychainError) {
+          // Skip drift; keychain cold / cancelled
+        }
         // Skip drift check on error (e.g. decrypt fails)
       }
     }
   }
 
   if (options?.json) {
+    const formatRemaining = (ms: number | null): string | null => {
+      if (ms == null || ms < 0) return null;
+      const mins = Math.round(ms / 60_000);
+      if (mins < 60) return `${mins}m`;
+      return `${Math.round(mins / 60)}h`;
+    };
     const result: Record<string, unknown> = {
       locked: !hasEnv,
       hasEnvUp,
@@ -81,6 +129,11 @@ export async function run(options?: { json?: boolean }): Promise<void> {
       keyId,
       hasRecoveryBundle,
       upgradeRecommended,
+      keychainHelper,
+      keychainMigrateRecommended,
+      sessionActive,
+      sessionIdleExpiresIn: sessionActive ? formatRemaining(session.idleMsLeft) : null,
+      sessionAbsoluteExpiresIn: sessionActive ? formatRemaining(session.absoluteMsLeft) : null,
       keyCount,
       staleCount,
       drift,
@@ -93,9 +146,17 @@ export async function run(options?: { json?: boolean }): Promise<void> {
   logger.info(`.env.up: ${hasEnvUp ? 'present' : 'not found'}`);
   logger.info(`Keypair: ${hasKeypair ? 'configured' : 'not configured'}`);
   logger.info(`Key storage: ${keyStorage}`);
+  if (keyStorage === 'keychain') {
+    logger.info(`Session: ${sessionActive ? 'active (warm)' : 'inactive (cold — next decrypt may prompt)'}`);
+  }
   if (upgradeRecommended) {
     logger.info(
       'Tip: run `up key upgrade` to add a recovery code and encrypt ~/.dotenvup/identity (Key-Id unchanged; opt-in).',
+    );
+  }
+  if (keychainMigrateRecommended) {
+    logger.info(
+      'Tip (experimental): run `up key migrate-to-keychain` to store the wrapping key in macOS Keychain (Touch ID / password).',
     );
   }
 

@@ -58,6 +58,7 @@ export {
   saveKeypairEnvelope,
   loadKeypairEnvelope,
   migratePlaintextToEnvelope,
+  migrateFileEnvelopeToKeychain,
   detectKeyStorageMode,
   archiveIdentity,
   recoveryBundlePath,
@@ -67,6 +68,28 @@ export {
   readIdentityEnvelope,
   writeIdentityEnvelope,
 } from './identityEnvelope.js';
+export {
+  AuthCancelledError,
+  NonInteractiveKeychainError,
+  KEYCHAIN_SERVICE,
+  resolveKeychainHelper,
+  keychainHelperAvailable,
+  keychainPromptsBlocked,
+  setKeychainHelperForTests,
+  type KeychainHelperApi,
+} from './keychainHelper.js';
+export {
+  ensureSessionAgent,
+  sessionStatus,
+  sessionGet,
+  sessionPut,
+  sessionStop,
+  sessionSocketPath,
+  sessionTtls,
+  parseDurationMs,
+  sessionRequestForTests,
+  type SessionStatus,
+} from './sessionAgent.js';
 export {
   searchLocalKeys,
   discoverLocalKeyCandidates,

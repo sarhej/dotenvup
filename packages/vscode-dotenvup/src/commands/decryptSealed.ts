@@ -36,14 +36,17 @@ export async function run(keystore: ExtensionKeyStore, uri?: vscode.Uri): Promis
   }
 
   const pubKey = await keystore.getPublicKey();
-  const privKey = await keystore.getPrivateKey();
+  const { requirePrivateKeyOrNotify } = await import('../keyErrors');
+  const privKey = await requirePrivateKeyOrNotify(keystore, 'Decrypt Sealed File');
   if (!pubKey || !privKey) {
-    const action = await vscode.window.showErrorMessage(
-      'DotEnvUp: No keypair found. Run "DotEnvUp: Init" first to create one.',
-      'Init keypair',
-    );
-    if (action === 'Init keypair') {
-      await vscode.commands.executeCommand('dotenvup.init');
+    if (!pubKey) {
+      const action = await vscode.window.showErrorMessage(
+        'DotEnvUp: No public key found. Run "DotEnvUp: Init" only if you have never set up a key.',
+        'Init keypair',
+      );
+      if (action === 'Init keypair') {
+        await vscode.commands.executeCommand('dotenvup.init');
+      }
     }
     return;
   }

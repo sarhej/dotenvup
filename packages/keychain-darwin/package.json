@@ -1,0 +1,53 @@
+{
+  "name": "@dotenvup/keychain",
+  "version": "0.1.0",
+  "description": "macOS Keychain helper for DotEnvUp identity wrapping keys (Touch ID / UserPresence)",
+  "keywords": [
+    "dotenvup",
+    "keychain",
+    "macos",
+    "touchid"
+  ],
+  "homepage": "https://dotenvup.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarhej/dotenvup.git",
+    "directory": "packages/keychain-darwin"
+  },
+  "license": "MIT",
+  "author": "UnknownPassword",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "bin/dotenvup-keychain",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build:helper": "bash scripts/build-helper.sh",
+    "build:helper:release": "DOTENVUP_CODESIGN=1 DOTENVUP_NOTARIZE=1 bash scripts/build-helper.sh",
+    "build": "tsc && node -e \"process.platform==='darwin'?require('child_process').execSync('bash scripts/build-helper.sh',{stdio:'inherit'}):console.log('skip helper build (non-darwin)')\"",
+    "clean": "rm -rf dist bin/dotenvup-keychain",
+    "lint": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

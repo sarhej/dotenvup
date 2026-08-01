@@ -70,10 +70,7 @@ export class SafeEditFSProvider implements vscode.FileSystemProvider {
       const content = await fs.readFile(realPath, 'utf8');
       const { parse, decryptAny, parseEnvFile } = await import('@dotenvup/format');
 
-      const privateKey = await this.keystore.getPrivateKey();
-      if (!privateKey) {
-        throw new Error('No private key available. Run DotEnvUp: Init first.');
-      }
+      const privateKey = await this.keystore.requirePrivateKey();
 
       const file = parse(content);
       const result = await decryptAny(file, privateKey, '@local');
@@ -121,11 +118,10 @@ export class SafeEditFSProvider implements vscode.FileSystemProvider {
 
     try {
       const { parse, create, serialize, parseEnvFile } = await import('@dotenvup/format');
-      const privateKey = await this.keystore.getPrivateKey();
+      const privateKey = await this.keystore.requirePrivateKey();
       const publicKey = await this.keystore.getPublicKey();
-      
-      if (!privateKey || !publicKey) {
-        throw new Error('No keypair available.');
+      if (!publicKey) {
+        throw new Error('No public key available.');
       }
 
       // 1. Read existing .env.up to preserve recipients and metadata

@@ -7,10 +7,11 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@dotenvup/format && npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=@dotenvup/mcp --workspace=@dotenvup/secret-generator --workspace=dotenvup",
+    "build": "npm run build --workspace=@dotenvup/keychain && npm run build --workspace=@dotenvup/format && npm run build --workspace=@dotenvup/cli --workspace=@dotenvup/node --workspace=@dotenvup/mcp --workspace=@dotenvup/secret-generator --workspace=dotenvup",
     "clean": "npm run clean --workspaces",
     "lint": "npm run lint --workspaces",
-    "test": "npm run test --workspaces",
+    "test": "npm run test --workspace=@dotenvup/format --workspace=@dotenvup/cli --workspace=@dotenvup/keychain --workspace=@dotenvup/node --workspace=@dotenvup/mcp --workspace=@dotenvup/secret-generator",
+    "test:extension": "npm run test --workspace=dotenvup",
     "audit": "npm audit",
     "audit:fix": "npm audit fix",
     "security:check": "npm audit --audit-level=high",

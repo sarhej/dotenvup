@@ -76,9 +76,12 @@ export class SafeEditCustomEditorProvider implements vscode.CustomTextEditorProv
     const decrypt = async (): Promise<string> => {
       const content = document.getText();
       const { parse, decryptAny } = await import('@dotenvup/format');
-      const privateKey = await this.keystore.getPrivateKey();
-      if (!privateKey) {
-        return '# No private key. Run DotEnvUp: Init first.';
+      let privateKey: Uint8Array;
+      try {
+        privateKey = await this.keystore.requirePrivateKey();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return `# ${msg}\n# Warm the session with: up run -- true`;
       }
       const file = parse(content);
       const result = await decryptAny(file, privateKey, '@local');
@@ -108,10 +111,13 @@ export class SafeEditCustomEditorProvider implements vscode.CustomTextEditorProv
         const newPlaintext = message.content;
         try {
           const { create, serialize, parseEnvFile } = await import('@dotenvup/format');
-          const privateKey = await this.keystore.getPrivateKey();
+          const { requirePrivateKeyOrNotify } = await import('../keyErrors');
+          const privateKey = await requirePrivateKeyOrNotify(this.keystore, 'Safe Edit save');
           const publicKey = await this.keystore.getPublicKey();
           if (!privateKey || !publicKey) {
-            vscode.window.showErrorMessage('DotEnvUp: No keypair. Run DotEnvUp: Init first.');
+            if (!publicKey) {
+              vscode.window.showErrorMessage('DotEnvUp: No public key found.');
+            }
             return;
           }
           const author = await getAuthor(this.keystore.getIdentityDir());

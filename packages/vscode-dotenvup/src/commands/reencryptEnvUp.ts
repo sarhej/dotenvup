@@ -15,9 +15,9 @@ export async function reencryptLocked(
     await import('@dotenvup/format');
   const { getAuthor } = await import('../author');
 
-  const privateKey = await keystore.getPrivateKey();
   const publicKey = await keystore.getPublicKey();
-  if (!privateKey || !publicKey) throw new Error('No keypair');
+  const privateKey = await keystore.requirePrivateKey();
+  if (!publicKey) throw new Error('No public key');
 
   const content = await fs.readFile(envUpPath, 'utf8');
   const file = parse(content);

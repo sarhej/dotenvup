@@ -116,7 +116,48 @@ describe('CLI commands', () => {
   it('--version shows version', async () => {
     const result = await runUp(['--version'], testDir);
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain('0.0.1');
+    expect(result.stdout).toContain('0.2.1');
+  });
+
+  it('session status works when cold', async () => {
+    const sessDir = path.join(TEST_HOME, 'session-test');
+    fs.mkdirSync(sessDir, { recursive: true });
+    const result = await new Promise<{ stdout: string; stderr: string; code: number }>((resolve) => {
+      const env = {
+        ...process.env,
+        DOTENVUP_TEST: '1',
+        DOTENVUP_IDENTITY_DIR: TEST_IDENTITY_DIR,
+        DOTENVUP_TEST_IDENTITY_DIR: TEST_IDENTITY_DIR,
+        HOME: TEST_HOME,
+        USERPROFILE: TEST_HOME,
+        DOTENVUP_SESSION_SOCK: path.join(sessDir, 'agent.sock'),
+        DOTENVUP_SESSION_COOKIE: path.join(sessDir, 'agent.cookie'),
+        DOTENVUP_NO_PRESENCE: '1',
+      };
+      const child = spawn('node', [CLI, 'session', 'status', '--json'], { cwd: testDir, env });
+      let stdout = '';
+      let stderr = '';
+      child.stdout?.on('data', (d) => { stdout += d.toString(); });
+      child.stderr?.on('data', (d) => { stderr += d.toString(); });
+      child.on('close', (code) => resolve({ stdout, stderr, code: code ?? 0 }));
+    });
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.active).toBe(false);
+  });
+
+  it('status --json includes sessionActive', async () => {
+    const result = await runUp(['status', '--json'], testDir);
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(typeof json.sessionActive).toBe('boolean');
+    expect(json.keyStorage).toBeTruthy();
+  });
+
+  it('--help mentions session', async () => {
+    const result = await runUp(['--help'], testDir);
+    expect(result.stdout).toContain('session status');
+    expect(result.stdout).toContain('migrate-to-keychain');
   });
 });
 

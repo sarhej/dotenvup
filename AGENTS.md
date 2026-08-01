@@ -85,14 +85,17 @@ Release notes: [docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md](docs/RELEASE_NOTES_IDEN
 
 | `up status --json` field | Meaning |
 |--------------------------|---------|
-| `keyStorage` | `file-envelope` (current), `plaintext` (legacy), or `absent` |
+| `keyStorage` | `file-envelope`, `keychain` (macOS opt-in), `plaintext` (legacy), or `absent` |
 | `hasRecoveryBundle` | Recovery file exists for active Key-Id |
 | `upgradeRecommended` | User should run `up key upgrade` (opt-in; human only) |
+| `keychainMigrateRecommended` | macOS + helper + file envelope → human may run `up key migrate-to-keychain` |
+| `sessionActive` | In-memory session agent holds the unwrapped key (warm) |
 
 - New installs use `identity.enc` + wrapping key under `~/.dotenvup/`.
 - Legacy plaintext `identity` still works until the human upgrades.
-- **Touch ID / Keychain is not shipped yet.** Do not tell users biometrics are available.
-- CI: prefer `UP_KEY` / `DOTENVUP_PRIVATE_KEY`; never hang on prompts (`DOTENVUP_NO_PROMPT` / non-TTY).
+- **Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`). Do not run it unless the user asked.
+- After one interactive unlock, the **session agent** keeps the key warm (~30m idle / 8h absolute; wiped on lock/sleep). `up session status` / `up session stop`.
+- CI: prefer `UP_KEY` / `DOTENVUP_PRIVATE_KEY`; never hang on prompts (`DOTENVUP_NO_PROMPT` / non-TTY). Cold Keychain + no warm session → exit `1`.
 
 ## Non-Interactive / CI Flags
 

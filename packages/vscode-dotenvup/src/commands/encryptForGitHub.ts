@@ -37,9 +37,12 @@ export async function run(keystore: ExtensionKeyStore, uri?: vscode.Uri): Promis
   }
 
   const publicKey = await keystore.getPublicKey();
-  const privateKey = await keystore.getPrivateKey();
+  const { requirePrivateKeyOrNotify } = await import('../keyErrors');
+  const privateKey = await requirePrivateKeyOrNotify(keystore, 'Encrypt for GitHub User');
   if (!publicKey || !privateKey) {
-    vscode.window.showErrorMessage('DotEnvUp: No keypair found. Run "DotEnvUp: Init" first.');
+    if (!publicKey) {
+      vscode.window.showErrorMessage('DotEnvUp: No public key found. Run "DotEnvUp: Init" only if you have never set up a key.');
+    }
     return;
   }
 

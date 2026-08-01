@@ -2,7 +2,7 @@
 
 > **Goal:** On macOS, gate DotEnvUp's private key behind Touch ID / Apple Watch / login password, with roughly one prompt per working session — without making the Keychain a new way to lose keys.
 
-Status: M0 approved. **M1 in progress** — file-wrapped `identity.enc` + auto recovery bundle at `up init` (no native helper yet).
+Status: M0–M3 shipped. **M4** Key Management webview (Keychain / session / migrate / warm+lock session) shipped in extension ≥0.6.4. Publish to Marketplace/npm still a release step.
 
 Wireframes: [../designs/](../designs/) (see [Wireframes](#wireframes)).
 
@@ -61,16 +61,17 @@ flowchart TD
 ### Keychain item
 
 - Class: generic password. Service `com.dotenvup.wrapping-key`, account = Key-Id (so multiple identities can coexist after `up init --force`).
-- Access control: **`kSecAccessControlUserPresence`**. macOS then accepts Touch ID, Apple Watch, or the login password, and the item survives biometric re-enrollment.
 - Accessibility: `kSecAttrAccessibleWhenUnlockedThisDeviceOnly` — never leaves the device, never lands in an iCloud or unencrypted backup.
+- **M2 auth gate (shipped):** `LocalAuthentication` `.deviceOwnerAuthentication` on helper `get` (Touch ID / Apple Watch / login password). Bare CLI tools cannot use `kSecAttrAccessControl` / data-protection Keychain ACL without a provisioning profile (`errSecMissingEntitlement` **-34018**).
+- **Later hardening:** ship a provisioned app-bundled helper with `kSecAccessControlUserPresence` so the OS enforces presence even if another same-UID process calls `SecItemCopyMatching` directly.
 
-**Rejected alternatives:** `kSecAccessControlBiometryCurrentSet` (destroys the item on fingerprint change), `kSecAccessControlBiometryAny` (excludes Apple Watch and password fallback, so a Mac without Touch ID cannot participate), and `@napi-rs/keyring` (the keytar successor, but it exposes no ACL support at all).
+**Rejected alternatives:** `kSecAccessControlBiometryCurrentSet` (destroys the item on fingerprint change), `kSecAccessControlBiometryAny` (excludes Apple Watch and password fallback), and `@napi-rs/keyring` (no ACL / LA support).
 
 ## Helper binary
 
 Touch ID requires Security.framework plus LocalAuthentication, which no Node keyring library exposes. We ship a small Swift binary rather than an FFI or node-gyp dependency, so `npm i -g @dotenvup/cli` can never fail with a compiler error.
 
-- Package: `@dotenvup/keychain-darwin`, an optional dependency containing a universal (arm64 + x64) binary built with `swiftc -framework LocalAuthentication -framework Security`.
+- Package: `@dotenvup/keychain`, an optional dependency containing a universal (arm64 + x64) binary built with `swiftc -framework LocalAuthentication -framework Security`.
 - Developer ID signed and notarized in the release workflow. This is mandatory, not cosmetic: the Keychain ACL is bound to the binary's code signature, so an unsigned helper that changes each release re-prompts and looks broken.
 - If the package is missing (Linux, Windows, CI), `available()` returns false and the provider chain falls back to the file-wrapped envelope with no error.
 
@@ -224,9 +225,14 @@ Produced (M0), matching [key-management-webview-wireframe.svg](../designs/key-ma
 - [key-management-touchid.svg](../designs/key-management-touchid.svg) — Keychain mode + session + agent JSON view
 - [key-mismatch-recovery-wireframe.svg](../designs/key-mismatch-recovery-wireframe.svg) — includes **Enter recovery code** path
 
-## Validation tasks before M2 is called done
+## Validation
 
-1. Confirm the prompt appears when the helper is spawned from Cursor's Electron process, not only from Terminal.
-2. Confirm a notarized universal binary keeps a stable Keychain ACL identity across releases.
-3. Confirm `com.apple.screenIsLocked` is observable from a spawned helper in a login session.
-4. Measure real prompt frequency over a working day; the target is roughly one per morning.
+**Automated (CI):** format session/keychain edge tests on Ubuntu + macOS; helper `probe` on macOS. See `.github/workflows/ci.yml`.
+
+**Manual (required before marketing Touch ID):** [KEYCHAIN_M3_MANUAL_TEST.md](KEYCHAIN_M3_MANUAL_TEST.md).
+
+Legacy M2 notes:
+
+1. Prompt from Cursor Electron, not only Terminal.
+2. Lock-screen wipe via `watch-presence`.
+3. Roughly one prompt per warm session (M3).
