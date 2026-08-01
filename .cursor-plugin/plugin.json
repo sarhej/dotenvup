@@ -2,7 +2,7 @@
   "name": "dotenvup",
   "displayName": "DotEnvUp",
   "version": "1.0.0",
-  "description": "Encrypted .env files (.env.up) in Cursor: never assume .env exists, run env-dependent commands via `up run --`, bootstrap and rotate secrets safely.",
+  "description": ".env files with a lock — encrypted .env.up, agent-safe `up run --`, never assume plaintext exists.",
   "author": {
     "name": "DotEnvUp"
   },
