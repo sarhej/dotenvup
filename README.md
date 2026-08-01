@@ -117,7 +117,7 @@ Full flow (read/save sequences): [Safe Edit design](docs/design/SAFE_EDIT_FLOW.m
 | [`@dotenvup/node`](./packages/node) | Drop-in `dotenv` replacement for Node.js | [![npm](https://img.shields.io/npm/v/@dotenvup/node)](https://www.npmjs.com/package/@dotenvup/node) |
 | [`@dotenvup/cli`](./packages/cli) | CLI tool (`up lock`, `up unlock`, `up run`) | [![npm](https://img.shields.io/npm/v/@dotenvup/cli)](https://www.npmjs.com/package/@dotenvup/cli) |
 | [DotEnvUp Extension](./packages/vscode-dotenvup) | VS Code / Cursor extension — local secret management | [Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) · [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) · [.vsix](https://github.com/sarhej/dotenvup/releases) |
-| [@dotenvup/mcp](./packages/dotenvup-mcp) | MCP server — status, keys, run (for Cursor/AI) | In-repo; [design](docs/design/MCP_SERVER.md) |
+| [@dotenvup/mcp](./packages/dotenvup-mcp) | MCP server — status, keys, run (for Cursor/AI) | `npx -y @dotenvup/mcp`; [design](docs/design/MCP_SERVER.md) |
 | [@dotenvup/secret-generator](./packages/secret-generator) | Password / passphrase generator (Web Crypto, EFF wordlist) — browsers & tooling | In-repo; npm publish when ready |
 
 **Cross-repo duty:** Changing `packages/secret-generator` requires **[docs/SECRET_GENERATOR_SYNC.md](./docs/SECRET_GENERATOR_SYNC.md)** (UnknownPassword mirror + vendor). Cursor **`project-context.mdc`** enforces this.

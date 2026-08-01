@@ -126,7 +126,7 @@ Use `up status` to check lock state. See AGENTS.md in the dotenvup repo.
 
 DotEnvUp can be used via MCP so AI assistants (e.g. Cursor) can check lock state, list key metadata, and run commands with decrypted env **without exposing secrets**.
 
-- **Package:** [@dotenvup/mcp](packages/dotenvup-mcp) — run `node packages/dotenvup-mcp/dist/index.js` from the repo, or `npx -y @dotenvup/mcp` when published.
+- **Package:** [@dotenvup/mcp](packages/dotenvup-mcp) — `npx -y @dotenvup/mcp`, or `node packages/dotenvup-mcp/dist/index.js` from a repo checkout.
 - **Tools:** `dotenvup_status`, `dotenvup_keys`, `dotenvup_run` (returns only exit code, not stdout/stderr).
 - **Cursor:** Add the server to MCP settings; or run **DotEnvUp: Copy MCP config for Cursor** from the command palette to copy the config snippet.
 - **Design:** [docs/design/MCP_SERVER.md](docs/design/MCP_SERVER.md).

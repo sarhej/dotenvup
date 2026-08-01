@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" width="1400" height="900">
+  <defs>
+    <style><![CDATA[
+      text { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #e5e7eb; }
+      .title { font-size: 20px; font-weight: 700; }
+      .subtitle { font-size: 12px; fill: #9ca3af; }
+      .h2 { font-size: 14px; font-weight: 700; }
+      .body { font-size: 12px; }
+      .mono { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 12px; fill: #c4b5fd; }
+      .btn { font-size: 12px; font-weight: 600; fill: #ffffff; }
+      .btn-secondary { font-size: 12px; font-weight: 600; fill: #d1d5db; }
+      .tiny { font-size: 10px; fill: #9ca3af; }
+      .warn { font-size: 11px; fill: #fbbf24; }
+      .ok { font-size: 11px; fill: #86efac; }
+      .label { font-size: 10px; fill: #fda4af; font-style: italic; }
+      .danger { font-size: 11px; fill: #fca5a5; }
+    ]]></style>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="900" fill="#0f172a"/>
+  <text x="24" y="32" class="title">DotEnvUp - Recovery code (one-time reveal)</text>
+  <text x="24" y="52" class="subtitle">States: reveal, confirm saved, re-show refused | Shown after Keychain opt-in or fresh init on macOS</text>
+
+  <!-- Reveal -->
+  <rect x="24" y="76" width="680" height="520" rx="10" fill="#111827" stroke="#334155"/>
+  <text x="40" y="98" class="label">Reveal (once)</text>
+  <rect x="24" y="108" width="680" height="52" rx="10" fill="#1f2937"/>
+  <text x="44" y="139" class="title">Save your recovery code</text>
+
+  <rect x="40" y="180" width="648" height="80" rx="8" fill="#422006" stroke="#92400e"/>
+  <text x="56" y="208" class="warn">This is the only way back if Keychain is wiped or you get a new Mac.</text>
+  <text x="56" y="232" class="warn">We will not show this code again.</text>
+
+  <rect x="40" y="280" width="648" height="100" rx="8" fill="#0f172a" stroke="#4f46e5"/>
+  <text x="56" y="310" class="tiny">8-word recovery code (EFF wordlist)</text>
+  <text x="56" y="340" class="mono">orchid maple harbor quiet cedar river silver lantern</text>
+  <text x="56" y="362" class="tiny">Key-Id: pBEsFwUPu2Q | bundle: ~/.dotenvup/recovery/pBEsFwUPu2Q.dotenvup-key</text>
+
+  <rect x="40" y="400" width="140" height="36" rx="6" fill="#4f46e5"/>
+  <text x="110" y="423" text-anchor="middle" class="btn">Copy code</text>
+  <rect x="196" y="400" width="160" height="36" rx="6" fill="#334155"/>
+  <text x="276" y="423" text-anchor="middle" class="btn-secondary">Reveal in terminal</text>
+
+  <rect x="40" y="460" width="24" height="24" rx="4" fill="#334155" stroke="#9ca3af"/>
+  <text x="76" y="478" class="body">I saved this code somewhere durable (password manager / paper)</text>
+
+  <rect x="40" y="510" width="220" height="36" rx="6" fill="#334155"/>
+  <text x="150" y="533" text-anchor="middle" class="btn-secondary">Continue (disabled until check)</text>
+  <text x="40" y="570" class="tiny">Continue enables only after checkbox. Copy alone is not enough.</text>
+
+  <!-- Confirm -->
+  <rect x="724" y="76" width="652" height="250" rx="10" fill="#111827" stroke="#334155"/>
+  <text x="740" y="98" class="label">Confirmed</text>
+  <rect x="724" y="108" width="652" height="52" rx="10" fill="#1f2937"/>
+  <text x="744" y="139" class="title">Recovery ready</text>
+  <rect x="740" y="180" width="620" height="100" rx="8" fill="#1f2937" stroke="#374151"/>
+  <text x="756" y="208" class="ok">Recovery bundle written and verified.</text>
+  <text x="756" y="232" class="body">To restore on a new Mac: up key import (paste code or open bundle)</text>
+  <text x="756" y="256" class="mono">up key recovery status</text>
+
+  <!-- Re-show refused -->
+  <rect x="724" y="346" width="652" height="250" rx="10" fill="#111827" stroke="#334155"/>
+  <text x="740" y="368" class="label">Re-show refused</text>
+  <rect x="724" y="378" width="652" height="52" rx="10" fill="#1f2937"/>
+  <text x="744" y="409" class="title">Code already shown</text>
+  <rect x="740" y="450" width="620" height="110" rx="8" fill="#1f2937" stroke="#374151"/>
+  <text x="756" y="478" class="danger">Cannot display the recovery code again.</text>
+  <text x="756" y="502" class="body">While this machine can still unlock, generate a new bundle:</text>
+  <text x="756" y="530" class="mono">up key recovery rotate</text>
+
+  <text x="24" y="640" class="h2">Cursor plugin / agent path</text>
+  <text x="24" y="668" class="body">Agents must never print the recovery code in chat. Skill rule: tell the user to run the extension panel or `up key recovery status` / copy from the one-time UI themselves.</text>
+  <text x="24" y="700" class="body">MCP tools stay metadata-only (status/keys/run). No tool returns the recovery code or private key.</text>
+  <text x="24" y="760" class="tiny">Implementation: reuse packages/format keyBundle exportKeyBundle + @dotenvup/secret-generator for words. Do not invent a second crypto format.</text>
+  <text x="24" y="792" class="tiny">Existing up key export remains for passphrase-based cross-machine transfer.</text>
+</svg>

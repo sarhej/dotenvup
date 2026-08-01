@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 980" width="1400" height="980">
+  <defs>
+    <style><![CDATA[
+      text { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #e5e7eb; }
+      .title { font-size: 20px; font-weight: 700; }
+      .subtitle { font-size: 12px; fill: #9ca3af; }
+      .h2 { font-size: 14px; font-weight: 700; }
+      .body { font-size: 12px; }
+      .mono { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 11px; fill: #c4b5fd; }
+      .btn { font-size: 12px; font-weight: 600; fill: #ffffff; }
+      .btn-secondary { font-size: 12px; font-weight: 600; fill: #d1d5db; }
+      .tiny { font-size: 10px; fill: #9ca3af; }
+      .warn { font-size: 11px; fill: #fbbf24; }
+      .ok { font-size: 11px; fill: #86efac; }
+      .label { font-size: 10px; fill: #fda4af; font-style: italic; }
+    ]]></style>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="980" fill="#0f172a"/>
+  <text x="24" y="32" class="title">DotEnvUp - Key Management with Touch ID / session</text>
+  <text x="24" y="52" class="subtitle">Extension webview (human) | Cursor plugin skill/MCP mirrors status via up status --json</text>
+
+  <rect x="24" y="76" width="900" height="560" rx="10" fill="#111827" stroke="#334155"/>
+  <text x="40" y="98" class="label">Desktop - Keychain mode</text>
+  <rect x="24" y="108" width="900" height="52" rx="10" fill="#1f2937"/>
+  <text x="44" y="139" class="title">Key Management</text>
+  <text x="252" y="139" class="subtitle">Touch ID Keychain, recovery, session</text>
+
+  <rect x="40" y="180" width="420" height="200" rx="8" fill="#1f2937" stroke="#374151"/>
+  <text x="56" y="208" class="h2">Current Identity</text>
+  <text x="56" y="232" class="body">Storage mode: keychain</text>
+  <text x="56" y="252" class="body">Envelope:</text>
+  <text x="56" y="270" class="mono">~/.dotenvup/identity.enc</text>
+  <text x="56" y="294" class="body">Key-Id:</text>
+  <text x="56" y="312" class="mono">pBEsFwUPu2Q</text>
+  <text x="56" y="344" class="ok">Keychain wrapping key present (UserPresence)</text>
+
+  <rect x="480" y="180" width="424" height="200" rx="8" fill="#1f2937" stroke="#374151"/>
+  <text x="496" y="208" class="h2">Session</text>
+  <text x="496" y="232" class="ok">Active - idle 28m left / absolute 7h 12m</text>
+  <text x="496" y="256" class="body">Last unlock: Touch ID</text>
+  <text x="496" y="280" class="tiny">Clears on screen lock, sleep, logout</text>
+  <rect x="496" y="300" width="120" height="32" rx="6" fill="#334155"/>
+  <text x="556" y="321" text-anchor="middle" class="btn-secondary">Lock session</text>
+  <rect x="632" y="300" width="140" height="32" rx="6" fill="#4f46e5"/>
+  <text x="702" y="321" text-anchor="middle" class="btn">Unlock (Touch ID)</text>
+
+  <rect x="40" y="400" width="864" height="200" rx="8" fill="#1f2937" stroke="#374151"/>
+  <text x="56" y="428" class="h2">Actions</text>
+  <rect x="56" y="448" width="160" height="34" rx="6" fill="#4f46e5"/>
+  <text x="136" y="469" text-anchor="middle" class="btn">Recovery status</text>
+  <rect x="232" y="448" width="160" height="34" rx="6" fill="#334155"/>
+  <text x="312" y="469" text-anchor="middle" class="btn-secondary">Rotate recovery</text>
+  <rect x="408" y="448" width="180" height="34" rx="6" fill="#334155"/>
+  <text x="498" y="469" text-anchor="middle" class="btn-secondary">Migrate to file</text>
+  <rect x="604" y="448" width="140" height="34" rx="6" fill="#334155"/>
+  <text x="674" y="469" text-anchor="middle" class="btn-secondary">Export key</text>
+  <text x="56" y="520" class="body">Cursor plugin tip: agents should call MCP dotenvup_status (sessionActive) before dotenvup_run.</text>
+  <text x="56" y="544" class="tiny">If session cold and non-TTY: exit 1 - ask human to Unlock (Touch ID) once.</text>
+  <text x="56" y="568" class="tiny">No private key material in this panel - fingerprint and paths only.</text>
+
+  <!-- Compact / plugin agent view -->
+  <rect x="948" y="76" width="428" height="560" rx="10" fill="#111827" stroke="#334155"/>
+  <text x="964" y="98" class="label">Agent / plugin view (no secrets)</text>
+  <rect x="948" y="108" width="428" height="52" rx="10" fill="#1f2937"/>
+  <text x="968" y="139" class="title">up status --json</text>
+
+  <rect x="964" y="180" width="396" height="280" rx="8" fill="#0f172a" stroke="#374151"/>
+  <text x="980" y="208" class="mono">{</text>
+  <text x="980" y="228" class="mono">  "keyStorage": "keychain",</text>
+  <text x="980" y="248" class="mono">  "biometry": "userPresence",</text>
+  <text x="980" y="268" class="mono">  "sessionActive": true,</text>
+  <text x="980" y="288" class="mono">  "sessionIdleExpiresIn": "28m",</text>
+  <text x="980" y="308" class="mono">  "keyId": "pBEsFwUPu2Q",</text>
+  <text x="980" y="328" class="mono">  "locked": true</text>
+  <text x="980" y="348" class="mono">}</text>
+  <text x="980" y="400" class="ok">Safe for agents and chat</text>
+  <text x="980" y="424" class="tiny">Cursor plugin skill: prefer MCP status, then run.</text>
+
+  <rect x="24" y="660" width="1352" height="292" rx="10" fill="#111827" stroke="#334155"/>
+  <text x="40" y="688" class="label">How Cursor plugin ships Touch ID (without pretending to be the OS dialog)</text>
+  <text x="40" y="720" class="h2">Plugin package</text>
+  <text x="40" y="744" class="body">1. Skill: teach unlock-once + session; never print recovery codes or up show output.</text>
+  <text x="40" y="764" class="body">2. MCP: bundle @dotenvup/mcp in plugin mcp.json - status/keys/run (no secrets in responses).</text>
+  <text x="40" y="784" class="body">3. Optional hook: beforeShellExecution warn if npm test without up run when .env.up present and session cold.</text>
+  <text x="40" y="816" class="h2">Human Touch ID UI</text>
+  <text x="40" y="840" class="body">Extension (dotenvup.dotenvup) remains the in-IDE panel. Plugin deep-links users: "Open DotEnvUp: Key Management" or run up unlock.</text>
+  <text x="40" y="872" class="tiny">Same machine identity for plugin MCP, extension, and CLI - never a second keystore in the plugin.</text>
+</svg>

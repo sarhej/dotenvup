@@ -18,6 +18,8 @@ This project uses DotEnvUp: secrets live in `.env.up` (encrypted, safe to commit
 4. `.env.up` is safe to commit; `.env`, `.env.local`, and `*.local` are not.
 5. **Never** put secrets under a browser-exposed prefix like `VITE_`, `NEXT_PUBLIC_`, or `REACT_APP_` — bundlers ship those to the client. Server-only secrets get no prefix (e.g. `OPENAI_API_KEY`, `STAGING_OPERATOR_PASSWORD`).
 6. Agents must **not invent secret values** — the user fills them in locally.
+7. **Never** ask the user to paste a recovery code or `up show` output into chat. Point them at Key Management UI or the terminal.
+8. **macOS Touch ID / Keychain (rolling out):** Prefer a warm session. If status shows session cold / auth required, ask the human to unlock once (`up unlock` or **DotEnvUp: Key Management** — Touch ID / Mac password). Do not hang waiting for a biometric prompt in non-interactive runs.
 
 ## Command reference
 

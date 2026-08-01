@@ -1,14 +1,16 @@
 {
   "name": "dotenvup",
   "displayName": "DotEnvUp",
-  "version": "1.0.0",
-  "description": ".env files with a lock — encrypted .env.up, agent-safe `up run --`, never assume plaintext exists.",
+  "version": "1.1.0",
+  "description": ".env files with a lock — encrypted .env.up, agent-safe `up run --`, MCP status/run, never assume plaintext exists. macOS Touch ID Keychain unlock via CLI session (see docs/design/KEYCHAIN_TOUCHID.md).",
   "author": {
     "name": "DotEnvUp"
   },
   "homepage": "https://github.com/sarhej/dotenvup#readme",
   "repository": "https://github.com/sarhej/dotenvup",
   "license": "MIT",
-  "keywords": ["dotenv", "secrets", "env", "encryption", "security", "cursor"],
-  "logo": "assets/logo.png"
+  "keywords": ["dotenv", "secrets", "env", "encryption", "security", "cursor", "touch-id", "keychain"],
+  "logo": "assets/logo.png",
+  "skills": "skills",
+  "mcpServers": ".cursor-plugin/mcp.json"
 }
