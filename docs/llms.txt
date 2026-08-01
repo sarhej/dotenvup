@@ -30,7 +30,7 @@ The .env.up format is a "half-open envelope": key names, versions, timestamps, a
 
 - Zero-knowledge encryption: Private keys only on your machine under ~/.dotenvup/ (encrypted identity.enc envelope on new installs; legacy plaintext identity still readable until `up key upgrade`)
 - Recovery: `up init` / `up key upgrade` create a one-time recovery code + bundle; never paste recovery codes into chat
-- Touch ID / Keychain: NOT shipped yet (roadmap). Do not claim biometrics are available.
+- Touch ID / Keychain: opt-in via `up key migrate-to-keychain` (macOS). Session agent warms after one unlock (`up session status`). Do not run migrate without user request.
 - Safe to commit: .env.up files belong in Git
 - Comments preserved: Lossless roundtrip of comments and structure
 - Multi-recipient: Encrypt for multiple users and machines (@alice, @ci)

@@ -8,10 +8,20 @@
  * After migration, context.secrets is never used for key storage again.
  */
 
-import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 import type { ExtensionContext } from 'vscode';
 import type { KeyProvider, Keypair } from '@dotenvup/format';
-import { KeyStore, EnvProvider, FileProvider } from '@dotenvup/format';
+import {
+  KeyStore,
+  EnvProvider,
+  FileProvider,
+  detectKeyStorageMode,
+  PUBLIC_IDENTITY_FILE,
+  IDENTITY_ENVELOPE_FILE,
+  PLAINTEXT_IDENTITY_FILE,
+} from '@dotenvup/format';
+import { KEYCHAIN_NO_KEY_HINT } from './keyErrors';
 
 const LEGACY_KEY_ACCOUNT = 'dotenvup-local-keypair';
 
@@ -72,6 +82,7 @@ export class ExtensionKeyStore {
   /**
    * Run migration once: if legacy key exists but FileProvider has no key,
    * copy the legacy key to FileProvider and delete from context.secrets.
+   * Must not require Keychain decrypt (cold keychain would prompt/fail).
    */
   private async ensureMigrated(): Promise<void> {
     if (this.migrated) return;
@@ -80,38 +91,97 @@ export class ExtensionKeyStore {
     const fileProvider = this.store.getProvider('file') as FileProvider | undefined;
     if (!fileProvider) return;
 
-    // Check if FileProvider already has a key
-    const fileKey = await fileProvider.getKeypair();
-    if (fileKey) return; // Already migrated or user set up manually
+    const dir = fileProvider.getIdentityDir();
+    // Identity already on disk (envelope, keychain, or plaintext) — skip legacy migrate.
+    try {
+      const mode = await detectKeyStorageMode(dir);
+      if (mode !== 'absent') return;
+    } catch {
+      // continue
+    }
+    if (
+      fs.existsSync(path.join(dir, IDENTITY_ENVELOPE_FILE)) ||
+      fs.existsSync(path.join(dir, PLAINTEXT_IDENTITY_FILE)) ||
+      fs.existsSync(path.join(dir, PUBLIC_IDENTITY_FILE))
+    ) {
+      return;
+    }
 
-    // Check if legacy key exists
     const legacyProvider = this.store.getProvider('legacy-vscode');
     if (!legacyProvider) return;
 
     const legacyKey = await legacyProvider.getKeypair();
     if (!legacyKey) return;
 
-    // Migrate: copy to FileProvider
     await fileProvider.saveKeypair(legacyKey.publicKey, legacyKey.privateKey);
-
-    // Delete from legacy store
     await this.context.secrets.delete(LEGACY_KEY_ACCOUNT);
     await this.context.globalState.update('dotenvup-publicKey', undefined);
   }
 
+  /** True if any identity material exists (does not require Touch ID). */
   async hasKeypair(): Promise<boolean> {
     await this.ensureMigrated();
-    return this.store.hasKeypair();
+    try {
+      const mode = await detectKeyStorageMode(this.getIdentityDir());
+      if (mode !== 'absent') return true;
+    } catch {
+      // fall through
+    }
+    if (fs.existsSync(path.join(this.getIdentityDir(), PUBLIC_IDENTITY_FILE))) return true;
+    try {
+      return await this.store.hasKeypair();
+    } catch {
+      return true; // keychain cold / cancel — still configured
+    }
   }
 
   async getPublicKey(): Promise<Uint8Array | null> {
     await this.ensureMigrated();
+    const pubPath = path.join(this.getIdentityDir(), PUBLIC_IDENTITY_FILE);
+    try {
+      if (fs.existsSync(pubPath)) {
+        const pub = new Uint8Array(Buffer.from(fs.readFileSync(pubPath, 'utf8').trim(), 'base64'));
+        if (pub.length === 32) return pub;
+      }
+    } catch {
+      // fall through
+    }
     return this.store.getPublicKey();
   }
 
   async getPrivateKey(): Promise<Uint8Array | null> {
     await this.ensureMigrated();
-    return this.store.getPrivateKey();
+    try {
+      return await this.store.getPrivateKey();
+    } catch (err) {
+      // Re-throw cancel / non-interactive so unlock can show the right toast.
+      throw err;
+    }
+  }
+
+  /**
+   * Load private key or throw a clear Error (never silent null for keychain).
+   */
+  async requirePrivateKey(): Promise<Uint8Array> {
+    await this.ensureMigrated();
+    let mode: string = 'absent';
+    try {
+      mode = await detectKeyStorageMode(this.getIdentityDir());
+    } catch {
+      // ignore
+    }
+
+    try {
+      const key = await this.store.getPrivateKey();
+      if (key) return key;
+    } catch (err) {
+      throw err;
+    }
+
+    if (mode === 'keychain' || fs.existsSync(path.join(this.getIdentityDir(), IDENTITY_ENVELOPE_FILE))) {
+      throw new Error(KEYCHAIN_NO_KEY_HINT);
+    }
+    throw new Error('DotEnvUp: No keypair. Run "DotEnvUp: Init" first.');
   }
 
   async storeKeypair(publicKey: Uint8Array, privateKey: Uint8Array): Promise<void> {

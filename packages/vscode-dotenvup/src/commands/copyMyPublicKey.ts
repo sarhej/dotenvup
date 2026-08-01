@@ -5,7 +5,9 @@ import * as logger from '../logger';
 export async function run(keystore: ExtensionKeyStore): Promise<void> {
   const publicKey = await keystore.getPublicKey();
   if (!publicKey) {
-    logger.error('DotEnvUp: No keypair found. Run "DotEnvUp: Init" first.');
+    logger.error(
+      'DotEnvUp: No public key (identity.pub) found. If you use Keychain, the public key should still be on disk. Run "DotEnvUp: Init" only if you have never set up a key.',
+    );
     return;
   }
 

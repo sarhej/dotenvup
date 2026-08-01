@@ -18,7 +18,7 @@ DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud,
   - `identity.pub` — public key (mode `0644`) for sharing recipients
 - **Legacy:** plaintext `identity` (mode `0600`) is still readable until the user runs `up key upgrade`.
 - **CI / automation:** `UP_KEY` or `DOTENVUP_PRIVATE_KEY` (base64 private key) overrides files; never prompts.
-- **Not in this release:** macOS Keychain / Touch ID. That moves the wrapping key into Keychain with a presence prompt; see [design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md). Until then, anyone who can read both `identity.enc` and `wrapping-key` can decrypt — same class of local-disk risk as a single `0600` key file, with a clearer path to biometrics later.
+- **Optional (macOS):** `up key migrate-to-keychain` moves the wrapping key into Keychain (`WhenUnlockedThisDeviceOnly`). Reads go through our helper, which prompts via LocalAuthentication (Touch ID / Apple Watch / login password). The private key never enters Keychain. (True Keychain ACL needs a provisioned app bundle; see [design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).) Until you migrate, anyone who can read both `identity.enc` and `wrapping-key` can decrypt.
 
 ## Key Backup and Recovery
 

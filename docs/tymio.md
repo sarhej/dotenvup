@@ -40,7 +40,7 @@ Libraries (not products): `@dotenvup/format`, `@dotenvup/node`, `@dotenvup/mcp`,
 | Initiative | Product | Status |
 |------------|---------|--------|
 | DotEnvUp — workspace & product map | (workspace-level) | DONE |
-| macOS Touch ID Keychain (envelope + session agent) | `cli` | IN_PROGRESS (P0) — **M0–M1b SHIPPED**; next **M2** Swift helper |
+| macOS Touch ID Keychain (envelope + session agent) | `cli` | DONE (P0) — **M0–M4** in tree; publish via [PUBLISH_KEYCHAIN.md](PUBLISH_KEYCHAIN.md) |
 | Cursor Marketplace plugin listing | `cursor-plugin` | IN_PROGRESS — MCP on npm; listing follow-up |
 | Homebrew tap for `up` CLI | `cli` | PLANNED (P2) — after SEA binaries |
 | Extension production hardening | `vscode-extension` | PLANNED |
@@ -53,35 +53,30 @@ Libraries (not products): `@dotenvup/format`, `@dotenvup/node`, `@dotenvup/mcp`,
 | M0 Design + wireframes | DONE |
 | M1 File envelope + recovery | DONE (PRODUCTION) |
 | M1b Existing-user `up key upgrade` | DONE (PRODUCTION) |
-| M2 Swift Keychain helper | PLANNED — **next** |
-| M3 Session agent | PLANNED |
-| M4 Extension Touch ID UX | PLANNED |
+| M2 Swift Keychain helper | DONE (opt-in / experimental) |
+| M3 Session agent | DONE |
+| M4 Extension Touch ID UX | DONE (in tree; Marketplace **0.6.4** when published) |
 
-### Published artifacts (M1 wave)
+### Published artifacts
 
 | Artifact | Version |
 |----------|---------|
-| `@dotenvup/format`, `cli`, `node`, `secret-generator` | 0.1.0 / cli **0.1.1** |
-| `@dotenvup/mcp` | 0.1.1 |
-| Extension Marketplace + Open VSX | **0.6.3** |
-| GitHub release | [v0.6.3](https://github.com/sarhej/dotenvup/releases/tag/v0.6.3) |
+| `@dotenvup/format`, `cli`, `node` | **0.2.0** (Keychain wave; publish via [PUBLISH_KEYCHAIN.md](PUBLISH_KEYCHAIN.md)) |
+| `@dotenvup/keychain-darwin` | **0.1.0** (first publish) |
+| `@dotenvup/mcp` | **0.2.0** |
+| Extension Marketplace + Open VSX | **0.6.4** (pending publish; local VSIX OK) |
+| Last GitHub release | [v0.6.3](https://github.com/sarhej/dotenvup/releases/tag/v0.6.3) |
 
 Active design: [docs/design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).  
 Ship messaging: [docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md](RELEASE_NOTES_IDENTITY_ENVELOPE.md).
 
-### M2 readiness (honest)
+### M2 / M3 status
 
-**Ready to start design/implementation for M2:** yes — envelope + recovery + opt-in upgrade are in production; Key-Id stable; file fallback path exists.
+**M2–M4 done in tree** (opt-in Keychain + session agent + Key Management UX). Local sign + notarize proven. Automated edge tests in CI (Ubuntu + macOS). Interactive checklist: [KEYCHAIN_M3_MANUAL_TEST.md](design/KEYCHAIN_M3_MANUAL_TEST.md). Publish: [PUBLISH_KEYCHAIN.md](PUBLISH_KEYCHAIN.md).
 
-**Not ready to market Touch ID:** until M2 helper is signed/notarized **and** M3 session agent avoids per-command prompts.
+CI `.p12` notarization secrets still optional follow-up for release builds.
 
-**Confirm before coding M2:**
-
-1. Apple Developer ID Application cert + notarization credentials available for CI
-2. Package layout: `@dotenvup/keychain-darwin` optional dep (no node-gyp)
-3. Opt-in command UX: e.g. `up key migrate-to-keychain` requiring recovery present
-4. Test plan: Terminal + Cursor Electron prompt; cancel/rollback; Linux CI without helper
-5. Docs-first: short M2 implementation plan + any new wireframes if extension UI changes early
+Ship notes: [RELEASE_NOTES_KEYCHAIN_M2.md](RELEASE_NOTES_KEYCHAIN_M2.md), [RELEASE_NOTES_SESSION_AGENT_M3.md](RELEASE_NOTES_SESSION_AGENT_M3.md).
 
 ## Related
 

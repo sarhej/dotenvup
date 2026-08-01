@@ -55,6 +55,7 @@ export class FileProvider implements KeyProvider {
   }
 
   async getKeypair(): Promise<Keypair | null> {
+    // AuthCancelledError / NonInteractiveKeychainError propagate to the CLI.
     const fromEnvelope = await loadKeypairEnvelope(this.dir);
     if (fromEnvelope) return fromEnvelope;
     return this.loadPlaintextKeypair();

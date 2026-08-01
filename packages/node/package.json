@@ -1,6 +1,6 @@
 {
   "name": "@dotenvup/node",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Drop-in dotenv replacement that reads encrypted .env.up files",
   "keywords": [
     "dotenv",
@@ -40,7 +40,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@dotenvup/format": "^0.1.0"
+    "@dotenvup/format": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "^25.2.3",

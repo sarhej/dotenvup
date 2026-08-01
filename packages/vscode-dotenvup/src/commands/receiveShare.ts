@@ -91,14 +91,17 @@ export async function run(keystore: ExtensionKeyStore): Promise<void> {
     if (data.encryption_type === 'x25519-sealed') {
       const { sealedShareDecrypt } = await import('@dotenvup/format');
       const pubKey = await keystore.getPublicKey();
-      const privKey = await keystore.getPrivateKey();
+      const { requirePrivateKeyOrNotify } = await import('../keyErrors');
+      const privKey = await requirePrivateKeyOrNotify(keystore, 'Receive Share');
       if (!pubKey || !privKey) {
-        const action = await vscode.window.showErrorMessage(
-          'DotEnvUp: No keypair found. This share requires your Ed25519 private key to decrypt.',
-          'Init keypair',
-        );
-        if (action === 'Init keypair') {
-          await vscode.commands.executeCommand('dotenvup.init');
+        if (!pubKey) {
+          const action = await vscode.window.showErrorMessage(
+            'DotEnvUp: No public key found. This share requires your private key to decrypt. Run Init only if you have never set up a key.',
+            'Init keypair',
+          );
+          if (action === 'Init keypair') {
+            await vscode.commands.executeCommand('dotenvup.init');
+          }
         }
         return;
       }

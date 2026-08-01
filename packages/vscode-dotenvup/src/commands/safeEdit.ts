@@ -72,6 +72,7 @@ export async function run(uri?: vscode.Uri, keystore?: ExtensionKeyStore): Promi
   } catch (error) {
     logger.error(`DotEnvUp: Failed to open Safe Edit: ${error}`);
     const msg = error instanceof Error ? error.message : String(error);
+    const name = error instanceof Error ? error.name : '';
     if (isKeyMismatchError(error) && keystore) {
       const choice = await vscode.window.showErrorMessage(
         'DotEnvUp: Safe Edit failed — this .env.up was encrypted with a different key than the one in use. ' +
@@ -83,6 +84,31 @@ export async function run(uri?: vscode.Uri, keystore?: ExtensionKeyStore): Promi
         const recovery = await import('./recoverKeyMismatch');
         await recovery.run(keystore, { envUpPath, sourceAction: 'manual' });
       }
+      return;
+    }
+    if (
+      name === 'AuthCancelledError' ||
+      /Authentication cancelled/i.test(msg)
+    ) {
+      vscode.window.showErrorMessage(
+        'DotEnvUp: Safe Edit cancelled — approve Touch ID / password, or run `up run -- true` in a terminal to warm the session first.',
+      );
+      return;
+    }
+    if (
+      name === 'NonInteractiveKeychainError' ||
+      /session is locked/i.test(msg) ||
+      /DOTENVUP_NO_PROMPT/i.test(msg)
+    ) {
+      vscode.window.showErrorMessage(
+        'DotEnvUp: Safe Edit needs Keychain unlock. Run `up run -- true` in Terminal (Touch ID), then retry Safe Edit — or update the extension to a build that includes Keychain support.',
+      );
+      return;
+    }
+    if (/No private key|keychain helper is not available|wrap\.source/i.test(msg)) {
+      vscode.window.showErrorMessage(
+        'DotEnvUp: Safe Edit cannot read a Keychain-backed identity. Install a DotEnvUp build that includes `@dotenvup/keychain-darwin` (or warm a session with `up run -- true` after updating the extension).',
+      );
       return;
     }
     vscode.window.showErrorMessage(`DotEnvUp: Failed to open Safe Edit. ${msg}`);

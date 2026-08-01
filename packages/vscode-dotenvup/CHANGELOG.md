@@ -2,12 +2,23 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.6.4] - 2026-08-01
+
+### Fixed
+
+- **Keychain / Touch ID unlock from the extension** — Bundles the signed `dotenvup-keychain` helper; treats the extension host as a GUI for LocalAuthentication prompts; shared `requirePrivateKey` path for Unlock, Safe Edit, Lock, Import, Encrypt for Recipient/GitHub, Decrypt Sealed, Export, Receive Share, and deactivate safety checks. Cancel / cold-session errors no longer push users toward Init.
+- **Status / copy** — Key Storage Status shows detected storage mode + session warmth; Marketplace description updated for opt-in Keychain (not “Touch ID by default”).
+
+### Changed
+
+- Depends on `@dotenvup/format` with session agent + Keychain unwrap. Prefer warming with `up run -- true` once per session.
+
 ## [0.6.3] - 2026-08-01
 
 ### Changed
 
-- **Key storage status copy** — Reflects encrypted `identity.enc` envelope + wrapping key; notes that macOS Touch ID is not shipped yet. CLI identity changes land with `@dotenvup/cli` / `@dotenvup/format` (see [RELEASE_NOTES_IDENTITY_ENVELOPE.md](../../docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md)). Existing users: `up key upgrade`.
-- **Marketplace description** — Mentions encrypted local identity + recovery; explicitly not Touch ID yet.
+- **Key storage status copy** — Reflects encrypted `identity.enc` envelope + wrapping key. CLI identity changes land with `@dotenvup/cli` / `@dotenvup/format` (see [RELEASE_NOTES_IDENTITY_ENVELOPE.md](../../docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md)). Existing users: `up key upgrade`.
+- **Marketplace description** — Mentions encrypted local identity + recovery (pre–Keychain packaging).
 
 ## [0.6.2] - 2026-03-06
 

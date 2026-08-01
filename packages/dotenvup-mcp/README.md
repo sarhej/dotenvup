@@ -6,7 +6,7 @@ MCP (Model Context Protocol) server for **DotEnvUp**. Lets AI assistants (Cursor
 
 | Tool | Description |
 |------|-------------|
-| `dotenvup_status` | Lock state, `.env.up` presence, keypair, key count, stale count, drift (JSON). |
+| `dotenvup_status` | Lock state, `.env.up` presence, keypair, `keyStorage`, `sessionActive`, `sessionIdleExpiresIn`, Keychain flags, key count, stale count, drift (JSON). No secrets. |
 | `dotenvup_keys` | Key names, versions, timestamps, authors — metadata only, no values. |
 | `dotenvup_run` | Run a command with decrypted env (same as `up run -- <cmd>`). Returns only exit code/success; stdout/stderr are not returned to avoid leaking secrets. |
 

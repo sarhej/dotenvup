@@ -126,7 +126,8 @@ DotEnvUp stores identity under `~/.dotenvup/`:
 
 | File | Role |
 |------|------|
-| `identity.enc` + `wrapping-key` | Current default — encrypted private key (mode `0600`) |
+| `identity.enc` + `wrapping-key` | Default file envelope — encrypted private key (mode `0600`) |
+| `identity.enc` (Keychain wrap) | After `up key migrate-to-keychain` — wrapping key in macOS Keychain |
 | `identity.pub` | Public key (mode `0644`) |
 | `identity` | Legacy plaintext private key (still readable until `up key upgrade`) |
 | `recovery/<keyId>.dotenvup-key` | Passphrase-protected recovery bundle |
@@ -160,7 +161,7 @@ If commands fail due to key errors:
    up key import backup.dotenvup-key
    ```
 
-**macOS Touch ID:** not available yet. If you expected a biometric prompt, you are on the envelope release only — design: [KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).
+**macOS Keychain / Touch ID (opt-in):** after `up key upgrade`, run `up key migrate-to-keychain`. Needs the signed helper from `@dotenvup/keychain-darwin` (bundled in CLI / extension ≥0.6.4). Cancel leaves the file envelope unchanged. After a wipe or new Mac, restore with `up key import` + recovery code. A warm **session agent** (`up run -- true`, or `up session status`) avoids re-prompting until idle/absolute TTL or screen lock / sleep / logout. Design: [KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).
 
 ### "Failed to decrypt key bundle" / wrong passphrase
 

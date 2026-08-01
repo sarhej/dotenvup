@@ -222,14 +222,21 @@ export async function readIdentityEnvelope(identityDir: string): Promise<Identit
   }
 }
 
-export type KeyStorageMode = 'plaintext' | 'file-envelope' | 'absent';
+export type KeyStorageMode = 'plaintext' | 'file-envelope' | 'keychain' | 'absent';
 
 /**
  * Reports the *usable* storage mode.
  * Envelope wins only if it decrypts; otherwise plaintext is reported if present
  * so a broken mid-migrate envelope never looks like "no key".
+ * Keychain mode is reported when the envelope declares wrap.source=keychain
+ * (even if the session is cold / prompt would be needed).
  */
 export async function detectKeyStorageMode(identityDir: string): Promise<KeyStorageMode> {
+  const envelope = await readIdentityEnvelope(identityDir);
+  if (envelope?.wrap.source === 'keychain') {
+    return 'keychain';
+  }
+
   const fromEnvelope = await loadKeypairEnvelope(identityDir);
   if (fromEnvelope) return 'file-envelope';
   try {
@@ -301,7 +308,10 @@ export async function saveKeypairEnvelope(
   return envelope;
 }
 
-export async function loadKeypairEnvelope(identityDir: string): Promise<Keypair | null> {
+export async function loadKeypairEnvelope(
+  identityDir: string,
+  options?: { allowFileFallbackForKeychain?: boolean },
+): Promise<Keypair | null> {
   const envelope = await readIdentityEnvelope(identityDir);
   if (!envelope) return null;
 
@@ -314,16 +324,65 @@ export async function loadKeypairEnvelope(identityDir: string): Promise<Keypair 
   const publicKey = new Uint8Array(Buffer.from(pubRaw.trim(), 'base64'));
   if (publicKey.length !== 32) return null;
 
-  if (envelope.wrap.source !== 'file') {
-    // M2 keychain path not available in format package yet.
-    return null;
-  }
-
   const wrapPath = envelope.wrap.path ?? WRAPPING_KEY_FILE;
-  let wrappingKey: Uint8Array;
-  try {
-    wrappingKey = await readFileWrappingKey(identityDir, wrapPath);
-  } catch {
+  let wrappingKey: Uint8Array | null = null;
+
+  if (envelope.wrap.source === 'keychain') {
+    const account = envelope.wrap.account ?? envelope.keyId;
+    const {
+      getWrappingKeyFromKeychain,
+      AuthCancelledError,
+      NonInteractiveKeychainError,
+      resolveKeychainHelper,
+    } = await import('./keychainHelper.js');
+    const { sessionGet, sessionPut } = await import('./sessionAgent.js');
+
+    // Warm session: no Touch ID prompt.
+    const warm = await sessionGet(envelope.keyId);
+    if (warm) return warm;
+
+    try {
+      wrappingKey = await getWrappingKeyFromKeychain(account);
+    } catch (err) {
+      if (err instanceof AuthCancelledError || err instanceof NonInteractiveKeychainError) {
+        throw err;
+      }
+      // Rollback safety: if wrapping-key file still exists, use it.
+      const allowFallback = options?.allowFileFallbackForKeychain !== false;
+      if (allowFallback) {
+        try {
+          wrappingKey = await readFileWrappingKey(identityDir, wrapPath);
+        } catch {
+          wrappingKey = null;
+        }
+      }
+      if (!wrappingKey) {
+        const helper = await resolveKeychainHelper();
+        if (!helper) return null;
+        throw err;
+      }
+    }
+
+    try {
+      const privateKey = await unsealIdentity(envelope, wrappingKey, publicKey);
+      const kp = { publicKey, privateKey };
+      // Best-effort: cache for the rest of the session (M3).
+      try {
+        await sessionPut(envelope.keyId, kp);
+      } catch {
+        // ignore agent failures
+      }
+      return kp;
+    } catch {
+      return null;
+    }
+  } else if (envelope.wrap.source === 'file') {
+    try {
+      wrappingKey = await readFileWrappingKey(identityDir, wrapPath);
+    } catch {
+      return null;
+    }
+  } else {
     return null;
   }
 
@@ -333,6 +392,143 @@ export async function loadKeypairEnvelope(identityDir: string): Promise<Keypair 
   } catch {
     return null;
   }
+}
+
+/**
+ * Move wrapping key from file → Keychain. Same Key-Id; fail-safe with rollback.
+ *
+ * Order:
+ * 1. Require file envelope + recovery bundle
+ * 2. set Keychain + get round-trip
+ * 3. Rewrite envelope wrap.source=keychain (keep wrapping-key file)
+ * 4. Verify full decrypt via Keychain
+ * 5. Archive + delete wrapping-key file
+ */
+export async function migrateFileEnvelopeToKeychain(identityDir: string): Promise<{
+  keyId: string;
+  service: string;
+  account: string;
+}> {
+  const {
+    resolveKeychainHelper,
+    KEYCHAIN_SERVICE,
+    AuthCancelledError,
+    NonInteractiveKeychainError,
+  } = await import('./keychainHelper.js');
+
+  const helper = await resolveKeychainHelper();
+  if (!helper) {
+    throw new Error('macOS Keychain helper is not available. Install @dotenvup/keychain-darwin on macOS.');
+  }
+  await helper.probe();
+
+  const envelope = await readIdentityEnvelope(identityDir);
+  if (!envelope) {
+    throw new Error('No identity.enc found. Run: up key upgrade');
+  }
+  if (envelope.wrap.source === 'keychain') {
+    const account = envelope.wrap.account ?? envelope.keyId;
+    if (await helper.has(account)) {
+      return {
+        keyId: envelope.keyId,
+        service: envelope.wrap.service ?? KEYCHAIN_SERVICE,
+        account,
+      };
+    }
+  }
+  if (envelope.wrap.source !== 'file' && envelope.wrap.source !== 'keychain') {
+    throw new Error('Unsupported wrap.source for Keychain migration.');
+  }
+
+  const keyId = envelope.keyId;
+  if (!(await recoveryBundleExists(identityDir, keyId))) {
+    throw new Error('Recovery bundle required before Keychain migration. Run: up key upgrade');
+  }
+
+  const wrapPath = envelope.wrap.path ?? WRAPPING_KEY_FILE;
+  const wrappingKey = await readFileWrappingKey(identityDir, wrapPath);
+  const account = keyId;
+  const service = KEYCHAIN_SERVICE;
+
+  let pubRaw: string;
+  try {
+    pubRaw = await fs.readFile(path.join(identityDir, PUBLIC_IDENTITY_FILE), 'utf8');
+  } catch {
+    throw new Error('Missing identity.pub');
+  }
+  const publicKey = new Uint8Array(Buffer.from(pubRaw.trim(), 'base64'));
+  if (publicKey.length !== 32) throw new Error('Invalid identity.pub');
+
+  // Ensure we can decrypt with file key before touching Keychain.
+  const privateKeyCheck = await unsealIdentity(envelope, wrappingKey, publicKey);
+
+  try {
+    await helper.set(account, wrappingKey);
+  } catch (err) {
+    if (err instanceof AuthCancelledError || err instanceof NonInteractiveKeychainError) throw err;
+    throw err;
+  }
+
+  let fromKc: Uint8Array;
+  try {
+    fromKc = await helper.get(account);
+  } catch (err) {
+    try {
+      await helper.delete(account);
+    } catch {
+      // ignore
+    }
+    throw err;
+  }
+
+  if (!keysEqual(fromKc, wrappingKey)) {
+    try {
+      await helper.delete(account);
+    } catch {
+      // ignore
+    }
+    throw new Error('Keychain round-trip verification failed. File envelope left unchanged.');
+  }
+
+  const newEnvelope = await sealIdentity(privateKeyCheck, publicKey, wrappingKey, {
+    source: 'keychain',
+    service,
+    account,
+  });
+  // Preserve createdAt from original when possible
+  newEnvelope.createdAt = envelope.createdAt;
+  await writeIdentityEnvelope(identityDir, newEnvelope);
+
+  // Verify decrypt via Keychain path (file fallback still allowed).
+  const loaded = await loadKeypairEnvelope(identityDir);
+  if (!loaded || !keysEqual(loaded.privateKey, privateKeyCheck)) {
+    // Roll back envelope header to file source
+    await writeIdentityEnvelope(identityDir, envelope);
+    try {
+      await helper.delete(account);
+    } catch {
+      // ignore
+    }
+    throw new Error('Post-migration decrypt verification failed. Rolled back to file envelope.');
+  }
+
+  // Archive wrapping-key then remove
+  const archiveDir = path.join(identityDir, ARCHIVE_DIR, keyId);
+  await fs.mkdir(archiveDir, { recursive: true, mode: 0o700 });
+  const wrapFile = path.join(identityDir, wrapPath);
+  try {
+    await fs.copyFile(wrapFile, path.join(archiveDir, WRAPPING_KEY_FILE));
+    await fs.unlink(wrapFile);
+  } catch (err) {
+    // Envelope is keychain-backed and verified; missing delete is non-fatal but warn via throw soft?
+    throw new Error(
+      `Keychain migration succeeded but failed to remove wrapping-key file: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+  }
+
+  return { keyId, service, account };
 }
 
 /**

@@ -120,7 +120,28 @@ up key upgrade
 up key upgrade --yes
 ```
 
-Safe order: create + verify a recovery bundle → write `identity.bak-<keyId>` → write envelope → verify decrypt → only then remove plaintext. `up status` nudges you when an upgrade is recommended. Touch ID / Keychain is a later step (macOS); this command is disk encryption + recovery only.
+Safe order: create + verify a recovery bundle → write `identity.bak-<keyId>` → write envelope → verify decrypt → only then remove plaintext. `up status` nudges you when an upgrade is recommended.
+
+### up key migrate-to-keychain (macOS, experimental)
+
+After you have a file envelope + recovery bundle, optionally move the **wrapping key** into the macOS Keychain (`UserPresence`: Touch ID, Apple Watch, or login password). The private key stays in `identity.enc`; Key-Id is unchanged.
+
+```bash
+up key upgrade              # prerequisite if still on plaintext
+up key migrate-to-keychain  # opt-in; may prompt for Touch ID / password
+```
+
+Requires `@dotenvup/keychain-darwin` (optional dependency of the CLI on macOS). Cancel leaves the file envelope intact.
+
+After the first successful unlock, an in-memory **session agent** keeps your key warm so further `up run` / decrypt calls usually do not re-prompt (default ~30 minutes idle / 8 hours absolute; wiped on screen lock, sleep, or logout).
+
+```bash
+up session status       # warm or cold
+up session status --json
+up session stop         # wipe the in-memory cache now
+```
+
+Non-interactive / CI: use `UP_KEY` / `DOTENVUP_PRIVATE_KEY`. With Keychain storage, `DOTENVUP_NO_PROMPT=1` or non-TTY uses a warm session if present; otherwise exits `1` without prompting.
 
 ### up key export [file]
 

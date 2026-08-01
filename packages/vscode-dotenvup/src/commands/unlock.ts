@@ -66,9 +66,14 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
     return;
   }
 
-  let privateKey = await keystore.getPrivateKey();
-  if (!privateKey) {
-    logger.error('DotEnvUp: No keypair. Run "DotEnvUp: Init" first.');
+  let privateKey: Uint8Array;
+  try {
+    privateKey = await keystore.requirePrivateKey();
+  } catch (err) {
+    const { showKeyLoadError } = await import('../keyErrors');
+    if (showKeyLoadError(err, 'Unlock')) return;
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(msg);
     return;
   }
 
@@ -98,9 +103,12 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
         logger.error('.env.up was encrypted with a different key. Cannot decrypt.');
         return;
       }
-      privateKey = await keystore.getPrivateKey();
-      if (!privateKey) {
-        logger.error('DotEnvUp: Recovery completed but no private key is configured.');
+      try {
+        privateKey = await keystore.requirePrivateKey();
+      } catch (e) {
+        const { showKeyLoadError } = await import('../keyErrors');
+        if (showKeyLoadError(e, 'Unlock')) return;
+        logger.error(e instanceof Error ? e.message : String(e));
         return;
       }
       const retry = await decryptAny(file, privateKey, '@local');
@@ -190,7 +198,17 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
       unlockExpiresAt = null;
       void (async () => {
         // SAFETY: full decrypt verification before auto-lock deletion
-        const privKey = await keystore.getPrivateKey();
+        let privKey: Uint8Array | null = null;
+        try {
+          privKey = await keystore.requirePrivateKey();
+        } catch (err) {
+          const { showKeyLoadError } = await import('../keyErrors');
+          if (!showKeyLoadError(err, 'Auto-lock')) {
+            logger.error('DotEnvUp: Auto-lock cancelled — could not load private key.', err);
+          }
+          autoLockTimer = null;
+          return;
+        }
         const { isSafeToDelete } = await import('@dotenvup/format');
         const safeCheck = await isSafeToDelete(envUpPath, privKey);
         if (!safeCheck.safe) {

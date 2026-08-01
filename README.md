@@ -120,7 +120,7 @@ Full flow (read/save sequences): [Safe Edit design](docs/design/SAFE_EDIT_FLOW.m
 | [@dotenvup/mcp](./packages/dotenvup-mcp) | MCP server — status, keys, run (for Cursor/AI) | `npx -y @dotenvup/mcp`; [design](docs/design/MCP_SERVER.md) |
 | [@dotenvup/secret-generator](./packages/secret-generator) | Password / passphrase generator (Web Crypto, EFF wordlist) — browsers & tooling | In-repo; npm publish when ready |
 
-**Local identity (M1):** private key stored as encrypted `identity.enc` (+ recovery code). Existing users: `up key upgrade`. **Not Touch ID yet** — see [docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md](docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md).
+**Local identity:** encrypted `identity.enc` (+ recovery). Existing users: `up key upgrade`. **Opt-in macOS Keychain** (`up key migrate-to-keychain`) + session agent — see [docs/design/KEYCHAIN_TOUCHID.md](docs/design/KEYCHAIN_TOUCHID.md). Not “Touch ID by default.”
 
 **Cross-repo duty:** Changing `packages/secret-generator` requires **[docs/SECRET_GENERATOR_SYNC.md](./docs/SECRET_GENERATOR_SYNC.md)** (UnknownPassword mirror + vendor). Cursor **`project-context.mdc`** enforces this.
 

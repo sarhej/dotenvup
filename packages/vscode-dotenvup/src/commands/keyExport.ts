@@ -27,9 +27,10 @@ async function promptPassphrase(): Promise<string | null> {
 
 export async function run(keystore: ExtensionKeyStore): Promise<void> {
   const publicKey = await keystore.getPublicKey();
-  const privateKey = await keystore.getPrivateKey();
+  const { requirePrivateKeyOrNotify } = await import('../keyErrors');
+  const privateKey = await requirePrivateKeyOrNotify(keystore, 'Export Key');
   if (!publicKey || !privateKey) {
-    logger.error('DotEnvUp: No keypair found. Run "DotEnvUp: Init" first.');
+    if (!publicKey) logger.error('DotEnvUp: No public key found. Run "DotEnvUp: Init" only if you have never set up a key.');
     return;
   }
 

@@ -59,7 +59,7 @@ async function main(): Promise<void> {
     'dotenvup_status',
     {
       title: 'DotEnvUp status',
-      description: 'Get lock state, .env.up presence, keypair status, key count, stale count, and drift. No secrets returned.',
+      description: 'Get lock state, .env.up presence, keypair, keyStorage, sessionActive / sessionIdleExpiresIn, Keychain flags, key count, stale count, and drift. No secrets returned. Prefer checking sessionActive before dotenvup_run when keyStorage is keychain.',
       inputSchema: dirSchema,
     },
     async ({ directory }) => {

@@ -115,6 +115,10 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
     return;
   }
 
+  const { requirePrivateKeyOrNotify } = await import('../keyErrors');
+  const privateKey = await requirePrivateKeyOrNotify(keystore, 'Lock');
+  if (!privateKey) return;
+
   // --- Lock from buffer (dirty) path: warn, persist buffer to .env.up, delete .env, close tab ---
   if (envFileIsDirty(envPath)) {
     const normalizedEnv = path.normalize(envPath);
@@ -156,9 +160,8 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
       logger.error('DotEnvUp: Failed to persist editor content to .env.up. .env preserved.');
       return;
     }
-    const privKey = await keystore.getPrivateKey();
     const { isSafeToDelete } = await import('@dotenvup/format');
-    const safeCheck = await isSafeToDelete(envUpPath, privKey!);
+    const safeCheck = await isSafeToDelete(envUpPath, privateKey);
     if (!safeCheck.safe) {
       logger.error(`DotEnvUp: Verification failed after write (${safeCheck.reason}). .env preserved.`);
       return;
@@ -192,9 +195,6 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
 
   let decrypted: Record<string, string> | null = null;
   try {
-    let privateKey = await keystore.getPrivateKey();
-    if (!privateKey) throw new Error('No keypair. Run DotEnvUp: Init first.');
-
     const { parse, decryptAny } = await import('@dotenvup/format');
     const envUpContent = await fs.readFile(envUpPath, 'utf8');
     const file = parse(envUpContent);
@@ -217,9 +217,8 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
     }
 
     try {
-      const privKey = await keystore.getPrivateKey();
       const { isSafeToDelete } = await import('@dotenvup/format');
-      const safeCheck = await isSafeToDelete(envUpPath, privKey);
+      const safeCheck = await isSafeToDelete(envUpPath, privateKey);
       if (!safeCheck.safe) {
         logger.error(`DotEnvUp: Re-import wrote .env.up but verification failed (${safeCheck.reason}). .env preserved.`);
         return;
@@ -282,9 +281,8 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
     return;
   }
 
-  const privateKeyFinal = await keystore.getPrivateKey();
   const { isSafeToDelete } = await import('@dotenvup/format');
-  const safeCheck = await isSafeToDelete(envUpPath, privateKeyFinal!);
+  const safeCheck = await isSafeToDelete(envUpPath, privateKey);
   if (!safeCheck.safe) {
     logger.error(`DotEnvUp: BLOCKED deletion — safety check failed: ${safeCheck.reason}`);
     return;

@@ -1,6 +1,6 @@
 {
   "name": "@dotenvup/format",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Core parser and writer for the .env.up encrypted environment file format",
   "keywords": [
     "dotenv",
@@ -46,5 +46,8 @@
   "dependencies": {
     "libsodium-wrappers": "^0.8.2",
     "dotenv": "^16.4.5"
+  },
+  "optionalDependencies": {
+    "@dotenvup/keychain-darwin": "^0.1.0"
   }
 }
