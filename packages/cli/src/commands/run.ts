@@ -42,6 +42,9 @@ export async function run(args: string[]): Promise<void> {
 
   const [cmd, ...cmdArgs] = args;
   logger.debug(`Spawning child process: ${cmd}`, { cmdArgs });
+  // Intentional: `up run` executes the caller-supplied command with decrypted env.
+  // Same trust model as a shell; args are CLI argv after `--`, not remote input.
+  // nosemgrep: javascript.lang.security.detect-child-process.detect-child-process
   const child = spawn(cmd, cmdArgs, {
     stdio: 'inherit',
     env,

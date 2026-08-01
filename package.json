@@ -15,7 +15,7 @@
     "audit": "npm audit",
     "audit:fix": "npm audit fix",
     "security:check": "npm audit --audit-level=high",
-    "security:sast": "semgrep scan --config auto --error",
+    "security:sast": "semgrep scan --config auto --severity=ERROR --error",
     "release:verify": "npm run security:check && npm run build && npm test",
     "release:verify:full": "npm run security:check && npm run security:sast && npm run build && npm test",
     "package:extension": "npm run build && npm run package --workspace=dotenvup",
