@@ -1,6 +1,6 @@
 # Release notes — macOS Keychain helper (M2, experimental)
 
-> **Honest scope:** Opt-in macOS Keychain storage for the **wrapping key**, with Touch ID / Apple Watch / login password prompts via a signed helper. This is **not** “Touch ID by default,” and without the session agent (M3) cold unlocks may prompt more than once per session.
+> **Honest scope:** Opt-in macOS Keychain storage for the **wrapping key**, with Touch ID / Apple Watch / login password prompts via a signed helper. This is **not** “Touch ID by default.” Session agent (M3) keeps the key warm after the first successful unlock.
 
 Design: [design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md). Setup: [design/KEYCHAIN_M2_SETUP.md](design/KEYCHAIN_M2_SETUP.md).
 

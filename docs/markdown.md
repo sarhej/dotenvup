@@ -34,7 +34,7 @@ The .env.up format is a "half-open envelope": key names, versions, timestamps, a
 
 ## Key features (format and security)
 
-- Zero-knowledge encryption: Private keys on your machine under ~/.dotenvup/ (encrypted identity.enc on new installs; `up key upgrade` for legacy). macOS Keychain / Touch ID is experimental opt-in (`up key migrate-to-keychain`).
+- Zero-knowledge encryption: Private keys on your machine under ~/.dotenvup/ (encrypted identity.enc on new installs; `up key upgrade` for legacy). macOS Keychain is **opt-in** (`up key migrate-to-keychain`) with LocalAuthentication prompts — not enabled by default.
 - Safe to commit: .env.up files belong in Git
 - Comments preserved: Lossless roundtrip of comments and structure
 - Multi-recipient: Encrypt for multiple users and machines (@alice, @ci)

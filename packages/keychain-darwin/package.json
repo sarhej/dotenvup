@@ -1,6 +1,6 @@
 {
   "name": "@dotenvup/keychain",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "macOS Keychain helper for DotEnvUp identity wrapping keys (Touch ID / UserPresence)",
   "keywords": [
     "dotenvup",
@@ -27,15 +27,19 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist",
+    "dist/index.js",
+    "dist/index.d.ts",
+    "dist/index.js.map",
+    "dist/index.d.ts.map",
     "bin/dotenvup-keychain",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "build": "tsc && node -e \"process.platform==='darwin'?require('child_process').execSync('bash scripts/build-helper.sh',{stdio:'inherit',env:{...process.env,DOTENVUP_CODESIGN:process.env.DOTENVUP_CODESIGN??'1'}}):console.log('skip helper build (non-darwin)')\"",
     "build:helper": "bash scripts/build-helper.sh",
     "build:helper:release": "DOTENVUP_CODESIGN=1 DOTENVUP_NOTARIZE=1 bash scripts/build-helper.sh",
-    "build": "tsc && node -e \"process.platform==='darwin'?require('child_process').execSync('bash scripts/build-helper.sh',{stdio:'inherit'}):console.log('skip helper build (non-darwin)')\"",
+    "prepublishOnly": "tsc && node -e \"if(process.platform!=='darwin'){console.error('Publish @dotenvup/keychain from macOS after notarizing');process.exit(1)}\" && DOTENVUP_CODESIGN=1 DOTENVUP_NOTARIZE=1 bash scripts/build-helper.sh",
     "clean": "rm -rf dist bin/dotenvup-keychain",
     "lint": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
