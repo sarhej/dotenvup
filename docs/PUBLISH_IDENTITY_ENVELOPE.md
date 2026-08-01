@@ -1,12 +1,13 @@
 # Manual publish steps — identity envelope (v0.6.3 / npm 0.1.0)
 
-Already done in repo:
+Already done:
 
 - [x] PR #13 merged to `main`
 - [x] Git tag `v0.6.3` + [GitHub Release](https://github.com/sarhej/dotenvup/releases/tag/v0.6.3) with `.vsix`
+- [x] VS Code Marketplace **0.6.3** published
+- [x] Open VSX **0.6.3** published
 - [ ] npm packages (blocked on your OTP / web auth)
-- [ ] VS Code Marketplace / Open VSX
-- [ ] Website deploy (`docs/` → dotenvup.com)
+- [ ] Website deploy (`docs/` → dotenvup.com) — needs `CLOUDFLARE_API_TOKEN`
 
 ## 1. npm (required — OTP)
 
