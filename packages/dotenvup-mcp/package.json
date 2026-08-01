@@ -1,6 +1,6 @@
 {
   "name": "@dotenvup/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for DotEnvUp — status, keys, and run commands with decrypted env (no secrets over the wire)",
   "keywords": [
     "dotenvup",
@@ -34,7 +34,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@dotenvup/cli": "*",
+    "@dotenvup/cli": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "zod": "^3.25.76"
   },

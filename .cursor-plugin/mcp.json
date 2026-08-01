@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dotenvup": {
+      "command": "npx",
+      "args": ["-y", "@dotenvup/mcp"],
+      "env": {}
+    }
+  }
+}

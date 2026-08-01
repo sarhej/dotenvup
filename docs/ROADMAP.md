@@ -39,7 +39,7 @@ The extension works end-to-end but is MVP quality. Every item below must be addr
 ### 1.3 Shared Logic with CLI
 
 - [ ] **Extract shared `.env` parser** — Both CLI and extension have their own `parseEnv()`. Move to `@dotenvup/format` or a shared utility so bug fixes apply to both.
-- [ ] **Keychain consistency** — CLI uses OS keychain via `keytar`; extension uses VS Code `SecretStorage`. Document that these are separate keystores and how to handle the mismatch (user may `up init` in terminal and expect extension to see the key).
+- [x] **Local identity envelope (M1)** — File-wrapped `identity.enc` + recovery codes; opt-in `up key upgrade`. See [RELEASE_NOTES_IDENTITY_ENVELOPE.md](./RELEASE_NOTES_IDENTITY_ENVELOPE.md). Touch ID / Keychain helper is separate (M2+; [KEYCHAIN_TOUCHID.md](./design/KEYCHAIN_TOUCHID.md)).
 - [ ] **Settings for defaults** — Add VS Code settings for: default unlock duration, auto-lock on window close (on/off), stale key threshold (days), show confirmation dialogs (on/off).
 
 ### 1.4 Testing

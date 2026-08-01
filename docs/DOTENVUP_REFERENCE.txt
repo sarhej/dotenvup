@@ -1,6 +1,6 @@
 # DotEnvUp — canonical reference (paste into other chats/agents)
 
-DotEnvUp: .env encryption — encrypted .env format (.env.up), VS Code/Cursor extension, CLI (`up`), MCP server for Cursor. Extension: one-click lock/unlock. CLI: up lock/unlock/run (npm i -g @dotenvup/cli). Zero-knowledge, keys at ~/.dotenvup/identity.
+DotEnvUp: .env encryption — encrypted .env format (.env.up), VS Code/Cursor extension, CLI (`up`), MCP server for Cursor. Extension: one-click lock/unlock. CLI: up lock/unlock/run (npm i -g @dotenvup/cli). Zero-knowledge; identity under ~/.dotenvup/ as identity.enc envelope + recovery (up key upgrade for legacy plaintext). Touch ID NOT shipped yet. Agents: AGENTS.md + docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md.
 
 Repo:     https://github.com/sarhej/dotenvup
 Extension: .env Up (DotEnvUp) — ID: dotenvup.dotenvup (search ".env" or "env" in marketplace)

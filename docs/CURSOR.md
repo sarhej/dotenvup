@@ -6,9 +6,11 @@ This doc covers how **Cursor** users (IDE and CLI agents) work with DotEnvUp, an
 
 ### 1. Cursor Marketplace plugin (recommended)
 
-This repo is a **Cursor plugin**: the `.cursor-plugin/plugin.json` manifest at the repo root bundles the [dotenvup skill](../skills/dotenvup/SKILL.md) (Open Plugins layout: root `skills/`). Once listed on the [Cursor Marketplace](https://cursor.com/marketplace) or [cursor.directory](https://cursor.directory), install it from **Customize → Plugins** or by searching "dotenvup".
+This repo is a **Cursor plugin**: [`.cursor-plugin/plugin.json`](../.cursor-plugin/plugin.json) bundles the [dotenvup skill](../skills/dotenvup/SKILL.md) and MCP via [`.cursor-plugin/mcp.json`](../.cursor-plugin/mcp.json) (`npx -y @dotenvup/mcp`). Install from **Customize → Plugins** or search "dotenvup" on the [Cursor Marketplace](https://cursor.com/marketplace) / [cursor.directory](https://cursor.directory).
 
-After installation, the skill is available in every project. The agent applies it automatically when a project uses `.env.up`, or you can invoke it manually with `/dotenvup` in chat.
+After install, the skill applies when a project uses `.env.up` (or `/dotenvup` in chat). MCP tools: `dotenvup_status`, `dotenvup_keys`, `dotenvup_run` (no secrets in responses).
+
+**macOS Touch ID / Keychain** (design: [KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md)): the plugin does not own the OS prompt — the CLI helper + editor extension do. Skill/MCP make agents session-aware (unlock once, then run). Human UI: **DotEnvUp: Key Management**.
 
 ### 2. Manual fallback: copy the skill
 

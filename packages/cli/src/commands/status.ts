@@ -4,7 +4,14 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { parse, parseHeader, decryptAny } from '@dotenvup/format';
+import {
+  parse,
+  parseHeader,
+  decryptAny,
+  detectKeyStorageMode,
+  keyFingerprint,
+  recoveryBundleExists,
+} from '@dotenvup/format';
 import * as keystore from '../keystore.js';
 import { parseEnvFile, entriesMatch } from '../envParser.js';
 import * as logger from '../logger.js';
@@ -18,6 +25,12 @@ export async function run(options?: { json?: boolean }): Promise<void> {
   const hasEnv = fs.existsSync(envPath);
   const hasEnvUp = fs.existsSync(envUpPath);
   const hasKeypair = await keystore.hasKeypair();
+  const identityDir = keystore.getIdentityDir();
+  const keyStorage = await detectKeyStorageMode(identityDir);
+  const pub = hasKeypair ? await keystore.getPublicKey() : null;
+  const keyId = pub ? await keyFingerprint(pub) : null;
+  const hasRecoveryBundle = keyId ? await recoveryBundleExists(identityDir, keyId) : false;
+  const upgradeRecommended = keyStorage === 'plaintext' || (hasKeypair && !hasRecoveryBundle);
 
   let keyCount = 0;
   let staleCount = 0;
@@ -64,6 +77,10 @@ export async function run(options?: { json?: boolean }): Promise<void> {
       locked: !hasEnv,
       hasEnvUp,
       hasKeypair,
+      keyStorage,
+      keyId,
+      hasRecoveryBundle,
+      upgradeRecommended,
       keyCount,
       staleCount,
       drift,
@@ -75,6 +92,12 @@ export async function run(options?: { json?: boolean }): Promise<void> {
   logger.info(`Lock status: ${hasEnv ? 'UNLOCKED (.env exists)' : 'LOCKED (.env absent)'}`);
   logger.info(`.env.up: ${hasEnvUp ? 'present' : 'not found'}`);
   logger.info(`Keypair: ${hasKeypair ? 'configured' : 'not configured'}`);
+  logger.info(`Key storage: ${keyStorage}`);
+  if (upgradeRecommended) {
+    logger.info(
+      'Tip: run `up key upgrade` to add a recovery code and encrypt ~/.dotenvup/identity (Key-Id unchanged; opt-in).',
+    );
+  }
 
   if (hasEnvUp) {
     if (staleCount > 0) {

@@ -28,11 +28,14 @@ The .env.up format is a "half-open envelope": key names, versions, timestamps, a
 
 ## Key features (format and security)
 
-- Zero-knowledge encryption: Private keys on your machine (~/.dotenvup/identity)
+- Zero-knowledge encryption: Private keys only on your machine under ~/.dotenvup/ (encrypted identity.enc envelope on new installs; legacy plaintext identity still readable until `up key upgrade`)
+- Recovery: `up init` / `up key upgrade` create a one-time recovery code + bundle; never paste recovery codes into chat
+- Touch ID / Keychain: NOT shipped yet (roadmap). Do not claim biometrics are available.
 - Safe to commit: .env.up files belong in Git
 - Comments preserved: Lossless roundtrip of comments and structure
 - Multi-recipient: Encrypt for multiple users and machines (@alice, @ci)
 - Zero code changes: Works with existing dotenv and process.env
+- Agents: prefer `up run --`; check `up status --json` for keyStorage / upgradeRecommended; never run `up init --force` or `up key upgrade` without explicit user request
 
 ## Format specification
 
@@ -45,9 +48,11 @@ The .env.up format is a published open standard (v1):
 - Website: https://dotenvup.com
 - GitHub: https://github.com/sarhej/dotenvup
 - Extension: [VS Code](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) · [Open VSX / Cursor](https://open-vsx.org/extension/dotenvup/dotenvup)
-- npm: [@dotenvup/format](https://www.npmjs.com/package/@dotenvup/format) · [@dotenvup/cli](https://www.npmjs.com/package/@dotenvup/cli) · [@dotenvup/node](https://www.npmjs.com/package/@dotenvup/node)
+- npm: [@dotenvup/format](https://www.npmjs.com/package/@dotenvup/format) · [@dotenvup/cli](https://www.npmjs.com/package/@dotenvup/cli) · [@dotenvup/node](https://www.npmjs.com/package/@dotenvup/node) · [@dotenvup/mcp](https://www.npmjs.com/package/@dotenvup/mcp)
 - User Guide: https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md
 - Security: https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md
+- Identity envelope release notes: https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md
+- Agents: https://github.com/sarhej/dotenvup/blob/main/AGENTS.md
 - Team sharing (commercial): https://unknownpassword.com
 
 ## Installation (copy-paste)
@@ -67,11 +72,13 @@ npm install @dotenvup/node
 ## Quick start (CLI)
 
 ```bash
-up init            # Generate keypair (~/.dotenvup/identity)
-up import .env     # Encrypt .env -> .env.up
-up lock            # Delete plaintext .env
-up unlock 5m       # Decrypt for 5 minutes
+up init              # Generate keypair (identity.enc + recovery code)
+up key upgrade       # Existing users: opt-in migrate plaintext identity (same Key-Id)
+up import .env       # Encrypt .env -> .env.up
+up lock              # Delete plaintext .env
+up unlock --duration 5m
 up run -- npm start  # Run with decrypted env (no file on disk)
+up status --json     # lock state, keyStorage, upgradeRecommended
 ```
 
 ## License

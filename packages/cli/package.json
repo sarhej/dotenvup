@@ -37,7 +37,8 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@dotenvup/format": "*",
+    "@dotenvup/format": "^0.1.0",
+    "@dotenvup/secret-generator": "^0.1.0",
     "dotenv": "^17.3.1"
   },
   "devDependencies": {

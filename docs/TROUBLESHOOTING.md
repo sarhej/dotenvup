@@ -16,11 +16,13 @@ Click the status bar item to run the protect flow (Import `.env` → create `.en
 
 ### "No keypair found. Run: up init"
 
-No local DotEnvUp identity was found at `~/.dotenvup/identity`. Run:
+No usable DotEnvUp identity was found under `~/.dotenvup/` (envelope or legacy plaintext). Run:
 
 ```bash
 up init
 ```
+
+Save the one-time recovery code. Check with `up key recovery status`.
 
 ### ".env.up not found. Run: up import .env"
 
@@ -120,26 +122,45 @@ The source file has non-UTF-8 bytes. Re-save the file as UTF-8 in your editor.
 
 ## Identity File Issues
 
-DotEnvUp stores identity files in `~/.dotenvup`:
+DotEnvUp stores identity under `~/.dotenvup/`:
 
-- `identity` (private key, expected mode `0600`)
-- `identity.pub` (public key)
+| File | Role |
+|------|------|
+| `identity.enc` + `wrapping-key` | Current default — encrypted private key (mode `0600`) |
+| `identity.pub` | Public key (mode `0644`) |
+| `identity` | Legacy plaintext private key (still readable until `up key upgrade`) |
+| `recovery/<keyId>.dotenvup-key` | Passphrase-protected recovery bundle |
+| `identity.bak-<keyId>` | Leftover after upgrade; delete only after unlock/`up run` works |
+
+If `up status` shows `keyStorage: plaintext` or `upgradeRecommended: true`:
+
+```bash
+up key upgrade
+```
+
+That is opt-in, keeps the same Key-Id, and shows a recovery code once. See [RELEASE_NOTES_IDENTITY_ENVELOPE.md](RELEASE_NOTES_IDENTITY_ENVELOPE.md).
 
 If commands fail due to key errors:
 
 1. Verify files exist:
    ```bash
    ls -la ~/.dotenvup
+   up status --json
    ```
 2. Fix permissions:
    ```bash
    chmod 700 ~/.dotenvup
-   chmod 600 ~/.dotenvup/identity
+   chmod 600 ~/.dotenvup/identity.enc ~/.dotenvup/wrapping-key 2>/dev/null
+   chmod 600 ~/.dotenvup/identity 2>/dev/null
    ```
-3. Restore from backup:
+3. Restore from recovery or export:
    ```bash
+   up key import ~/.dotenvup/recovery/<keyId>.dotenvup-key
+   # or
    up key import backup.dotenvup-key
    ```
+
+**macOS Touch ID:** not available yet. If you expected a biometric prompt, you are on the envelope release only — design: [KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).
 
 ### "Failed to decrypt key bundle" / wrong passphrase
 

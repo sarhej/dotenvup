@@ -18,11 +18,17 @@ From the DotEnvUp monorepo (after `npm install` and `npm run build`):
 node packages/dotenvup-mcp/dist/index.js
 ```
 
-Or install the package (when published):
+Or install from npm:
 
 ```bash
 npm install -g @dotenvup/mcp
 dotenvup-mcp
+```
+
+One-shot via npx (e.g. Cursor MCP config):
+
+```bash
+npx -y @dotenvup/mcp
 ```
 
 ## Cursor MCP config

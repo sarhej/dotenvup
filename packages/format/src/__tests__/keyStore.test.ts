@@ -38,15 +38,18 @@ describe('FileProvider', () => {
     expect(Buffer.from(kp!.privateKey)).toEqual(Buffer.from(privateKey));
   });
 
-  it('writes private key with correct permissions', async () => {
+  it('writes envelope and wrapping key with correct permissions', async () => {
     const fp = new FileProvider(tmpDir);
     const { publicKey, privateKey } = await generateKeypair();
     await fp.saveKeypair(publicKey, privateKey);
 
-    const privPath = path.join(tmpDir, 'identity');
-    const stat = await fs.stat(privPath);
-    // 0o600 = owner read+write (33152 in decimal on most systems)
-    expect(stat.mode & 0o777).toBe(0o600);
+    const encStat = await fs.stat(path.join(tmpDir, 'identity.enc'));
+    const wrapStat = await fs.stat(path.join(tmpDir, 'wrapping-key'));
+    // 0o600 = owner read+write
+    expect(encStat.mode & 0o777).toBe(0o600);
+    expect(wrapStat.mode & 0o777).toBe(0o600);
+    // Plaintext identity must not remain after envelope save
+    await expect(fs.access(path.join(tmpDir, 'identity'))).rejects.toThrow();
   });
 
   it('creates nested directory if needed', async () => {

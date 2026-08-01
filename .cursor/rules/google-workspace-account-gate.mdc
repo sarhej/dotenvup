@@ -1,0 +1,33 @@
+---
+description: NEVER use Gmail/Google Workspace MCP without explicit account check + user approval
+alwaysApply: true
+---
+
+# Google Workspace / Gmail — mandatory account gate
+
+**NEVER** call Gmail, Drive, Docs, Sheets, Calendar, Chat, or any other Google Workspace MCP tool without completing the gate below.
+
+Cross-account mistakes can leak one customer's data into another customer's mailbox or Drive. This is a hard stop, not a guideline.
+
+## Before ANY Google Workspace / Gmail operation
+
+1. **Identify the active account.** Call `people_getMe` (or equivalent) and read the authenticated email / identity.
+2. **State the account to the user** in plain language (e.g. "Authenticated as alice@customer-a.com").
+3. **Ask which account / workspace** they want if more than one is possible, or confirm the shown account is correct.
+4. **Wait for explicit approval** of (a) the target account and (b) the specific action (draft, send, search, create, delete, share, etc.).
+5. Only then call the Workspace tool.
+
+## Forbidden without approval
+
+- Creating or sending email / drafts
+- Searching or reading mailbox contents
+- Drive / Docs / Sheets / Calendar / Chat writes or reads of customer data
+- Switching, refreshing, or clearing auth as a workaround to "just do the thing"
+
+## If the wrong account is active
+
+Stop. Tell the user which account is connected. Do **not** proceed, draft, or "fix it later." Ask them how to switch to the correct workspace.
+
+## Applies everywhere
+
+This rule applies in every project and every customer context — not only DotEnvUp.

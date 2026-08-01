@@ -14,6 +14,11 @@ import { run as runKeys } from './commands/keys.js';
 import { run as runStatus } from './commands/status.js';
 import { run as runKeyExport } from './commands/keyExport.js';
 import { run as runKeyImport } from './commands/keyImport.js';
+import {
+  runStatus as runKeyRecoveryStatus,
+  runMigrateEnvelope as runKeyMigrateEnvelope,
+} from './commands/keyRecovery.js';
+import { run as runKeyUpgrade } from './commands/keyUpgrade.js';
 import { run as runRecover } from './commands/recover.js';
 import * as recipientsCmd from './commands/recipients.js';
 import * as logger from './logger.js';
@@ -24,7 +29,8 @@ const COMMANDS: Record<
   string,
   (args: string[], options?: Record<string, boolean | string>) => Promise<void>
 > = {
-  init: async (_args, opts) => runInit({ force: opts?.force as boolean }),
+  init: async (_args, opts) =>
+    runInit({ force: opts?.force as boolean, yes: opts?.yes as boolean }),
   import: async (args, opts) =>
     runImport(args[0], { delete: opts?.delete as boolean }),
   lock: async (_args, opts) =>
@@ -74,7 +80,21 @@ const COMMANDS: Record<
         dryRun: (opts?.dryRun as boolean) || (opts?.['dry-run'] as boolean),
       });
     }
-    console.error('Usage: up key <export|import> [args]');
+    if (sub === 'recovery') {
+      const action = args[1] ?? 'status';
+      if (action === 'status') {
+        return runKeyRecoveryStatus({ json: opts?.json as boolean });
+      }
+      console.error('Usage: up key recovery status [--json]');
+      process.exit(1);
+    }
+    if (sub === 'upgrade') {
+      return runKeyUpgrade({ yes: opts?.yes as boolean });
+    }
+    if (sub === 'migrate-envelope') {
+      return runKeyMigrateEnvelope({ yes: opts?.yes as boolean });
+    }
+    console.error('Usage: up key <export|import|upgrade|recovery|migrate-envelope> [args]');
     process.exit(1);
   },
 };
@@ -143,12 +163,15 @@ DotEnvUp CLI v${VERSION}
 Usage: up <command> [options] [args...]
 
 Commands:
-  init                 Generate keypair, store in ~/.dotenvup/identity
+  init                 Generate keypair (identity.enc + recovery bundle)
   import [file]        Convert .env to .env.up (default: .env)
   lock                 Delete plaintext .env (prompts to list keys; use --yes to skip)
   unlock               Decrypt .env.up, write .env (prompts for duration, default 5m)
   key export [file]    Export keypair to encrypted bundle (.dotenvup-key)
   key import <file>    Import keypair from encrypted bundle
+  key upgrade          Opt-in: recovery code + migrate plaintext → identity.enc (safe)
+  key recovery status  Whether a recovery bundle exists for the active Key-Id
+  key migrate-envelope Alias of key upgrade
   show [key]           Print decrypted values (all or one key)
   run -- <cmd>         Run command with decrypted env (no .env written)
   keys                 List key metadata (no decryption)
@@ -157,16 +180,16 @@ Commands:
   recipients <cmd>     Manage additional recipients (list/add/remove/discover)
 
 Options:
-  --force              Overwrite existing keypair (init)
+  --force              Overwrite existing keypair (init; archives previous Key-Id)
+  --yes, -y            Skip recovery "saved" confirmation (init); skip lock confirm
   --passphrase <text>  Passphrase for key export/import bundle
   --dry-run            Validate key bundle without importing it (key import)
   --delete             Delete source file after import (import)
   --duration <time>    Auto-lock after 5m, 15m, 30m, 1h, 2h, or "never" (unlock; skips prompt if set)
   --until-terminal-exit  Unlock, spawn shell, auto-lock when shell exits (unlock)
-  --yes, -y            Skip confirmation (lock)
   --force, -f          Lock with drift; overwrite .env on unlock when differs
   --force-delete       Delete plaintext .env even if .env.up can't be decrypted (lock)
-  --json               Machine-readable output (status, keys)
+  --json               Machine-readable output (status, keys, key recovery status)
   --deep               Deep scan full home directory (recover)
   --label <name>       Optional label for recipient add
   --help, -h           Show this help

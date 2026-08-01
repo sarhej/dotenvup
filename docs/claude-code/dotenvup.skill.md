@@ -18,13 +18,17 @@ This project uses DotEnvUp: secrets live in `.env.up` (encrypted, safe to commit
 4. `.env.up` is safe to commit; `.env`, `.env.local`, and `*.local` are not.
 5. **Never** put secrets under a browser-exposed prefix like `VITE_`, `NEXT_PUBLIC_`, or `REACT_APP_` — bundlers ship those to the client. Server-only secrets get no prefix (e.g. `OPENAI_API_KEY`, `STAGING_OPERATOR_PASSWORD`).
 6. Agents must **not invent secret values** — the user fills them in locally.
+7. **Never** ask the user to paste a recovery code or `up show` output into chat. Point them at Key Management UI or the terminal.
+8. **Local identity:** New installs use encrypted `identity.enc` under `~/.dotenvup/`. If `up status --json` has `upgradeRecommended: true`, tell the human to run `up key upgrade` (opt-in; do not auto-run). **Touch ID / Keychain is not shipped yet** — do not claim biometrics work.
+9. **Never** run `up init --force` without explicit user approval (replaces identity after archive).
 
 ## Command reference
 
 | Command | Purpose |
 |---------|---------|
-| `up status` / `up status --json` | Lock state, `.env.up` presence, keypair, drift |
-| `up init` | Create keypair in `~/.dotenvup/identity` (once per machine) |
+| `up status` / `up status --json` | Lock state, keypair, `keyStorage`, `upgradeRecommended`, drift |
+| `up init` | Create keypair (`identity.enc` + recovery code; once per machine) |
+| `up key upgrade` | Opt-in: recovery + migrate legacy plaintext identity (same Key-Id) |
 | `up import .env [--delete]` | Encrypt `.env` → `.env.up` (`--delete` removes plaintext) |
 | `up unlock [--duration 15m]` | Decrypt `.env.up` → `.env` with auto-lock timer |
 | `up lock [--yes] [--force]` | Delete plaintext `.env` (`--force` discards drift) |
@@ -39,7 +43,7 @@ Exit codes: `0` success, `1` user/usage error, `2` system error.
 **Bootstrap a repo:**
 
 ```bash
-up init                    # once per machine
+up init                    # once per machine; user must save recovery code
 cp .env.example .env       # user fills in real values — do not invent them
 up import .env --delete
 git add .env.up            # encrypted; safe to commit

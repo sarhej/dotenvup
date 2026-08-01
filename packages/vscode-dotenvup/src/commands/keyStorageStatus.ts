@@ -14,10 +14,11 @@ export async function run(keystore: ExtensionKeyStore): Promise<void> {
       'DotEnvUp Key Storage',
       `Mode: ${mode}`,
       `Identity dir: ${identityDir}`,
-      `Private key: ${path.join(identityDir, 'identity')} (mode 0600)`,
+      `Envelope (current): ${path.join(identityDir, 'identity.enc')} + wrapping-key`,
       `Public key: ${path.join(identityDir, 'identity.pub')}`,
+      `Legacy plaintext (if present): ${path.join(identityDir, 'identity')}`,
       `Keypair: ${hasKeypair ? 'configured' : 'not configured'}`,
+      'Tip: CLI `up key upgrade` migrates legacy plaintext (same Key-Id). Touch ID is not shipped yet.',
     ].join('\n'),
   );
 }
-

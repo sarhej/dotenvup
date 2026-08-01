@@ -559,18 +559,18 @@ describe('~/.dotenvup directory edge cases', () => {
     expect(result.safe).toBe(false);
   });
 
-  it('identity file deleted but identity.pub remains → FileProvider returns null', async () => {
+  it('wrapping key deleted but identity.enc remains → FileProvider returns null', async () => {
     const fp = new FileProvider(keyDir);
     const { publicKey, privateKey } = await generateKeypair();
     await fp.saveKeypair(publicKey, privateKey);
 
-    await fs.unlink(path.join(keyDir, 'identity'));
+    await fs.unlink(path.join(keyDir, 'wrapping-key'));
 
     const kp = await fp.getKeypair();
     expect(kp).toBeNull();
   });
 
-  it('identity.pub deleted but identity remains → FileProvider returns null', async () => {
+  it('identity.pub deleted but envelope remains → FileProvider returns null', async () => {
     const fp = new FileProvider(keyDir);
     const { publicKey, privateKey } = await generateKeypair();
     await fp.saveKeypair(publicKey, privateKey);

@@ -3,10 +3,10 @@
  *
  * Uses the shared KeyProvider chain from @dotenvup/format:
  *   1. EnvProvider (UP_KEY env var) — for CI/CD, Docker, SSH
- *   2. FileProvider (~/.dotenvup/identity) — universal, cross-IDE
+ *   2. FileProvider (~/.dotenvup/identity.enc + wrapping-key) — universal
  *
  * The CLI and all VS Code-based IDEs (Cursor, VS Code, etc.) share
- * the same key at ~/.dotenvup/identity.
+ * the same identity directory (~/.dotenvup).
  */
 
 import { KeyStore, FileProvider, keyFingerprint, type Keypair } from '@dotenvup/format';
