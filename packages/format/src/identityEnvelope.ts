@@ -418,7 +418,7 @@ export async function migrateFileEnvelopeToKeychain(identityDir: string): Promis
 
   const helper = await resolveKeychainHelper();
   if (!helper) {
-    throw new Error('macOS Keychain helper is not available. Install @dotenvup/keychain-darwin on macOS.');
+    throw new Error('macOS Keychain helper is not available. Install @dotenvup/keychain on macOS.');
   }
   await helper.probe();
 

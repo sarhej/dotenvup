@@ -1,4 +1,4 @@
-# M2 setup — Apple signing & notarization for `@dotenvup/keychain-darwin`
+# M2 setup — Apple signing & notarization for `@dotenvup/keychain`
 
 Prerequisites for shipping a **Developer ID–signed + notarized** Swift helper. Open source stays MIT; this only covers the macOS binary you distribute.
 
@@ -14,7 +14,7 @@ Related: [KEYCHAIN_TOUCHID.md](KEYCHAIN_TOUCHID.md).
 | App Store Connect `.p8` key | ✅ | `~/.appstoreconnect/private_keys/AuthKey_YDV2VG57R9.p8` (Key ID `YDV2VG57R9`) |
 | `notarytool` keychain profile | ✅ | Profile `dotenvup` stored locally (2026-08-01) |
 | GitHub Actions secrets | ❌ | Add after local notarization works |
-| Optional package scaffold | ✅ | `@dotenvup/keychain-darwin` — helper + Node bridge |
+| Optional package scaffold | ✅ | `@dotenvup/keychain` — helper + Node bridge |
 
 **Signing identity to use for releases:**
 

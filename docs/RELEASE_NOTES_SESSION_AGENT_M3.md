@@ -7,7 +7,7 @@
 1. Detached agent process (`packages/format` `sessionAgentMain`) on `$TMPDIR/dotenvup-agent-<uid>.sock` + cookie (mode `0600`).
 2. Auto-spawn on first successful Keychain unwrap; `put` / `get` / `status` / `stop` NDJSON protocol.
 3. TTLs: idle **30m** (reset on use), absolute **8h** (cap 12h). Env: `DOTENVUP_SESSION_IDLE_TTL`, `DOTENVUP_SESSION_ABSOLUTE_TTL`, `DOTENVUP_SESSION_TTL`.
-4. `watch-presence` in `@dotenvup/keychain-darwin` — wipe on screen lock, sleep, logout/power-off.
+4. `watch-presence` in `@dotenvup/keychain` — wipe on screen lock, sleep, logout/power-off.
 5. CLI: `up session status|stop`; `up status --json` includes `sessionActive`.
 
 ## Non-interactive contract

@@ -71,7 +71,7 @@ flowchart TD
 
 Touch ID requires Security.framework plus LocalAuthentication, which no Node keyring library exposes. We ship a small Swift binary rather than an FFI or node-gyp dependency, so `npm i -g @dotenvup/cli` can never fail with a compiler error.
 
-- Package: `@dotenvup/keychain-darwin`, an optional dependency containing a universal (arm64 + x64) binary built with `swiftc -framework LocalAuthentication -framework Security`.
+- Package: `@dotenvup/keychain`, an optional dependency containing a universal (arm64 + x64) binary built with `swiftc -framework LocalAuthentication -framework Security`.
 - Developer ID signed and notarized in the release workflow. This is mandatory, not cosmetic: the Keychain ACL is bound to the binary's code signature, so an unsigned helper that changes each release re-prompts and looks broken.
 - If the package is missing (Linux, Windows, CI), `available()` returns false and the provider chain falls back to the file-wrapped envelope with no error.
 

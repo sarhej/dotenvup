@@ -131,7 +131,7 @@ up key upgrade              # prerequisite if still on plaintext
 up key migrate-to-keychain  # opt-in; may prompt for Touch ID / password
 ```
 
-Requires `@dotenvup/keychain-darwin` (optional dependency of the CLI on macOS). Cancel leaves the file envelope intact.
+Requires `@dotenvup/keychain` (optional dependency of the CLI on macOS). Cancel leaves the file envelope intact.
 
 After the first successful unlock, an in-memory **session agent** keeps your key warm so further `up run` / decrypt calls usually do not re-prompt (default ~30 minutes idle / 8 hours absolute; wiped on screen lock, sleep, or logout).
 

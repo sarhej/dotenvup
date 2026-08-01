@@ -33,7 +33,7 @@ if (process.platform !== 'darwin') {
 const helperSrc = path.resolve(extRoot, '../keychain-darwin/bin/dotenvup-keychain');
 const helperDest = path.join(destDir, 'dotenvup-keychain');
 if (!fs.existsSync(helperSrc)) {
-  console.warn(`copy-runtime: helper not found at ${helperSrc} (build @dotenvup/keychain-darwin first)`);
+  console.warn(`copy-runtime: helper not found at ${helperSrc} (build @dotenvup/keychain first)`);
   process.exit(0);
 }
 

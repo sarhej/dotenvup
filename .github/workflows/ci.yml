@@ -23,7 +23,7 @@ jobs:
 
       # Swift helper only on macOS; skip codesign in CI (no Developer ID secrets yet)
       - name: Build keychain-darwin
-        run: npm run build --workspace=@dotenvup/keychain-darwin
+        run: npm run build --workspace=@dotenvup/keychain
         env:
           DOTENVUP_CODESIGN: '0'
 

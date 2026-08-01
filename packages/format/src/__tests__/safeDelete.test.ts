@@ -279,12 +279,13 @@ describe('Corrupted .env.up — deletion MUST be blocked', () => {
     await fs.writeFile(envPath, SAMPLE_ENV);
     await createValidEnvUp(SAMPLE_ENTRIES, publicKey);
 
-    let content = await fs.readFile(envUpPath, 'utf8');
-    // Target the actual base64 payload after "payload:" in the encrypted block
-    content = content.replace(/(payload:)([A-Za-z0-9+/=]+)/, (_m, prefix, payload) => {
+    const original = await fs.readFile(envUpPath, 'utf8');
+    // libsodium base64 may be URL-safe (-_); match the same alphabet as the serializer
+    const content = original.replace(/(payload:)([A-Za-z0-9+/_=-]+)/, (_m, prefix: string, payload: string) => {
       const corrupted = 'AAAA' + payload.slice(4);
       return prefix + corrupted;
     });
+    expect(content).not.toBe(original);
     await fs.writeFile(envUpPath, content);
 
     expect((await isSafeToDelete(envUpPath, privateKey)).safe).toBe(false);

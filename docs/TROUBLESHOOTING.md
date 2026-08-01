@@ -161,7 +161,7 @@ If commands fail due to key errors:
    up key import backup.dotenvup-key
    ```
 
-**macOS Keychain / Touch ID (opt-in):** after `up key upgrade`, run `up key migrate-to-keychain`. Needs the signed helper from `@dotenvup/keychain-darwin` (bundled in CLI / extension ≥0.6.4). Cancel leaves the file envelope unchanged. After a wipe or new Mac, restore with `up key import` + recovery code. A warm **session agent** (`up run -- true`, or `up session status`) avoids re-prompting until idle/absolute TTL or screen lock / sleep / logout. Design: [KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).
+**macOS Keychain / Touch ID (opt-in):** after `up key upgrade`, run `up key migrate-to-keychain`. Needs the signed helper from `@dotenvup/keychain` (bundled in CLI / extension ≥0.6.4). Cancel leaves the file envelope unchanged. After a wipe or new Mac, restore with `up key import` + recovery code. A warm **session agent** (`up run -- true`, or `up session status`) avoids re-prompting until idle/absolute TTL or screen lock / sleep / logout. Design: [KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).
 
 ### "Failed to decrypt key bundle" / wrong passphrase
 

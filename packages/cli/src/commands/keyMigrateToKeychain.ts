@@ -22,7 +22,7 @@ export async function run(_options?: { yes?: boolean }): Promise<void> {
 
   if (!(await keychainHelperAvailable())) {
     logger.error(
-      'macOS Keychain helper not found. Build or install @dotenvup/keychain-darwin (bin/dotenvup-keychain).',
+      'macOS Keychain helper not found. Build or install @dotenvup/keychain (bin/dotenvup-keychain).',
     );
     process.exit(1);
   }

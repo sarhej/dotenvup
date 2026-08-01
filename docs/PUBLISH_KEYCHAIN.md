@@ -6,9 +6,9 @@ Ship order matters: npm packages first (CLI/format pull the helper), then extens
 
 | Package | Version |
 |---------|---------|
-| `@dotenvup/keychain-darwin` | `0.1.1` (helper; installs on all OS, runs on macOS) |
-| `@dotenvup/format` | `0.2.0` |
-| `@dotenvup/cli` | `0.2.0` |
+| `@dotenvup/keychain` | `0.1.0` (helper; installs on all OS, runs on macOS). Note: old name `@dotenvup/keychain-darwin` is a broken npm ghost — do not use. |
+| `@dotenvup/format` | `0.2.1` |
+| `@dotenvup/cli` | `0.2.1` |
 | `@dotenvup/mcp` | `0.2.0` |
 | `@dotenvup/node` | bump if it depends on format `^0.2.0` |
 | Extension `dotenvup` | `0.6.4` |
@@ -22,18 +22,20 @@ Ship order matters: npm packages first (CLI/format pull the helper), then extens
 
 ## npm
 
-**Pending OTP** (logged in as `supersergio`; `npm publish` needs browser/OTP once):
+**npm status (2026-08-01):**
+
+| Package | Status |
+|---------|--------|
+| `@dotenvup/format@0.2.1` | published |
+| `@dotenvup/cli@0.2.1` | published |
+| `@dotenvup/node@0.2.0` | published |
+| `@dotenvup/mcp@0.2.0` | published |
+| `@dotenvup/keychain@0.1.0` | **ghost** — publish ACK but registry 404 (same for retired `@dotenvup/keychain-darwin`). Check npm org / security hold; helper ships inside extension VSIX and local monorepo builds. |
 
 ```bash
-# From repo root, after build. keychain-darwin first (format optionalDependency).
-npm publish --workspace=@dotenvup/keychain-darwin --access public
-npm publish --workspace=@dotenvup/format --access public
-npm publish --workspace=@dotenvup/node --access public
-npm publish --workspace=@dotenvup/cli --access public
-npm publish --workspace=@dotenvup/mcp --access public
+# Retry keychain when npm org allows public packages with Mach-O binaries:
+npm publish --workspace=@dotenvup/keychain --access public
 ```
-
-Complete OTP / browser auth if npm prompts. macOS-only package: publish from darwin or ensure `bin/dotenvup-keychain` is in the tarball (`files` + built binary).
 
 ## Extension
 
@@ -41,7 +43,7 @@ Complete OTP / browser auth if npm prompts. macOS-only package: publish from dar
 - [x] Open VSX **0.6.4** published (2026-08-01)
 
 ```bash
-npm run build --workspace=@dotenvup/keychain-darwin --workspace=@dotenvup/format --workspace=dotenvup
+npm run build --workspace=@dotenvup/keychain --workspace=@dotenvup/format --workspace=dotenvup
 cd packages/vscode-dotenvup && npx vsce package --no-dependencies
 npx @vscode/vsce publish --no-dependencies
 npx ovsx publish --no-dependencies

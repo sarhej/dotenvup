@@ -1,5 +1,5 @@
 /**
- * Optional bridge to @dotenvup/keychain-darwin.
+ * Optional bridge to @dotenvup/keychain.
  * Missing package / non-darwin → null (file envelope remains usable).
  */
 
@@ -79,7 +79,7 @@ export async function resolveKeychainHelper(): Promise<KeychainHelperApi | null>
   if (testOverride !== undefined) return testOverride;
   if (process.platform !== 'darwin') return null;
   try {
-    const mod = (await import('@dotenvup/keychain-darwin')) as {
+    const mod = (await import('@dotenvup/keychain')) as {
       createHelper?: () => KeychainHelperApi | null;
       AuthCancelledError?: new (message?: string) => Error;
     };

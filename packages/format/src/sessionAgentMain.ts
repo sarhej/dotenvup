@@ -184,7 +184,7 @@ function resolveHelperPath(): string | null {
   if (fromEnv && fs.existsSync(fromEnv)) return fromEnv;
   try {
     const req = createRequire(import.meta.url);
-    const pkg = req.resolve('@dotenvup/keychain-darwin/package.json');
+    const pkg = req.resolve('@dotenvup/keychain/package.json');
     const candidate = path.join(path.dirname(pkg), 'bin', 'dotenvup-keychain');
     if (fs.existsSync(candidate)) return candidate;
   } catch {

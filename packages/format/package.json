@@ -1,6 +1,6 @@
 {
   "name": "@dotenvup/format",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Core parser and writer for the .env.up encrypted environment file format",
   "keywords": [
     "dotenv",
@@ -48,6 +48,6 @@
     "dotenv": "^16.4.5"
   },
   "optionalDependencies": {
-    "@dotenvup/keychain-darwin": "^0.1.1"
+    "@dotenvup/keychain": "^0.1.0"
   }
 }

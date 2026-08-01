@@ -6,7 +6,7 @@ Prerequisites:
 
 ```bash
 cd /path/to/dotenvup
-npm run build --workspace=@dotenvup/keychain-darwin --workspace=@dotenvup/format --workspace=@dotenvup/cli
+npm run build --workspace=@dotenvup/keychain --workspace=@dotenvup/format --workspace=@dotenvup/cli
 # helper should be Developer ID signed when possible (auto if cert present)
 up --version
 up status --json   # expect keyStorage keychain or file-envelope
@@ -75,7 +75,7 @@ DOTENVUP_NO_PROMPT=1 up run -- true
 Marketplace **0.6.3** does **not** understand Keychain-backed identity. Use a local build:
 
 ```bash
-npm run build --workspace=@dotenvup/keychain-darwin --workspace=@dotenvup/format --workspace=dotenvup
+npm run build --workspace=@dotenvup/keychain --workspace=@dotenvup/format --workspace=dotenvup
 # Install from VSIX or F5 Extension Development Host, then Reload Window
 ```
 

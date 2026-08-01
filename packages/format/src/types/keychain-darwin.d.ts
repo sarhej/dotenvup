@@ -1,4 +1,4 @@
-declare module '@dotenvup/keychain-darwin' {
+declare module '@dotenvup/keychain' {
   export function createHelper(binaryPath?: string): {
     probe(): Promise<{
       version: string;

@@ -1,4 +1,4 @@
-# `@dotenvup/keychain-darwin`
+# `@dotenvup/keychain`
 
 Optional macOS helper that stores DotEnvUp’s **identity wrapping key** in the login Keychain. Reads go through LocalAuthentication (Touch ID, Apple Watch, or login password). The package installs on all platforms (so Linux CI / optionalDependencies work); the native helper only runs on macOS.
 

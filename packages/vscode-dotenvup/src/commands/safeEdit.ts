@@ -107,7 +107,7 @@ export async function run(uri?: vscode.Uri, keystore?: ExtensionKeyStore): Promi
     }
     if (/No private key|keychain helper is not available|wrap\.source/i.test(msg)) {
       vscode.window.showErrorMessage(
-        'DotEnvUp: Safe Edit cannot read a Keychain-backed identity. Install a DotEnvUp build that includes `@dotenvup/keychain-darwin` (or warm a session with `up run -- true` after updating the extension).',
+        'DotEnvUp: Safe Edit cannot read a Keychain-backed identity. Install a DotEnvUp build that includes `@dotenvup/keychain` (or warm a session with `up run -- true` after updating the extension).',
       );
       return;
     }

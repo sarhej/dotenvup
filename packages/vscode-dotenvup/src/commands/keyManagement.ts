@@ -438,7 +438,7 @@ export async function run(context: ExtensionContext, keystore: ExtensionKeyStore
             } = await import('@dotenvup/format');
             const identityDir = keystore.getIdentityDir();
             if (!(await keychainHelperAvailable())) {
-              void vscode.window.showErrorMessage('DotEnvUp: Keychain helper not available. Install extension ≥0.6.4 or build @dotenvup/keychain-darwin.');
+              void vscode.window.showErrorMessage('DotEnvUp: Keychain helper not available. Install extension ≥0.6.4 or build @dotenvup/keychain.');
               break;
             }
             const mode = await detectKeyStorageMode(identityDir);

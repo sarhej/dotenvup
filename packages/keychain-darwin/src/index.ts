@@ -59,7 +59,7 @@ function packageRoot(): string {
     if (typeof metaUrl === 'string' && metaUrl.length > 0) {
       const require = createRequire(metaUrl);
       try {
-        return path.dirname(require.resolve('@dotenvup/keychain-darwin/package.json'));
+        return path.dirname(require.resolve('@dotenvup/keychain/package.json'));
       } catch {
         return path.resolve(path.dirname(fileURLToPath(metaUrl)), '..');
       }
@@ -69,7 +69,7 @@ function packageRoot(): string {
   }
 
   // Last resort: walk from cwd (CLI monorepo / linked installs)
-  const fromCwd = path.resolve(process.cwd(), 'node_modules/@dotenvup/keychain-darwin');
+  const fromCwd = path.resolve(process.cwd(), 'node_modules/@dotenvup/keychain');
   if (fs.existsSync(path.join(fromCwd, 'package.json'))) return fromCwd;
   return path.resolve(process.cwd());
 }

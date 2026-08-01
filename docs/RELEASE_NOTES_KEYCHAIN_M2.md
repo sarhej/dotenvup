@@ -6,7 +6,7 @@ Design: [design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md). Setup: [design
 
 ## What shipped
 
-1. Package `@dotenvup/keychain-darwin` — universal `dotenvup-keychain` binary (Developer ID signed + notarized for releases).
+1. Package `@dotenvup/keychain` — universal `dotenvup-keychain` binary (Developer ID signed + notarized for releases).
 2. Envelope `wrap.source: "keychain"` support in `@dotenvup/format`.
 3. CLI: `up key migrate-to-keychain` (requires file envelope + recovery bundle first).
 4. `up status` / `--json` fields: `keychainHelper`, `keychainMigrateRecommended`; `keyStorage` may be `keychain`.
