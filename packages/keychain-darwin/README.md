@@ -1,12 +1,12 @@
 # `@dotenvup/keychain-darwin`
 
-Optional macOS helper that stores DotEnvUp’s **identity wrapping key** in the login Keychain with a `UserPresence` ACL (Touch ID, Apple Watch, or login password).
+Optional macOS helper that stores DotEnvUp’s **identity wrapping key** in the login Keychain. Reads go through LocalAuthentication (Touch ID, Apple Watch, or login password). The package installs on all platforms (so Linux CI / optionalDependencies work); the native helper only runs on macOS.
 
 The private identity stays in `~/.dotenvup/identity.enc`. This package never holds the DotEnvUp private key itself.
 
 ## Requirements
 
-- macOS 13+
+- **Runtime:** macOS 13+ (helper binary)
 - Prebuilt universal binary `bin/dotenvup-keychain` (built on macOS; signed + notarized for releases)
 
 ## Helper CLI

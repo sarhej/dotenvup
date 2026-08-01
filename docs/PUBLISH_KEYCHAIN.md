@@ -6,7 +6,7 @@ Ship order matters: npm packages first (CLI/format pull the helper), then extens
 
 | Package | Version |
 |---------|---------|
-| `@dotenvup/keychain-darwin` | `0.1.0` (first publish; macOS only) |
+| `@dotenvup/keychain-darwin` | `0.1.1` (helper; installs on all OS, runs on macOS) |
 | `@dotenvup/format` | `0.2.0` |
 | `@dotenvup/cli` | `0.2.0` |
 | `@dotenvup/mcp` | `0.2.0` |

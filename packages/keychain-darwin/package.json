@@ -1,6 +1,6 @@
 {
   "name": "@dotenvup/keychain-darwin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "macOS Keychain helper for DotEnvUp identity wrapping keys (Touch ID / UserPresence)",
   "keywords": [
     "dotenvup",
@@ -26,13 +26,6 @@
     },
     "./package.json": "./package.json"
   },
-  "os": [
-    "darwin"
-  ],
-  "cpu": [
-    "arm64",
-    "x64"
-  ],
   "files": [
     "dist",
     "bin/dotenvup-keychain",
