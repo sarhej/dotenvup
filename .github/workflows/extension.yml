@@ -22,7 +22,6 @@ jobs:
   semgrep:
     name: Semgrep (SAST)
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,9 +34,11 @@ jobs:
       - run: python -m pip install --upgrade pip semgrep
       - run: npm run security:sast
 
+  # Scorecard only supports the default branch (main). On release tags it fails with
+  # "refs/tags/... not supported". Canonical Scorecard runs live in security.yml on main.
   scorecard:
     name: OpenSSF Scorecard
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -48,6 +49,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          ref: main
       - name: OpenSSF Scorecard
         uses: ossf/scorecard-action@v2.4.1
         with:
@@ -55,7 +57,7 @@ jobs:
           results_file: scorecard.sarif
           publish_results: true
       - name: Upload Scorecard SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: scorecard.sarif
@@ -72,19 +74,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript
           queries: security-extended
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: /language:javascript
 
   package-on-release:
-    needs: [release-verify, scorecard, codeql]
+    # Scorecard is not a release gate (tag refs unsupported). CodeQL + release-verify are.
+    needs: [release-verify, codeql]
     if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     steps:

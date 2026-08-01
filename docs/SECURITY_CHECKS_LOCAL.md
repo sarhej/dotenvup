@@ -88,9 +88,13 @@ npm run release:verify:full
 
 ```bash
 # Install once: brew install semgrep  OR  pip install semgrep
-semgrep scan --config auto
-# Security-only (stricter): semgrep scan --config p/security-audit
+semgrep scan --config auto --severity=ERROR
+# Broader audit (includes WARNING path-join noise on local workspace paths):
+#   semgrep scan --config auto
+# Security-only pack: semgrep scan --config p/security-audit
 ```
+
+CI `npm run security:sast` fails on **ERROR**-severity findings only (WARNING path-traversal on `path.join` of workspace roots is noise for this CLI/extension). OpenSSF Scorecard runs on **main** via [`.github/workflows/security.yml`](../.github/workflows/security.yml); the Extension release workflow does not run Scorecard on tag refs (Scorecard only supports the default branch).
 
 **Option B – CodeQL (deeper, slower; good for CI):**
 
@@ -103,10 +107,10 @@ codeql database analyze ./codeql-db javascript-security-extended --format=sarif-
 **Suggested `package.json` script (optional):**
 
 ```json
-"security:sast": "semgrep scan --config auto --error"
+"security:sast": "semgrep scan --config auto --severity=ERROR --error"
 ```
 
-Then run `npm run security:sast` before push. Use `--error` so findings fail the command (CI-friendly).
+Then run `npm run security:sast` before push. Use `--error` so ERROR findings fail the command (CI-friendly). WARNING-level path-join findings on trusted local workspace paths are excluded via `--severity=ERROR`.
 
 ### SAST in CI/CD (GitHub)
 
