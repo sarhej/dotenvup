@@ -1,0 +1,383 @@
+/**
+ * Identity envelope — encrypt private key under a random wrapping key.
+ *
+ * M1: wrap.source = "file" (wrapping-key next to identity.enc).
+ * M2+: wrap.source = "keychain" via native helper (same envelope shape).
+ */
+
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import type { Keypair } from './keyProvider.js';
+import { initSodium, keyFingerprint } from './crypto.js';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let sodium: any = null;
+
+export const IDENTITY_ENVELOPE_FORMAT = 'dotenvup-identity-envelope';
+export const IDENTITY_ENVELOPE_VERSION = 1;
+export const IDENTITY_ENVELOPE_FILE = 'identity.enc';
+export const WRAPPING_KEY_FILE = 'wrapping-key';
+export const PLAINTEXT_IDENTITY_FILE = 'identity';
+export const PUBLIC_IDENTITY_FILE = 'identity.pub';
+export const RECOVERY_DIR = 'recovery';
+export const ARCHIVE_DIR = 'archive';
+
+const CIPHER_NAME = 'xchacha20-poly1305';
+
+export type WrapSource = 'file' | 'keychain';
+
+export interface IdentityEnvelopeV1 {
+  format: typeof IDENTITY_ENVELOPE_FORMAT;
+  version: 1;
+  keyId: string;
+  createdAt: string;
+  wrap: {
+    source: WrapSource;
+    /** Relative path under identity dir when source=file */
+    path?: string;
+    service?: string;
+    account?: string;
+  };
+  cipher: {
+    name: typeof CIPHER_NAME;
+    nonce: string;
+    ciphertext: string;
+  };
+}
+
+async function getSodium() {
+  if (!sodium) {
+    const lib = await import('libsodium-wrappers');
+    await lib.ready;
+    sodium = lib.default;
+  }
+  return sodium!;
+}
+
+function aeadAdditionalData(keyId: string): Uint8Array {
+  return Buffer.from(`${IDENTITY_ENVELOPE_FORMAT}|${IDENTITY_ENVELOPE_VERSION}|${keyId}`, 'utf8');
+}
+
+function validateEnvelope(raw: unknown): asserts raw is IdentityEnvelopeV1 {
+  if (!raw || typeof raw !== 'object') throw new Error('Invalid identity envelope.');
+  const e = raw as Record<string, unknown>;
+  if (e['format'] !== IDENTITY_ENVELOPE_FORMAT) throw new Error('Invalid identity envelope format.');
+  if (e['version'] !== IDENTITY_ENVELOPE_VERSION) throw new Error('Unsupported identity envelope version.');
+  if (typeof e['keyId'] !== 'string' || !e['keyId']) throw new Error('Invalid identity envelope keyId.');
+  const wrap = e['wrap'];
+  if (!wrap || typeof wrap !== 'object') throw new Error('Invalid identity envelope wrap block.');
+  const wrapObj = wrap as Record<string, unknown>;
+  if (wrapObj['source'] !== 'file' && wrapObj['source'] !== 'keychain') {
+    throw new Error('Invalid identity envelope wrap.source.');
+  }
+  const cipher = e['cipher'];
+  if (!cipher || typeof cipher !== 'object') throw new Error('Invalid identity envelope cipher block.');
+  const c = cipher as Record<string, unknown>;
+  if (c['name'] !== CIPHER_NAME || typeof c['nonce'] !== 'string' || typeof c['ciphertext'] !== 'string') {
+    throw new Error('Invalid identity envelope cipher parameters.');
+  }
+}
+
+export function parseIdentityEnvelope(content: string): IdentityEnvelopeV1 {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    throw new Error('Identity envelope is not valid JSON.');
+  }
+  validateEnvelope(parsed);
+  return parsed;
+}
+
+export async function sealIdentity(
+  privateKey: Uint8Array,
+  publicKey: Uint8Array,
+  wrappingKey: Uint8Array,
+  wrap: IdentityEnvelopeV1['wrap'],
+): Promise<IdentityEnvelopeV1> {
+  await initSodium();
+  const s = await getSodium();
+  if (privateKey.length !== 32 || publicKey.length !== 32) {
+    throw new Error('Keypair must contain 32-byte public and private keys.');
+  }
+  if (wrappingKey.length !== 32) {
+    throw new Error('Wrapping key must be 32 bytes.');
+  }
+
+  const keyId = await keyFingerprint(publicKey);
+  const nonce = s.randombytes_buf(s.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES);
+  const ad = aeadAdditionalData(keyId);
+  const ciphertext = s.crypto_aead_xchacha20poly1305_ietf_encrypt(
+    privateKey,
+    ad,
+    null,
+    nonce,
+    wrappingKey,
+  );
+
+  return {
+    format: IDENTITY_ENVELOPE_FORMAT,
+    version: IDENTITY_ENVELOPE_VERSION,
+    keyId,
+    createdAt: new Date().toISOString(),
+    wrap,
+    cipher: {
+      name: CIPHER_NAME,
+      nonce: s.to_base64(nonce),
+      ciphertext: s.to_base64(ciphertext),
+    },
+  };
+}
+
+export async function unsealIdentity(
+  envelope: IdentityEnvelopeV1,
+  wrappingKey: Uint8Array,
+  publicKey: Uint8Array,
+): Promise<Uint8Array> {
+  await initSodium();
+  const s = await getSodium();
+  validateEnvelope(envelope);
+  if (wrappingKey.length !== 32) {
+    throw new Error('Wrapping key must be 32 bytes.');
+  }
+  if (publicKey.length !== 32) {
+    throw new Error('Public key must be 32 bytes.');
+  }
+
+  const expectedKeyId = await keyFingerprint(publicKey);
+  if (envelope.keyId !== expectedKeyId) {
+    throw new Error('Identity envelope keyId does not match public key.');
+  }
+
+  const nonce = s.from_base64(envelope.cipher.nonce);
+  const ciphertext = s.from_base64(envelope.cipher.ciphertext);
+  const ad = aeadAdditionalData(envelope.keyId);
+
+  let privateKey: Uint8Array;
+  try {
+    privateKey = s.crypto_aead_xchacha20poly1305_ietf_decrypt(
+      null,
+      ciphertext,
+      ad,
+      nonce,
+      wrappingKey,
+    ) as Uint8Array;
+  } catch {
+    throw new Error('Failed to decrypt identity envelope (wrong wrapping key or corrupted file).');
+  }
+
+  if (!privateKey || privateKey.length !== 32) {
+    throw new Error('Failed to decrypt identity envelope (invalid private key length).');
+  }
+
+  const derivedPub = s.crypto_scalarmult_base(privateKey) as Uint8Array;
+  if (derivedPub.length !== 32) {
+    throw new Error('Identity envelope integrity check failed.');
+  }
+  for (let i = 0; i < 32; i++) {
+    if (derivedPub[i] !== publicKey[i]) {
+      throw new Error('Identity envelope integrity check failed (public/private mismatch).');
+    }
+  }
+
+  return privateKey;
+}
+
+async function writeAtomic(filePath: string, data: string | Buffer, mode: number): Promise<void> {
+  const tmp = `${filePath}.tmp-${process.pid}`;
+  await fs.writeFile(tmp, data, { mode });
+  await fs.rename(tmp, filePath);
+  await fs.chmod(filePath, mode);
+}
+
+export async function writeFileWrappingKey(identityDir: string, wrappingKey: Uint8Array): Promise<string> {
+  const filePath = path.join(identityDir, WRAPPING_KEY_FILE);
+  await writeAtomic(filePath, Buffer.from(wrappingKey), 0o600);
+  return WRAPPING_KEY_FILE;
+}
+
+export async function readFileWrappingKey(identityDir: string, relativePath = WRAPPING_KEY_FILE): Promise<Uint8Array> {
+  const filePath = path.join(identityDir, relativePath);
+  const buf = await fs.readFile(filePath);
+  if (buf.length !== 32) {
+    throw new Error('Wrapping key file must be exactly 32 bytes.');
+  }
+  return new Uint8Array(buf);
+}
+
+export async function writeIdentityEnvelope(identityDir: string, envelope: IdentityEnvelopeV1): Promise<void> {
+  const filePath = path.join(identityDir, IDENTITY_ENVELOPE_FILE);
+  await writeAtomic(filePath, JSON.stringify(envelope, null, 2) + '\n', 0o600);
+}
+
+export async function readIdentityEnvelope(identityDir: string): Promise<IdentityEnvelopeV1 | null> {
+  try {
+    const content = await fs.readFile(path.join(identityDir, IDENTITY_ENVELOPE_FILE), 'utf8');
+    return parseIdentityEnvelope(content);
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT') return null;
+    throw err;
+  }
+}
+
+export type KeyStorageMode = 'plaintext' | 'file-envelope' | 'absent';
+
+export async function detectKeyStorageMode(identityDir: string): Promise<KeyStorageMode> {
+  try {
+    await fs.access(path.join(identityDir, IDENTITY_ENVELOPE_FILE));
+    return 'file-envelope';
+  } catch {
+    // continue
+  }
+  try {
+    await fs.access(path.join(identityDir, PLAINTEXT_IDENTITY_FILE));
+    return 'plaintext';
+  } catch {
+    return 'absent';
+  }
+}
+
+/**
+ * Persist keypair as identity.enc + file wrapping key + identity.pub.
+ * Does not leave a plaintext identity file.
+ */
+export async function saveKeypairEnvelope(
+  identityDir: string,
+  publicKey: Uint8Array,
+  privateKey: Uint8Array,
+): Promise<IdentityEnvelopeV1> {
+  await initSodium();
+  const s = await getSodium();
+  await fs.mkdir(identityDir, { recursive: true, mode: 0o700 });
+
+  const wrappingKey = s.randombytes_buf(32) as Uint8Array;
+  const relativeWrapPath = await writeFileWrappingKey(identityDir, wrappingKey);
+  const envelope = await sealIdentity(privateKey, publicKey, wrappingKey, {
+    source: 'file',
+    path: relativeWrapPath,
+  });
+  await writeIdentityEnvelope(identityDir, envelope);
+  await writeAtomic(
+    path.join(identityDir, PUBLIC_IDENTITY_FILE),
+    Buffer.from(publicKey).toString('base64') + '\n',
+    0o644,
+  );
+
+  // Remove plaintext private key if present (after envelope is durable).
+  try {
+    await fs.unlink(path.join(identityDir, PLAINTEXT_IDENTITY_FILE));
+  } catch {
+    // absent is fine
+  }
+
+  return envelope;
+}
+
+export async function loadKeypairEnvelope(identityDir: string): Promise<Keypair | null> {
+  const envelope = await readIdentityEnvelope(identityDir);
+  if (!envelope) return null;
+
+  let pubRaw: string;
+  try {
+    pubRaw = await fs.readFile(path.join(identityDir, PUBLIC_IDENTITY_FILE), 'utf8');
+  } catch {
+    return null;
+  }
+  const publicKey = new Uint8Array(Buffer.from(pubRaw.trim(), 'base64'));
+  if (publicKey.length !== 32) return null;
+
+  if (envelope.wrap.source !== 'file') {
+    // M2 keychain path not available in format package yet.
+    return null;
+  }
+
+  const wrapPath = envelope.wrap.path ?? WRAPPING_KEY_FILE;
+  let wrappingKey: Uint8Array;
+  try {
+    wrappingKey = await readFileWrappingKey(identityDir, wrapPath);
+  } catch {
+    return null;
+  }
+
+  try {
+    const privateKey = await unsealIdentity(envelope, wrappingKey, publicKey);
+    return { publicKey, privateKey };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Migrate plaintext identity → file envelope. Renames plaintext to identity.bak-<keyId>.
+ * No-op if envelope already present. Returns null if nothing to migrate.
+ */
+export async function migratePlaintextToEnvelope(identityDir: string): Promise<{
+  keyId: string;
+  bakPath: string;
+} | null> {
+  const mode = await detectKeyStorageMode(identityDir);
+  if (mode === 'file-envelope') return null;
+  if (mode !== 'plaintext') return null;
+
+  const privRaw = await fs.readFile(path.join(identityDir, PLAINTEXT_IDENTITY_FILE), 'utf8');
+  const pubRaw = await fs.readFile(path.join(identityDir, PUBLIC_IDENTITY_FILE), 'utf8');
+  const privateKey = new Uint8Array(Buffer.from(privRaw.trim(), 'base64'));
+  const publicKey = new Uint8Array(Buffer.from(pubRaw.trim(), 'base64'));
+  if (privateKey.length !== 32 || publicKey.length !== 32) {
+    throw new Error('Cannot migrate: plaintext identity is invalid.');
+  }
+
+  const keyId = await keyFingerprint(publicKey);
+  const bakPath = path.join(identityDir, `identity.bak-${keyId}`);
+  // Keep a bak copy before envelope replace (never delete the only copy).
+  await writeAtomic(bakPath, privRaw.endsWith('\n') ? privRaw : privRaw + '\n', 0o600);
+  await saveKeypairEnvelope(identityDir, publicKey, privateKey);
+
+  return { keyId, bakPath };
+}
+
+export function recoveryBundlePath(identityDir: string, keyId: string): string {
+  return path.join(identityDir, RECOVERY_DIR, `${keyId}.dotenvup-key`);
+}
+
+export async function recoveryBundleExists(identityDir: string, keyId: string): Promise<boolean> {
+  try {
+    await fs.access(recoveryBundlePath(identityDir, keyId));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Archive current identity materials under archive/<keyId>/ before overwrite.
+ */
+export async function archiveIdentity(identityDir: string, keyId: string): Promise<string> {
+  const dest = path.join(identityDir, ARCHIVE_DIR, keyId);
+  await fs.mkdir(dest, { recursive: true, mode: 0o700 });
+
+  const names = [
+    PLAINTEXT_IDENTITY_FILE,
+    PUBLIC_IDENTITY_FILE,
+    IDENTITY_ENVELOPE_FILE,
+    WRAPPING_KEY_FILE,
+  ];
+  for (const name of names) {
+    const src = path.join(identityDir, name);
+    try {
+      await fs.copyFile(src, path.join(dest, name));
+    } catch {
+      // optional
+    }
+  }
+
+  const recoverySrc = recoveryBundlePath(identityDir, keyId);
+  try {
+    await fs.copyFile(recoverySrc, path.join(dest, `${keyId}.dotenvup-key`));
+  } catch {
+    // optional
+  }
+
+  return dest;
+}

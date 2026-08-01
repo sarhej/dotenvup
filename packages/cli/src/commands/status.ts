@@ -4,7 +4,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { parse, parseHeader, decryptAny } from '@dotenvup/format';
+import { parse, parseHeader, decryptAny, detectKeyStorageMode } from '@dotenvup/format';
 import * as keystore from '../keystore.js';
 import { parseEnvFile, entriesMatch } from '../envParser.js';
 import * as logger from '../logger.js';
@@ -18,6 +18,7 @@ export async function run(options?: { json?: boolean }): Promise<void> {
   const hasEnv = fs.existsSync(envPath);
   const hasEnvUp = fs.existsSync(envUpPath);
   const hasKeypair = await keystore.hasKeypair();
+  const keyStorage = await detectKeyStorageMode(keystore.getIdentityDir());
 
   let keyCount = 0;
   let staleCount = 0;
@@ -64,6 +65,7 @@ export async function run(options?: { json?: boolean }): Promise<void> {
       locked: !hasEnv,
       hasEnvUp,
       hasKeypair,
+      keyStorage,
       keyCount,
       staleCount,
       drift,
@@ -75,6 +77,7 @@ export async function run(options?: { json?: boolean }): Promise<void> {
   logger.info(`Lock status: ${hasEnv ? 'UNLOCKED (.env exists)' : 'LOCKED (.env absent)'}`);
   logger.info(`.env.up: ${hasEnvUp ? 'present' : 'not found'}`);
   logger.info(`Keypair: ${hasKeypair ? 'configured' : 'not configured'}`);
+  logger.info(`Key storage: ${keyStorage}`);
 
   if (hasEnvUp) {
     if (staleCount > 0) {

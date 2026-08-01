@@ -40,7 +40,7 @@ Libraries (not products): `@dotenvup/format`, `@dotenvup/node`, `@dotenvup/mcp`,
 | Initiative | Product | Status |
 |------------|---------|--------|
 | DotEnvUp — workspace & product map | (workspace-level) | DONE |
-| macOS Touch ID Keychain (envelope + session agent) | `cli` | IN_PROGRESS (P0) — features M0–M4 |
+| macOS Touch ID Keychain (envelope + session agent) | `cli` | IN_PROGRESS (P0) — M0 DONE, M1 file envelope+recovery in PR |
 | Cursor Marketplace plugin listing | `cursor-plugin` | IN_PROGRESS — `@dotenvup/mcp@0.1.0` on npm DONE |
 | Homebrew tap for `up` CLI | `cli` | PLANNED (P2, NEXT) — distribution channel, **not** a separate product |
 | Extension production hardening | `vscode-extension` | PLANNED |

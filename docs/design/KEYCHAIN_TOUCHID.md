@@ -2,7 +2,7 @@
 
 > **Goal:** On macOS, gate DotEnvUp's private key behind Touch ID / Apple Watch / login password, with roughly one prompt per working session — without making the Keychain a new way to lose keys.
 
-Status: M0 design + wireframes ready for approval. Implementation (M1+) not started.
+Status: M0 approved. **M1 in progress** — file-wrapped `identity.enc` + auto recovery bundle at `up init` (no native helper yet).
 
 Wireframes: [../designs/](../designs/) (see [Wireframes](#wireframes)).
 

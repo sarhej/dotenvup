@@ -1,18 +1,28 @@
 /**
- * FileProvider — reads/writes keypair to ~/.dotenvup/identity
+ * FileProvider — reads/writes keypair under ~/.dotenvup
  *
  * Priority 2. Universal fallback that works across all IDEs and CLI.
- * Uses the same model as ~/.ssh/ — filesystem permissions protect the key.
  *
- * Files:
- *   ~/.dotenvup/identity      — base64-encoded 32-byte private key (mode 0o600)
- *   ~/.dotenvup/identity.pub  — base64-encoded 32-byte public key (mode 0o644)
+ * Storage (M1+):
+ *   ~/.dotenvup/identity.enc   — envelope (private key under wrapping key)
+ *   ~/.dotenvup/wrapping-key   — 32-byte file wrapping key (mode 0o600)
+ *   ~/.dotenvup/identity.pub   — base64 public key (mode 0o644)
+ *
+ * Legacy (still readable):
+ *   ~/.dotenvup/identity       — plaintext base64 private key (mode 0o600)
  */
 
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import type { KeyProvider, Keypair } from '../keyProvider.js';
+import {
+  detectKeyStorageMode,
+  loadKeypairEnvelope,
+  PLAINTEXT_IDENTITY_FILE,
+  PUBLIC_IDENTITY_FILE,
+  saveKeypairEnvelope,
+} from '../identityEnvelope.js';
 
 export class FileProvider implements KeyProvider {
   readonly name = 'file';
@@ -34,8 +44,8 @@ export class FileProvider implements KeyProvider {
     this.dir = customDir
       ?? resolvedEnvDir
       ?? (isTestEnv ? (resolvedTestDir ?? path.join(os.tmpdir(), 'dotenvup-test-identity', String(process.pid))) : path.join(os.homedir(), '.dotenvup'));
-    this.privPath = path.join(this.dir, 'identity');
-    this.pubPath = path.join(this.dir, 'identity.pub');
+    this.privPath = path.join(this.dir, PLAINTEXT_IDENTITY_FILE);
+    this.pubPath = path.join(this.dir, PUBLIC_IDENTITY_FILE);
   }
 
   async available(): Promise<boolean> {
@@ -43,6 +53,17 @@ export class FileProvider implements KeyProvider {
   }
 
   async getKeypair(): Promise<Keypair | null> {
+    const mode = await detectKeyStorageMode(this.dir);
+    if (mode === 'file-envelope') {
+      return loadKeypairEnvelope(this.dir);
+    }
+    if (mode === 'plaintext') {
+      return this.loadPlaintextKeypair();
+    }
+    return null;
+  }
+
+  private async loadPlaintextKeypair(): Promise<Keypair | null> {
     try {
       const privRaw = await fs.readFile(this.privPath, 'utf-8');
       const pubRaw = await fs.readFile(this.pubPath, 'utf-8');
@@ -59,17 +80,7 @@ export class FileProvider implements KeyProvider {
   }
 
   async saveKeypair(publicKey: Uint8Array, privateKey: Uint8Array): Promise<void> {
-    await fs.mkdir(this.dir, { recursive: true, mode: 0o700 });
-    await fs.writeFile(
-      this.privPath,
-      Buffer.from(privateKey).toString('base64') + '\n',
-      { mode: 0o600 },
-    );
-    await fs.writeFile(
-      this.pubPath,
-      Buffer.from(publicKey).toString('base64') + '\n',
-      { mode: 0o644 },
-    );
+    await saveKeypairEnvelope(this.dir, publicKey, privateKey);
   }
 
   /** Returns the path to the identity directory */
@@ -77,7 +88,10 @@ export class FileProvider implements KeyProvider {
     return this.dir;
   }
 
-  /** Returns the path to the private key file */
+  /**
+   * Legacy plaintext private key path (may be absent when using envelope).
+   * Prefer detectKeyStorageMode / identity.enc for new code.
+   */
   getPrivateKeyPath(): string {
     return this.privPath;
   }
@@ -85,5 +99,10 @@ export class FileProvider implements KeyProvider {
   /** Returns the path to the public key file */
   getPublicKeyPath(): string {
     return this.pubPath;
+  }
+
+  /** Returns path to identity.enc when using envelope storage */
+  getEnvelopePath(): string {
+    return path.join(this.dir, 'identity.enc');
   }
 }
