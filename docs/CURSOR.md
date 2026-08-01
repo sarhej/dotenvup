@@ -6,7 +6,7 @@ This doc covers how **Cursor** users (IDE and CLI agents) work with DotEnvUp, an
 
 ### 1. Cursor Marketplace plugin (recommended)
 
-This repo is a **Cursor plugin**: the `.cursor-plugin/plugin.json` manifest at the repo root bundles the [dotenvup skill](../plugins/dotenvup/skills/dotenvup/SKILL.md). Once listed on the [Cursor Marketplace](https://cursor.com/marketplace), install it from **Customize → Plugins** or by searching "dotenvup".
+This repo is a **Cursor plugin**: the `.cursor-plugin/plugin.json` manifest at the repo root bundles the [dotenvup skill](../skills/dotenvup/SKILL.md) (Open Plugins layout: root `skills/`). Once listed on the [Cursor Marketplace](https://cursor.com/marketplace) or [cursor.directory](https://cursor.directory), install it from **Customize → Plugins** or by searching "dotenvup".
 
 After installation, the skill is available in every project. The agent applies it automatically when a project uses `.env.up`, or you can invoke it manually with `/dotenvup` in chat.
 
@@ -18,12 +18,12 @@ Without the plugin system, copy the skill directly:
 # Project scope (shared with everyone using the repo):
 mkdir -p .cursor/skills/dotenvup
 curl -o .cursor/skills/dotenvup/SKILL.md \
-  https://raw.githubusercontent.com/sarhej/dotenvup/main/plugins/dotenvup/skills/dotenvup/SKILL.md
+  https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md
 
 # Or personal scope (all your projects):
 mkdir -p ~/.cursor/skills/dotenvup
 curl -o ~/.cursor/skills/dotenvup/SKILL.md \
-  https://raw.githubusercontent.com/sarhej/dotenvup/main/plugins/dotenvup/skills/dotenvup/SKILL.md
+  https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md
 ```
 
 ### 3. Lightweight alternative: a Cursor rule
@@ -54,7 +54,7 @@ The rule is always in context (cheap, minimal); the skill adds full workflows (b
 
 ```bash
 mkdir -p ~/.cursor/plugins/local/dotenvup
-cp -R .cursor-plugin plugins ~/.cursor/plugins/local/dotenvup/
+cp -R .cursor-plugin skills assets ~/.cursor/plugins/local/dotenvup/
 ```
 
 Then reload Cursor (`Developer: Reload Window`). The skill appears under Customize → Skills.

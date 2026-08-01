@@ -10,6 +10,5 @@
   "repository": "https://github.com/sarhej/dotenvup",
   "license": "MIT",
   "keywords": ["dotenv", "secrets", "env", "encryption", "security", "cursor"],
-  "logo": "packages/vscode-dotenvup/icon-256.png",
-  "skills": "plugins/dotenvup/skills"
+  "logo": "assets/logo.png"
 }
