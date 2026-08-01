@@ -34,7 +34,7 @@ The .env.up format is a "half-open envelope": key names, versions, timestamps, a
 
 ## Key features (format and security)
 
-- Zero-knowledge encryption: Private keys on your machine (~/.dotenvup/identity)
+- Zero-knowledge encryption: Private keys on your machine under ~/.dotenvup/ (encrypted identity.enc on new installs; `up key upgrade` for legacy). Touch ID not shipped yet.
 - Safe to commit: .env.up files belong in Git
 - Comments preserved: Lossless roundtrip of comments and structure
 - Multi-recipient: Encrypt for multiple users and machines (@alice, @ci)
@@ -74,7 +74,8 @@ npm install @dotenvup/node
 ## Quick start (CLI)
 
 ```bash
-up init            # Generate keypair (~/.dotenvup/identity)
+up init              # Generate keypair (identity.enc + recovery code)
+up key upgrade       # Existing users: opt-in migrate plaintext identity
 up import .env     # Encrypt .env -> .env.up
 up lock            # Delete plaintext .env
 up unlock 5m       # Decrypt for 5 minutes

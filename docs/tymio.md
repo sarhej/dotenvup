@@ -46,7 +46,8 @@ Libraries (not products): `@dotenvup/format`, `@dotenvup/node`, `@dotenvup/mcp`,
 | Extension production hardening | `vscode-extension` | PLANNED |
 | Website & edge Worker upkeep | `website` | PLANNED |
 
-Active design: [docs/design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).
+Active design: [docs/design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).  
+Ship messaging: [docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md](RELEASE_NOTES_IDENTITY_ENVELOPE.md) (honest: envelope + recovery now; Touch ID later).
 
 ## Related
 

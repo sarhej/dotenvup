@@ -2,6 +2,12 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- **Key storage status copy** — Reflects encrypted `identity.enc` envelope + wrapping key; notes that macOS Touch ID is not shipped yet. CLI identity changes land with `@dotenvup/cli` / `@dotenvup/format` (see [RELEASE_NOTES_IDENTITY_ENVELOPE.md](../../docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md)). Existing users: `up key upgrade`.
+
 ## [0.6.2] - 2026-03-06
 
 ### Fixed

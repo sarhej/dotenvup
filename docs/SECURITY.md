@@ -2,7 +2,7 @@
 
 ## Zero-knowledge, zero-trust
 
-DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud, and no third party that ever sees your secrets or your decryption keys. Encryption and decryption happen only on your machine. Your keypair lives at `~/.dotenvup/identity`; we never have access to it. You don't have to trust us — or anyone else — with your values.
+DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud, and no third party that ever sees your secrets or your decryption keys. Encryption and decryption happen only on your machine. Your keypair lives under `~/.dotenvup/` (encrypted envelope by default on new installs); we never have access to it. You don't have to trust us — or anyone else — with your values.
 
 ## What Is Encrypted
 
@@ -11,18 +11,24 @@ DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud,
 
 ## Where Keys Live
 
-- **Keypair:** Stored in user-level files under `~/.dotenvup/`.
-- **Private key:** `~/.dotenvup/identity` (mode `0600`).
-- **Public key:** `~/.dotenvup/identity.pub` (mode `0644`) for sharing recipients.
-- **Model:** Same trust model as `~/.ssh/` (filesystem permissions protect local private key).
+- **Keypair directory:** `~/.dotenvup/` (mode `0700`).
+- **Current default (file envelope):**
+  - `identity.enc` — private key encrypted under a random wrapping key (mode `0600`)
+  - `wrapping-key` — 32-byte file wrapping key (mode `0600`)
+  - `identity.pub` — public key (mode `0644`) for sharing recipients
+- **Legacy:** plaintext `identity` (mode `0600`) is still readable until the user runs `up key upgrade`.
+- **CI / automation:** `UP_KEY` or `DOTENVUP_PRIVATE_KEY` (base64 private key) overrides files; never prompts.
+- **Not in this release:** macOS Keychain / Touch ID. That moves the wrapping key into Keychain with a presence prompt; see [design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md). Until then, anyone who can read both `identity.enc` and `wrapping-key` can decrypt — same class of local-disk risk as a single `0600` key file, with a clearer path to biometrics later.
 
 ## Key Backup and Recovery
 
-- Use key export/import to back up and restore identity between machines:
+- **Automatic recovery (recommended):** `up init` and `up key upgrade` write `~/.dotenvup/recovery/<keyId>.dotenvup-key` and show a one-time recovery code. Store that code somewhere durable. Check with `up key recovery status`.
+- **Manual export/import** between machines:
   - `up key export backup.dotenvup-key`
   - `up key import backup.dotenvup-key`
-- Export bundles are passphrase-protected and include integrity/fingerprint checks.
+- Export/recovery bundles are passphrase-protected (scrypt + XChaCha20) and include integrity/fingerprint checks.
 - DotEnvUp never writes raw private keys to logs.
+- **Existing users:** migration is opt-in (`up key upgrade`). It does not change Key-Id. Details: [RELEASE_NOTES_IDENTITY_ENVELOPE.md](RELEASE_NOTES_IDENTITY_ENVELOPE.md).
 
 ## What We Never Log
 
@@ -36,9 +42,11 @@ DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud,
 |--------------------|--------|
 | Disk access (read `.env.up`) | Can see metadata; cannot decrypt without private key |
 | Disk access (read `.env`) | Can read plaintext if file exists (unlocked) |
-| Access to `~/.dotenvup/identity` | Can decrypt `.env.up`; full compromise |
+| Access to plaintext `identity` (legacy) or to both `identity.enc` + `wrapping-key` | Can decrypt `.env.up`; full compromise |
+| Access to recovery bundle **without** the recovery code | Cannot decrypt (scrypt-protected) |
+| Access to recovery bundle **with** the recovery code | Can restore identity (treat the code like a master backup) |
 
-**Mitigation:** Lock removes `.env` from disk. The main risk surface is the plaintext `.env` when unlocked. Use short unlock durations or `--until-terminal-exit` to minimize exposure.
+**Mitigation:** Lock removes `.env` from disk. Prefer `up key upgrade` on older installs. The main day-to-day risk surface remains the plaintext `.env` when unlocked — use short unlock durations, Safe Edit, or `up run --`.
 
 ## Sharing and Recipients
 

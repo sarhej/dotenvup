@@ -76,6 +76,23 @@ Scripts and agents can branch on these codes.
 - **Do not assume `.env` exists.** It may be locked. Use `up run --` or check with `up status`.
 - If using VS Code/Cursor extension, use `DotEnvUp: Key Management` for key backup/recovery tasks.
 - When editing secrets: `up unlock` -> edit `.env` -> `up import .env` -> `up lock`.
+- **Never print recovery codes**, `up show` output, or private key material into chat/logs.
+- **Never run `up init --force`** or `up key upgrade` unless the user explicitly asked (identity changes / interactive recovery).
+
+## Local identity storage (agents)
+
+Release notes: [docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md](docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md).
+
+| `up status --json` field | Meaning |
+|--------------------------|---------|
+| `keyStorage` | `file-envelope` (current), `plaintext` (legacy), or `absent` |
+| `hasRecoveryBundle` | Recovery file exists for active Key-Id |
+| `upgradeRecommended` | User should run `up key upgrade` (opt-in; human only) |
+
+- New installs use `identity.enc` + wrapping key under `~/.dotenvup/`.
+- Legacy plaintext `identity` still works until the human upgrades.
+- **Touch ID / Keychain is not shipped yet.** Do not tell users biometrics are available.
+- CI: prefer `UP_KEY` / `DOTENVUP_PRIVATE_KEY`; never hang on prompts (`DOTENVUP_NO_PROMPT` / non-TTY).
 
 ## Non-Interactive / CI Flags
 
@@ -83,11 +100,11 @@ All commands work in non-TTY (pipes, CI, agents) with the right flags:
 
 | Flag | Commands | Purpose |
 |------|----------|---------|
-| `--yes`, `-y` | lock | Skip confirmation prompt |
-| `--force`, `-f` | lock, unlock | Lock with drift; overwrite `.env` on unlock |
+| `--yes`, `-y` | lock, init, key upgrade | Skip confirmation prompts |
+| `--force`, `-f` | lock, unlock, init | Lock with drift; overwrite `.env` on unlock; overwrite identity on init (archives old Key-Id) |
 | `--force-delete` | lock | Delete `.env` even if `.env.up` can't be decrypted |
 | `--duration <time>` | unlock | Set auto-lock timer (5m, 15m, 1h, etc.) |
-| `--json` | status, keys | Machine-readable JSON output |
+| `--json` | status, keys, key recovery status | Machine-readable JSON output |
 
 ## Using with Claude Code
 
