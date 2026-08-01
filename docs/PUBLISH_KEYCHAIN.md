@@ -30,11 +30,12 @@ Ship order matters: npm packages first (CLI/format pull the helper), then extens
 | `@dotenvup/cli@0.2.1` | published |
 | `@dotenvup/node@0.2.0` | published |
 | `@dotenvup/mcp@0.2.0` | published |
-| `@dotenvup/keychain@0.1.0` | **ghost** — publish ACK but registry 404 (same for retired `@dotenvup/keychain-darwin`). Check npm org / security hold; helper ships inside extension VSIX and local monorepo builds. |
+| `@dotenvup/keychain@0.1.0` | published (live) |
+| `@dotenvup/keychain-darwin@0.1.1` | published but **deprecated name** — prefer `@dotenvup/keychain`; consider npm deprecate |
 
 ```bash
-# Retry keychain when npm org allows public packages with Mach-O binaries:
-npm publish --workspace=@dotenvup/keychain --access public
+# Already published. To deprecate the old name:
+# npm deprecate @dotenvup/keychain-darwin@"*" "Use @dotenvup/keychain instead."
 ```
 
 ## Extension
@@ -64,6 +65,10 @@ Until then: build/sign/notarize the helper locally with keychain profile `dotenv
 
 ## After publish
 
-- [ ] `npm i -g @dotenvup/cli@0.2.0` → `up status --json` shows `keychainHelper` / `sessionActive` fields
-- [ ] Marketplace + Open VSX show **0.6.4**
-- [ ] Update [tymio.md](tymio.md) / release notes if needed
+- [x] `up` **0.2.1** local — `up status --json` shows `keyStorage`/`keychainHelper`/`sessionActive`
+- [x] Marketplace + Open VSX show **0.6.4**
+- [ ] Optional: GitHub Release tag `v0.6.4` + notes
+- [ ] Optional: bump `@dotenvup/mcp` dep to `@dotenvup/cli@^0.2.1` and publish
+- [ ] Optional: `npm deprecate @dotenvup/keychain-darwin`
+- [ ] Optional: CI Apple `.p12` / notary secrets ([KEYCHAIN_M2_SETUP.md](design/KEYCHAIN_M2_SETUP.md))
+- [ ] Human: finish [KEYCHAIN_M3_MANUAL_TEST.md](design/KEYCHAIN_M3_MANUAL_TEST.md) if not already
