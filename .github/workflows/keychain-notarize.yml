@@ -1,0 +1,100 @@
+# Optional: sign + notarize @dotenvup/keychain helper in CI (macOS only).
+# Skips entirely when Apple secrets are not configured — local notary profile remains the release path.
+#
+# Required secrets (all must be set, or the job no-ops):
+#   APPLE_CERTIFICATE_P12_BASE64
+#   APPLE_CERTIFICATE_PASSWORD
+#   APPLE_API_KEY_ID
+#   APPLE_API_ISSUER
+#   APPLE_API_KEY_P8
+#   APPLE_TEAM_ID   (e.g. 85W68GBU9V)
+
+name: Keychain helper (sign + notarize)
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  notarize:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Apple secrets present
+        id: secrets
+        env:
+          APPLE_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$APPLE_CERTIFICATE_P12_BASE64" ] && [ -n "$APPLE_CERTIFICATE_PASSWORD" ] \
+            && [ -n "$APPLE_API_KEY_ID" ] && [ -n "$APPLE_API_ISSUER" ] \
+            && [ -n "$APPLE_API_KEY_P8" ] && [ -n "$APPLE_TEAM_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Apple signing secrets not fully configured — skipping (use local notary profile)."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Import Developer ID certificate
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          APPLE_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          CERT_PATH="$RUNNER_TEMP/certificate.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/dotenvup-signing.keychain-db"
+          echo "$APPLE_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH"
+          security create-keychain -p "" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN_PATH"
+          rm -f "$CERT_PATH"
+
+      - name: Store notarytool credentials
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          KEY_PATH="$RUNNER_TEMP/AuthKey_${APPLE_API_KEY_ID}.p8"
+          printf '%s\n' "$APPLE_API_KEY_P8" > "$KEY_PATH"
+          xcrun notarytool store-credentials "dotenvup-ci" \
+            --key "$KEY_PATH" \
+            --key-id "$APPLE_API_KEY_ID" \
+            --issuer "$APPLE_API_ISSUER"
+          rm -f "$KEY_PATH"
+
+      - name: Build, sign, notarize helper
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          DOTENVUP_CODESIGN: '1'
+          DOTENVUP_NOTARIZE: '1'
+          DOTENVUP_NOTARY_PROFILE: dotenvup-ci
+        run: |
+          npm ci
+          npm run build --workspace=@dotenvup/keychain
+          codesign --verify --verbose=2 packages/keychain-darwin/bin/dotenvup-keychain
+          xcrun stapler validate packages/keychain-darwin/bin/dotenvup-keychain
+
+      - name: Upload helper artifact
+        if: steps.secrets.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotenvup-keychain-macos
+          path: packages/keychain-darwin/bin/dotenvup-keychain
+          if-no-files-found: error

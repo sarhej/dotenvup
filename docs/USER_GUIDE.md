@@ -122,9 +122,9 @@ up key upgrade --yes
 
 Safe order: create + verify a recovery bundle → write `identity.bak-<keyId>` → write envelope → verify decrypt → only then remove plaintext. `up status` nudges you when an upgrade is recommended.
 
-### up key migrate-to-keychain (macOS, experimental)
+### up key migrate-to-keychain (macOS, opt-in)
 
-After you have a file envelope + recovery bundle, optionally move the **wrapping key** into the macOS Keychain (`UserPresence`: Touch ID, Apple Watch, or login password). The private key stays in `identity.enc`; Key-Id is unchanged.
+After you have a file envelope + recovery bundle, optionally move the **wrapping key** into the macOS Keychain. Reads prompt via LocalAuthentication (Touch ID, Apple Watch, or login password). The private key stays in `identity.enc`; Key-Id is unchanged. This is **not** OS-enforced Keychain ACL (`UserPresence` entitlement); see [SECURITY.md](SECURITY.md).
 
 ```bash
 up key upgrade              # prerequisite if still on plaintext

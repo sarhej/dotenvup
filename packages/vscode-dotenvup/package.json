@@ -1,7 +1,7 @@
 {
   "name": "dotenvup",
   "displayName": ".env Up (DotEnvUp)",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": ".env encryption: encrypt .env into .env.up. VS Code/Cursor extension + CLI (up). Encrypted local identity; opt-in macOS Keychain + session agent; lock/unlock, Safe Edit, up run --, MCP. Zero-knowledge. CLI: npm i -g @dotenvup/cli.",
   "publisher": "dotenvup",
   "keywords": [

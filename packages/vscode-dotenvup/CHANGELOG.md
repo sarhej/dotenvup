@@ -2,6 +2,13 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.6.5] - 2026-08-01
+
+### Fixed
+
+- **Notarized Keychain helper** — VSIX ships a Developer ID–signed helper that has passed Apple notarization (Gatekeeper-safe for public downloads). Bare Mach-O cannot be stapled; ticket is online after Accepted.
+- **Key Management** — Warm session / Lock session / Migrate to Keychain; honest Keychain (not OS ACL) messaging.
+
 ## [0.6.4] - 2026-08-01
 
 ### Fixed

@@ -62,5 +62,13 @@ if [[ "$DO_NOTARIZE" == "1" ]]; then
   ditto -c -k --keepParent "$OUT" "$zip_path"
   xcrun notarytool submit "$zip_path" --keychain-profile "$NOTARY_PROFILE" --wait
   rm -f "$zip_path"
-  echo "Notarization submitted for $OUT"
+  # Staple embeds the ticket (best for .app/.pkg/.dmg). Bare Mach-O often fails staple
+  # with error 73; Gatekeeper still accepts via online ticket lookup after "Accepted".
+  if xcrun stapler staple "$OUT" 2>/dev/null; then
+    echo "Stapled notarization ticket onto $OUT"
+  else
+    echo "Note: stapler skipped/failed for bare binary (expected). Notary status Accepted is enough for online Gatekeeper."
+  fi
+  spctl -a -vv --type execute "$OUT" 2>&1 || true
+  echo "Notarization complete for $OUT"
 fi
