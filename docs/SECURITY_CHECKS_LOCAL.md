@@ -94,7 +94,7 @@ semgrep scan --config auto --severity=ERROR
 # Security-only pack: semgrep scan --config p/security-audit
 ```
 
-CI `npm run security:sast` fails on **ERROR**-severity findings only (WARNING path-traversal on `path.join` of workspace roots is noise for this CLI/extension). OpenSSF Scorecard runs on **main** via [`.github/workflows/security.yml`](../.github/workflows/security.yml); the Extension release workflow does not run Scorecard on tag refs (Scorecard only supports the default branch).
+CI `npm run security:sast` fails on **ERROR**-severity findings only (WARNING path-traversal on `path.join` of workspace roots is noise for this CLI/extension). OpenSSF Scorecard runs only via [`.github/workflows/security.yml`](../.github/workflows/security.yml) on **main** (the Scorecard action rejects tag and non-main refs).
 
 **Option B – CodeQL (deeper, slower; good for CI):**
 
