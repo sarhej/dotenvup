@@ -323,7 +323,8 @@ The following are defined in v1 but reserved for future use:
 | Field | Location | Status |
 | :--- | :--- | :--- |
 | `env` | `[keys]` column | Reserved. Intended for environment tags (e.g. `dev`, `staging`, `prod`). |
-| `signature` | Between `[keys]` and `[encrypted]` | Reserved for v2. Header signature for tamper evidence. |
+| `signature` | Between `[keys]` and `[encrypted]` | Reserved for v2. Header + `[keys]` + `[policy]` signature for tamper evidence. See [design/FORMAT_V2.md](design/FORMAT_V2.md). |
+| `policy` | Between `[keys]` and `[encrypted]` | **Proposed** (optional). Per-recipient key subsets (cleartext). See [design/TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md). |
 | `identity` | `[encrypted]` block | Optional in v1. Links recipients to external accounts. |
 | `Project` | Header | Optional in v1. Project name. |
 | `Repository` | Header | Optional in v1. Git repository URL. |

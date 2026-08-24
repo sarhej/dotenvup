@@ -336,13 +336,11 @@ Suggested version bump when implemented:
 
 ---
 
-## 13. References
+## 13. Related docs
 
-- [FORMAT_SPEC.md](../FORMAT_SPEC.md) — v1 stable
-- [SECURITY.md](../SECURITY.md) — threat model
-- [KEYCHAIN_TOUCHID.md](./KEYCHAIN_TOUCHID.md) — session/signing UX
-- [MCP_SERVER.md](./MCP_SERVER.md) — agent verify tool fits Tier C
-- [ROADMAP.md](../ROADMAP.md) — onboarding items complement v2 `kind` / `env`
+- [TEAM_SECRETS_SOLUTION.md](./TEAM_SECRETS_SOLUTION.md) — `[policy]` block, per-recipient value subsets (team track; orthogonal to signing)
+- [SHARING_MODEL.md](./SHARING_MODEL.md) — v1 implementation status
+- [FORMAT_SPEC.md](../FORMAT_SPEC.md) — v1 normative spec
 
 ---
 

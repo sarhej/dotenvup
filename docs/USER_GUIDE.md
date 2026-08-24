@@ -242,7 +242,7 @@ If you lock without importing, your edits are lost. The lock command will warn y
 
 ### Team recipient workflow
 
-> **Scope:** Recipients decrypt the **entire** `.env.up` file (all keys). Per-key sharing is **not** supported — see [SHARING_MODEL.md](design/SHARING_MODEL.md).
+> **Design:** [TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md). **Today:** multi-recipient blocks work; each recipient gets the **same** values. **Target:** optional `[policy]` + per-recipient value subsets + merge re-encrypt. Key names always cleartext.
 
 1. Each teammate shares their **public** key: their public key file (e.g. `~/.dotenvup/identity.pub`) or the `publicKey` value from `up keys --json`.
 2. Project owner adds recipients:

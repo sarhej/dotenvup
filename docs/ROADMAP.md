@@ -187,16 +187,15 @@ Ideas for first-time users who do not yet have a clean `.env` workflow. **Constr
 
 ---
 
-## Priority 4 (Exploration): Format v2
+## Priority 4 (Exploration): Team secrets + format extensions
 
-v1 is stable. Exploration doc for tamper-evident metadata, signing, key `kind`/`env`, and git provenance (complements commit signing — does not replace it):
+**Canonical design:** [design/TEAM_SECRETS_SOLUTION.md](./design/TEAM_SECRETS_SOLUTION.md) — `[policy]` block, per-recipient value subsets, merge re-encrypt, no read-only roles.
 
-- **Design (draft):** [design/FORMAT_V2.md](./design/FORMAT_V2.md)
-- **Not started:** normative spec, `@dotenvup/format` implementation, `up verify`, signing subkey
-
-When v2 ships, target `@dotenvup/format` + CLI/extension minor releases — not a separate npm product.
-
-**Sharing (v1):** whole-file multi-recipient only — [design/SHARING_MODEL.md](./design/SHARING_MODEL.md).
+| Track | Doc | Status |
+|-------|-----|--------|
+| Team policy + filtered payloads | TEAM_SECRETS_SOLUTION.md | Designed, not implemented |
+| Metadata signing | [FORMAT_V2.md](./design/FORMAT_V2.md) | Draft (orthogonal) |
+| Implementation map | [SHARING_MODEL.md](./design/SHARING_MODEL.md) | v1 shipped vs target |
 
 ---
 
