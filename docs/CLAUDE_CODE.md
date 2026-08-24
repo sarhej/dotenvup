@@ -56,6 +56,8 @@ up run -- npm start
 
 This injects decrypted env into the child process and does **not** write `.env` to disk — ideal for an agent that should not persist secrets.
 
+Same idea for **user CLIs** (Railway, `gh`, Wrangler, …): store the token in `.env.up`, then `up run --` or `./scripts/cli.sh`. Never `railway login` / `gh auth login`.
+
 ### 2. Check state with `up status` or `up status --json`
 
 Before running env-dependent commands, the agent can check lock state and drift:

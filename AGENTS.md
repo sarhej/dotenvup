@@ -26,7 +26,7 @@ For seamless team sharing on top of this open format: **[unknownpassword.com](ht
 | **npm (format)** | https://www.npmjs.com/package/@dotenvup/format |
 
 **Paste into another chat:**
-*"DotEnvUp = extension v0.6.5 + CLI. Encrypted .env format (.env.up). VS Code/Cursor extension (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli — up lock/unlock/run. Default identity.enc; macOS Keychain/Touch ID is OPT-IN (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
+*"DotEnvUp = extension v0.6.5 + CLI. Encrypted .env format (.env.up). VS Code/Cursor extension (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli — up lock/unlock/run. Default identity.enc; macOS Keychain/Touch ID is OPT-IN (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json. CLI tokens in .env.up let agents run railway/gh/etc without cli login. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
 
 See also [docs/DOTENVUP_REFERENCE.txt](docs/DOTENVUP_REFERENCE.txt) for a copy-paste blob.
 
@@ -58,6 +58,25 @@ up run -- npm start
 ```
 
 This injects decrypted env vars into the child process without writing `.env` to disk.
+
+## CLI tokens (run user CLIs without overwriting personal logins)
+
+Agents **can** run the user's CLIs when the project token is in `.env.up`. Railway and GitHub are examples; the same pattern works for Wrangler, AWS, Fly, etc.
+
+1. User stores the CLI's token env var in `.env.up` once (agents never invent tokens).
+2. Run via `./scripts/cli.sh` if the repo has it, otherwise `up run -- <cli> …` after confirming the key exists (`up keys --json`).
+3. **Never** `railway login`, `gh auth login`, `wrangler login`, or other `*:login` / `auth login` — those overwrite the user's personal CLI account.
+4. **Never** run the bare CLI if the project token is missing (many CLIs fall through to `~/.railway`, `gh` keyring, etc.).
+5. Print identity / present-missing **names** only. Never print token values or `up show`.
+
+```bash
+./scripts/cli.sh status
+./scripts/cli.sh whoami
+./scripts/cli.sh railway whoami                          # example
+./scripts/cli.sh run --require CLOUDFLARE_API_TOKEN -- wrangler whoami
+```
+
+Reference wrapper: [scripts/cli.sh](scripts/cli.sh). Cursor rule: `.cursor/rules/cli-tokens-dotenvup.mdc`.
 
 ## Exit Codes
 
@@ -141,6 +160,7 @@ This project uses DotEnvUp. Never assume .env exists (it may be locked).
 Use `up run -- <command>` when a command needs environment variables.
 Use `up status --json` for lock state, keyStorage, and sessionActive.
 macOS Keychain/Touch ID is opt-in only — do not claim it is default.
+You can run user CLIs (railway, gh, wrangler, …) when their token is in .env.up — never `cli login` (overwrites personal accounts); refuse if the token is missing.
 Never paste recovery codes or secrets into chat. See AGENTS.md / dotenvup.com/llms.txt.
 ```
 

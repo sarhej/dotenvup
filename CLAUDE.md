@@ -21,6 +21,7 @@ See [AGENTS.md](AGENTS.md) for the full automation guide. **Claude Code users:**
 - **Never assume `.env` exists** — it may be locked. Use `up run -- <command>` to inject env.
 - `up status` or `up status --json` to check lock state and drift.
 - `up run -- npm test`, `up run -- npm start` — run commands with decrypted env (no file written).
+- User CLIs: token in `.env.up`, then `./scripts/cli.sh` or `up run --`. Never `railway login` / `gh auth login`.
 - Non-interactive flags: `--yes`, `--force`, `--duration`, `--force-delete`, `--json`.
 - Exit codes: `0` success, `1` user/usage error, `2` system error.
 

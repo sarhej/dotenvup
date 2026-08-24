@@ -187,6 +187,19 @@ Ideas for first-time users who do not yet have a clean `.env` workflow. **Constr
 
 ---
 
+## Priority 4 (Exploration): Format v2
+
+v1 is stable. Exploration doc for tamper-evident metadata, signing, key `kind`/`env`, and git provenance (complements commit signing — does not replace it):
+
+- **Design (draft):** [design/FORMAT_V2.md](./design/FORMAT_V2.md)
+- **Not started:** normative spec, `@dotenvup/format` implementation, `up verify`, signing subkey
+
+When v2 ships, target `@dotenvup/format` + CLI/extension minor releases — not a separate npm product.
+
+**Sharing (v1):** whole-file multi-recipient only — [design/SHARING_MODEL.md](./design/SHARING_MODEL.md).
+
+---
+
 ## References
 
 - [File Type Registration](./FILE_TYPE.md) — Canonical MIME types, UTI, registry keys

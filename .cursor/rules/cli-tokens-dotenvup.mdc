@@ -1,0 +1,32 @@
+---
+description: Run user CLIs via DotEnvUp-stored tokens; never overwrite personal CLI logins
+alwaysApply: true
+---
+
+# CLI tokens via DotEnvUp
+
+Agents **can** run the user's CLIs (Railway, GitHub, Cloudflare, AWS, …) when the project token lives in `.env.up`. One-time setup per project; then use the wrapper or `up run --`.
+
+## Do
+
+- Store the CLI's token env var in `.env.up` (user fills the value; **never invent tokens**).
+- Prefer `./scripts/cli.sh` when it exists: `status`, `whoami`, `run --require KEY -- cmd`.
+- Otherwise: confirm the key exists (`up keys --json`), then `up run -- <cli> …`.
+- Print **identity / present-missing names only**. Never print token values, `up show`, or `cli.sh env` output.
+
+## Do not
+
+- Do **not** run `railway login`, `gh auth login`, `wrangler login`, or any `*:login` / `auth login` — that overwrites the user's **personal** CLI account.
+- Do **not** run the bare CLI when the project token is missing. Many CLIs fall through to `~/.railway`, `gh` keyring, etc.
+- Do **not** use `source scripts/cli.sh env` from an agent session (exports can leak into tool logs). Humans may source it in their own terminal.
+
+## Examples (same pattern for any service)
+
+```bash
+# Railway (example): RAILWAY_API_TOKEN in .env.up
+./scripts/cli.sh railway whoami
+# GitHub (example): GH_TOKEN in .env.up
+./scripts/cli.sh gh api user --jq .login
+# Any other CLI:
+./scripts/cli.sh run --require CLOUDFLARE_API_TOKEN -- wrangler whoami
+```

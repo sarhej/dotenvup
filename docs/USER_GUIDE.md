@@ -75,6 +75,21 @@ up run -- npm start
 up run -- python main.py
 ```
 
+### CLI tokens (optional wrapper)
+
+You can store **CLI API tokens** in `.env.up` so agents and scripts run Railway, GitHub, Wrangler, etc. **as you** without `railway login` / `gh auth login` (those overwrite your personal CLI accounts).
+
+This repo’s example wrapper: [scripts/cli.sh](../scripts/cli.sh). Copy it into other projects; add a `SERVICES` line for each CLI.
+
+```bash
+./scripts/cli.sh status
+./scripts/cli.sh whoami
+./scripts/cli.sh railway whoami                          # example
+./scripts/cli.sh run --require CLOUDFLARE_API_TOKEN -- wrangler whoami
+```
+
+The user fills token values locally (`up unlock` → edit `.env` → `up import .env --delete` → `up lock`). Agents must not invent tokens. If the token is missing, do not run the bare CLI — it often falls through to a personal login.
+
 ### up keys
 
 List key metadata (names, versions, timestamps) without decrypting values.
@@ -226,6 +241,8 @@ up recover .env.up --deep
 If you lock without importing, your edits are lost. The lock command will warn you.
 
 ### Team recipient workflow
+
+> **Scope:** Recipients decrypt the **entire** `.env.up` file (all keys). Per-key sharing is **not** supported — see [SHARING_MODEL.md](design/SHARING_MODEL.md).
 
 1. Each teammate shares their **public** key: their public key file (e.g. `~/.dotenvup/identity.pub`) or the `publicKey` value from `up keys --json`.
 2. Project owner adds recipients:

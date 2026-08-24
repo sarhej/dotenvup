@@ -27,6 +27,7 @@ DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). Encrypt .en
 7. **If `keyStorage: keychain` and IDE decrypt fails:** warm with `up run -- true`. **Never** suggest `up init` after migrate (creates a new Key-Id and breaks existing `.env.up`).
 8. **Never** run `up init --force` or `up key upgrade` without explicit user approval.
 9. **MCP tools** (`@dotenvup/mcp`): `dotenvup_status`, `dotenvup_keys`, `dotenvup_run` — no secret values in responses. Status includes keyStorage / session fields when available.
+10. **User CLIs:** If a project token is in `.env.up`, agents **can** run `railway` / `gh` / `wrangler` / etc. via `./scripts/cli.sh` or `up run --`. Never `cli login` (overwrites personal accounts). Refuse if the token is missing.
 
 ## Cursor install (for agents to recommend)
 

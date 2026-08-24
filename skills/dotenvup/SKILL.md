@@ -1,6 +1,6 @@
 ---
 name: dotenvup
-description: "Manages DotEnvUp encrypted env files (.env.up). Use for .env.up projects, API keys, staging credentials, bootstrap/rotate secrets, or any command that needs env — prefer `up run --`, check `up status --json`, never assume .env exists. Explains identity.enc vs opt-in macOS Keychain/session to users."
+description: "Manages DotEnvUp encrypted env files (.env.up). Use for .env.up projects, API keys, staging credentials, CLI tokens (railway/gh/wrangler/etc via up run — never cli login), bootstrap/rotate secrets, or any command that needs env — prefer `up run --`, check `up status --json`, never assume .env exists. Explains identity.enc vs opt-in macOS Keychain/session to users."
 ---
 
 # DotEnvUp: encrypted .env for projects and agents
@@ -34,6 +34,7 @@ When the user asks how DotEnvUp stores keys, Touch ID, or “is it safe,” say:
 8. **Local identity:** New installs use encrypted `identity.enc`. If `upgradeRecommended: true`, tell the human to run `up key upgrade` (opt-in; do not auto-run). **macOS Keychain is opt-in** (`up key migrate-to-keychain`). Do **not** claim “Touch ID by default.”
 9. **Never** run `up init --force` without explicit user approval (replaces identity after archive).
 10. Prefer MCP `dotenvup_status` / `dotenvup_run` when configured (no secrets in tool responses).
+11. **You can run the user's CLIs** (Railway, GitHub, Cloudflare, AWS, …) when the token is in `.env.up`. Use `./scripts/cli.sh` if present, or `up run --`. Never `railway login` / `gh auth login` / other `*:login` — that overwrites personal CLI accounts. If the token is missing, refuse (bare CLIs fall through to the user's global login). Never invent tokens.
 
 ## Command reference
 
@@ -99,6 +100,22 @@ up run -- true             # warm session / Touch ID once
 up session status
 ```
 
+**CLI tokens (agents can act as the user):**
+
+Store the CLI's token env var in `.env.up` once (user fills the value). Then run the CLI through DotEnvUp so personal `railway login` / `gh auth login` accounts stay untouched.
+
+```bash
+./scripts/cli.sh status                    # names present/missing only
+./scripts/cli.sh whoami                    # identity, not tokens
+./scripts/cli.sh railway whoami            # example: RAILWAY_API_TOKEN
+./scripts/cli.sh gh api user --jq .login   # example: GH_TOKEN
+./scripts/cli.sh run --require CLOUDFLARE_API_TOKEN -- wrangler whoami
+# interactive human shell only (not agents):
+source scripts/cli.sh env
+```
+
+If the repo has no wrapper: `up keys --json` to confirm the key exists, then `up run -- <cli> …`. Same pattern for any service.
+
 ## Vite and other file-based bundlers
 
 `up run --` injects `process.env`, but Vite reads `import.meta.env` from `.env*` files on disk. For Vite SPAs, prefer `up unlock` + `.env` over `up run --`.
@@ -111,5 +128,7 @@ up session status
 - Asking the user to paste secrets into chat.
 - Claiming Touch ID / Keychain is on by default.
 - Suggesting `up init` after Keychain migrate when decrypt fails.
+- Running `railway login` / `gh auth login` / `wrangler login` on the user's machine.
+- Running a bare CLI when the project token is missing (falls through to personal login).
 
 Full automation guide: [AGENTS.md](https://github.com/sarhej/dotenvup/blob/main/AGENTS.md). Cursor: [CURSOR.md](https://github.com/sarhej/dotenvup/blob/main/docs/CURSOR.md). LLM digest: https://dotenvup.com/llms.txt

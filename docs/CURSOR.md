@@ -43,6 +43,7 @@ Use `up run -- <command>` when a command needs environment variables.
 Use `up status --json` for lock state, keyStorage, and sessionActive.
 macOS Keychain/Touch ID is opt-in only (up key migrate-to-keychain) — do not claim it is default.
 After Keychain migrate, warm with `up run -- true` if IDE decrypt fails — never up init.
+You can run user CLIs when their token is in .env.up (see scripts/cli.sh). Never railway login / gh auth login.
 Never paste recovery codes or secret values into chat.
 See AGENTS.md and skills/dotenvup/SKILL.md in the dotenvup repo.
 ```
@@ -58,12 +59,13 @@ The rule is always in context (cheap, minimal); the skill adds full workflows (b
 | Why a prompt again? | Cold Keychain or expired session — unlock once; session stays warm ~30m idle / 8h. |
 | IDE can’t decrypt after migrate | Run `up run -- true` to warm — **do not** `up init` (new Key-Id). |
 | How do agents run tests? | `up run -- npm test` (or MCP `dotenvup_run`) — no plaintext `.env` required. |
+| How do agents run my CLIs? | Token in `.env.up`, then `./scripts/cli.sh` / `up run --`. Never `cli login`. |
 
 LLM digest for crawlers/agents: https://dotenvup.com/llms.txt
 
 ## How Cursor agents work with DotEnvUp
 
-- **Agent runs shell commands**: Check `up status` / prefer `up run --`. Never invent secret values.
+- **Agent runs shell commands**: Check `up status` / prefer `up run --`. Never invent secret values. User CLIs: tokens in `.env.up`, never `*:login`.
 - **Skills**: [skills/dotenvup/SKILL.md](../skills/dotenvup/SKILL.md) — lock/unlock, Keychain honesty, Vite caveat.
 - **Rules**: `.cursor/rules/dotenvup.mdc` for a one-paragraph reminder.
 - **MCP**: [@dotenvup/mcp](../packages/dotenvup-mcp) — Command Palette **DotEnvUp: Copy MCP config for Cursor**.
@@ -82,6 +84,7 @@ Then reload Cursor (`Developer: Reload Window`). The skill appears under Customi
 | Need | Solution |
 |------|----------|
 | Run tests/build/start with secrets | `up run -- npm test` (and similar) |
+| Run user CLIs (Railway, gh, …) | Token in `.env.up` + `./scripts/cli.sh` / `up run --`; never `cli login` |
 | Know lock / Keychain / session | `up status --json` |
 | Teach Cursor the rules | DotEnvUp plugin (Marketplace) or skill in `.cursor/skills/` |
 | Session-level context | `.cursor/rules/dotenvup.mdc` snippet above |

@@ -57,6 +57,7 @@ Full automation guide: [AGENTS.md](AGENTS.md) at repo root.
 - **Never assume `.env` exists** — it may be locked. Use `up run -- <command>` to inject env.
 - Use `up status` (or `up status --json`) to check lock state and drift.
 - Prefer `up run -- <command>` when a command needs env (tests, build, run).
+- Agents can run user CLIs when the token is in `.env.up` (`./scripts/cli.sh` / `up run --`). Never `railway login` / `gh auth login`.
 - In non-interactive use: `--yes`, `--force`, `--duration`, `--force-delete`, `--json`.
 - Exit codes: `0` success, `1` user/usage error, `2` system error.
 - Do not commit `.env`; `.env.up` is safe to commit.
