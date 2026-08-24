@@ -165,12 +165,15 @@ Optional magic `#!dotenvup v2` later for signatures; `[policy]` can ship on v1-c
 
 ## Implementation checklist (when coding)
 
-1. **Spec addendum** — `[policy]` grammar, normative encrypt/verify, merge rules.
+**Gate:** Complete spec + test plan + security review before feature code ([TEAM_SECRETS_SPEC_ADDENDUM.md](./TEAM_SECRETS_SPEC_ADDENDUM.md), [TEAM_SECRETS_TEST_PLAN.md](./TEAM_SECRETS_TEST_PLAN.md), [TEAM_SECRETS_SECURITY.md](./TEAM_SECRETS_SECURITY.md)).
+
+1. **Tests first** — parser/policy validation, encrypt subset, `_raw` filter (R1/R2), merge (MRG-*).
 2. **`encrypt()`** — one JSON payload per recipient from policy.
 3. **`import` / Safe Edit** — merge re-encrypt; never drop unknown ciphertext.
-4. **CLI** — `up verify` optional: policy ↔ plaintext keys per block.
+4. **CLI** — `up verify` (structural + optional decrypt checks; no values in output).
 5. **Extension** — same merge path as CLI.
-6. **UnknownPassword** — edit policy + orchestrate re-encrypt (separate product).
+6. **QA** — `qa-fake-project-policy.sh` + doc update.
+7. **UnknownPassword** — edit policy + orchestrate re-encrypt (separate product).
 
 ---
 
@@ -186,6 +189,9 @@ Optional magic `#!dotenvup v2` later for signatures; `[policy]` can ship on v1-c
 ## Related docs
 
 - [SHARING_MODEL.md](./SHARING_MODEL.md) — today’s code vs this target  
+- [TEAM_SECRETS_SPEC_ADDENDUM.md](./TEAM_SECRETS_SPEC_ADDENDUM.md) — normative `[policy]` + merge rules  
+- [TEAM_SECRETS_TEST_PLAN.md](./TEAM_SECRETS_TEST_PLAN.md) — test matrix (pre-code gate)  
+- [TEAM_SECRETS_SECURITY.md](./TEAM_SECRETS_SECURITY.md) — threat model  
 - [FORMAT_SPEC.md](../FORMAT_SPEC.md) — v1 normative spec  
 - [FORMAT_V2.md](./FORMAT_V2.md) — metadata signatures (separate track)  
 - [USER_GUIDE.md](../USER_GUIDE.md) — user-facing recipient workflow  

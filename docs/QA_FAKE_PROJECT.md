@@ -6,6 +6,8 @@ It never touches your real `~/.dotenvup` keys.
 
 ## What it checks
 
+### Legacy harness (`qa-fake-project.sh`)
+
 1. Creates fake project `.env`.
 2. Creates isolated user identities:
    - Alice (owner)
@@ -15,6 +17,10 @@ It never touches your real `~/.dotenvup` keys.
 4. Encrypts `.env` as Alice.
 5. Decrypts same `.env.up` as Bob (proves multi-recipient works).
 6. Runs key recovery scan as Charlie.
+
+### Policy harness (planned)
+
+`qa-fake-project-policy.sh` — subset ACL, merge re-encrypt, and `up verify`. Spec: [design/TEAM_SECRETS_TEST_PLAN.md](design/TEAM_SECRETS_TEST_PLAN.md) §6.2.
 
 ## Run
 

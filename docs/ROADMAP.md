@@ -194,6 +194,9 @@ Ideas for first-time users who do not yet have a clean `.env` workflow. **Constr
 | Track | Doc | Status |
 |-------|-----|--------|
 | Team policy + filtered payloads | TEAM_SECRETS_SOLUTION.md | Designed, not implemented |
+| Normative spec + merge rules | [TEAM_SECRETS_SPEC_ADDENDUM.md](./design/TEAM_SECRETS_SPEC_ADDENDUM.md) | Draft (pre-code gate) |
+| Test plan | [TEAM_SECRETS_TEST_PLAN.md](./design/TEAM_SECRETS_TEST_PLAN.md) | Draft (pre-code gate) |
+| Security review | [TEAM_SECRETS_SECURITY.md](./design/TEAM_SECRETS_SECURITY.md) | Draft (pre-code gate) |
 | Metadata signing | [FORMAT_V2.md](./design/FORMAT_V2.md) | Draft (orthogonal) |
 | Implementation map | [SHARING_MODEL.md](./design/SHARING_MODEL.md) | v1 shipped vs target |
 

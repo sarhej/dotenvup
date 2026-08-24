@@ -50,7 +50,11 @@ DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud,
 
 ## Sharing and Recipients
 
-`.env.up` supports multiple recipients. Each recipient's block is encrypted with their public key. Only they can decrypt. The format supports future features (e.g. team sharing) where recipient public keys come from a server.
+`.env.up` supports multiple recipients. Each recipient's block is encrypted with their public key. Only they can decrypt.
+
+**Team policy (planned):** optional cleartext `[policy]` defines which key *values* each recipient receives; key *names* stay visible in `[keys]` for everyone with repo access. See [design/TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md) and the pre-implementation security review [design/TEAM_SECRETS_SECURITY.md](design/TEAM_SECRETS_SECURITY.md).
+
+Recipient public keys may come from manual exchange, GitHub SSH keys, or a team directory (e.g. UnknownPassword).
 
 ## Ed25519-to-X25519 Key Conversion
 

@@ -28,6 +28,8 @@
 - Re-import merges edits without wiping keys the editor never decrypted
 - No read-only roles — git audit only
 
+**Pre-implementation gates:** [TEAM_SECRETS_SPEC_ADDENDUM.md](./TEAM_SECRETS_SPEC_ADDENDUM.md) · [TEAM_SECRETS_TEST_PLAN.md](./TEAM_SECRETS_TEST_PLAN.md) · [TEAM_SECRETS_SECURITY.md](./TEAM_SECRETS_SECURITY.md)
+
 ---
 
 ## Code pointers
