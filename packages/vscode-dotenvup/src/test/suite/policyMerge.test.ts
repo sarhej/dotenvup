@@ -112,7 +112,7 @@ suite('Policy merge (team secrets)', () => {
 
     const bobBlock = updated.encryptedBlocks.find((b) => b.recipient === 'bob');
     assert.ok(bobBlock, 'Bob block still present');
-    const bobDec = await decrypt(bobBlock!, await bobStore.requirePrivateKey());
+    const bobDec = await decrypt(updated, 'bob', await bobStore.requirePrivateKey());
     assert.strictEqual(bobDec.entries.SHARED, 'bob-edited');
   });
 
@@ -134,7 +134,7 @@ suite('Policy merge (team secrets)', () => {
     assert.ok(file.policy, 'Policy section preserved');
     const bobBlock = file.encryptedBlocks.find((b) => b.recipient === 'bob');
     assert.ok(bobBlock, 'Bob block present after reencrypt');
-    const bobDec = await decrypt(bobBlock!, await bobStore.requirePrivateKey());
+    const bobDec = await decrypt(file, 'bob', await bobStore.requirePrivateKey());
     assert.strictEqual(bobDec.entries.SHARED, 'owner-sync');
     assert.strictEqual(bobDec.entries.ALICE_ONLY, undefined);
   });
