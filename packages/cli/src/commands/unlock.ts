@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { spawn } from 'child_process';
-import { parse, decryptAny } from '@dotenvup/format';
+import { parse, decryptAny, assertDecryptRespectsPolicy, PolicyValidationError } from '@dotenvup/format';
 import * as keystore from '../keystore.js';
 import { parseEnvFile, entriesMatch } from '../envParser.js';
 import * as logger from '../logger.js';
@@ -101,7 +101,17 @@ export async function run(options?: {
   const file = parse(content);
 
   const result = await decryptAny(file, privateKey, '@local');
-  const { entries, raw: rawContent } = result;
+  const { entries, raw: rawContent, recipient } = result;
+
+  try {
+    assertDecryptRespectsPolicy(recipient, entries, file.policy);
+  } catch (err) {
+    if (err instanceof PolicyValidationError) {
+      logger.error(err.message);
+      process.exit(1);
+    }
+    throw err;
+  }
 
   // Overwrite check: if .env exists and differs
   if (fs.existsSync(envPath)) {

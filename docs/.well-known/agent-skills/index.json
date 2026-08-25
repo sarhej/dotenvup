@@ -6,14 +6,14 @@
       "type": "skill-md",
       "description": "Use when the project uses DotEnvUp (.env.up). Never assume .env exists; prefer up run --. CLI tokens in .env.up let agents run user CLIs without cli login. Explain identity.enc vs opt-in macOS Keychain/session honestly.",
       "url": "https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md",
-      "digest": "sha256:a21f9f38c62b17d746d94475df6ff5c90f12f576181d9eecdf2ab479c6ec3189"
+      "digest": "sha256:88042ad0e29de346cc59cd876ab8e5a704d60149974d70672022e8f0d8189a80"
     },
     {
       "name": "dotenvup-claude-code",
       "type": "skill-md",
       "description": "Claude Code skill copy for DotEnvUp workflows (up run --, CLI tokens without cli login, Keychain honesty, lock state).",
       "url": "https://raw.githubusercontent.com/sarhej/dotenvup/main/docs/claude-code/dotenvup.skill.md",
-      "digest": "sha256:a21f9f38c62b17d746d94475df6ff5c90f12f576181d9eecdf2ab479c6ec3189"
+      "digest": "sha256:88042ad0e29de346cc59cd876ab8e5a704d60149974d70672022e8f0d8189a80"
     }
   ]
 }

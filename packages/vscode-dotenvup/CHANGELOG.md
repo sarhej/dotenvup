@@ -2,6 +2,14 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.7.0] - 2026-08-25
+
+### Added
+
+- **Team policy** — optional `[policy]` in `.env.up`: each recipient decrypts only their key subset. Merge import / Safe Edit preserve other people's ciphertext. `up verify` equivalent path; re-encrypt requires a full-catalog holder.
+- **Atomic `.env.up` writes** — temp file, decrypt verify, then rename (import, Safe Edit, re-encrypt).
+- Unlock / Safe Edit **refuse** when ciphertext exceeds `[policy]` (stale or legacy blocks).
+
 ## [0.6.5] - 2026-08-01
 
 ### Fixed

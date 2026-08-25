@@ -1,6 +1,6 @@
 # Team secrets — security review (pre-implementation)
 
-> **Status:** Threat model and acceptance gate for `[policy]` + merge re-encrypt.  
+> **Status:** Threat model for `[policy]` + merge re-encrypt (**implemented**).  
 > **Design:** [TEAM_SECRETS_SOLUTION.md](./TEAM_SECRETS_SOLUTION.md) · **Normative rules:** [TEAM_SECRETS_SPEC_ADDENDUM.md](./TEAM_SECRETS_SPEC_ADDENDUM.md)  
 > **Base model:** [SECURITY.md](../SECURITY.md)
 
@@ -12,8 +12,9 @@ This review covers:
 
 - Optional cleartext `[policy]` (value ACL by key name)
 - Per-recipient filtered ciphertext
-- Merge re-encrypt on import / Safe Edit / lock
+- Merge re-encrypt on import / Safe Edit
 - `up verify` (structural + optional decrypt checks)
+- Full-catalog gate on `up reencrypt`; fail-closed unlock/run on V3 mismatch
 
 Out of scope here: FORMAT v2 metadata signatures ([FORMAT_V2.md](./FORMAT_V2.md)), UnknownPassword product security, sealed one-off shares.
 
@@ -49,14 +50,13 @@ Out of scope here: FORMAT v2 metadata signatures ([FORMAT_V2.md](./FORMAT_V2.md)
 
 ## 4. Threat scenarios
 
-### 4.1 Accidental data loss (merge wipe) — **High (today)**
+### 4.1 Accidental data loss (merge wipe) — **Mitigated**
 
 | | |
 |---|---|
 | **Scenario** | Bob unlocks, edits 2 keys, `up import` re-encrypts **full** file for all recipients with only Bob's plaintext → Alice-only secrets lost. |
-| **Current v1** | **Vulnerable** — `import.ts` calls `create()` with full replace. |
-| **Target** | Merge algorithm §8 of spec addendum; MRG-* tests. |
-| **Residual** | Malicious Bob could still delete keys from **his** slice; cannot delete Alice-only ciphertext without Alice's cooperation unless he edits `[policy]` in git (visible). |
+| **Current** | **Mitigated** — merge import updates only the editor's block unless the editor holds the full catalog (`canSyncAllPolicyBlocks`). `up reencrypt` is refused for a partial slice. |
+| **Residual** | **Old CLI** (pre-merge) still full-replaces — every teammate must upgrade. Malicious Bob can still delete keys from **his** slice; cannot delete Alice-only ciphertext unless he edits `[policy]` in git (visible). `up lock` still does not merge (import first). |
 
 ### 4.2 `_raw` superset leak — **Critical (if mishandled)**
 
@@ -82,8 +82,8 @@ Out of scope here: FORMAT v2 metadata signatures ([FORMAT_V2.md](./FORMAT_V2.md)
 |---|---|
 | **Scenario** | Policy says Bob gets 2 keys; blob actually contains 40 (bug or malicious writer). |
 | **Impact** | Over-permission until detected. |
-| **Mitigation** | V3 verify with decrypt; writers must use policy-aware `encrypt()`. |
-| **Residual** | Offline verify without private key cannot detect V3. |
+| **Mitigation** | V3 on `up verify`; **fail-closed** on unlock / run / show / Safe Edit (`assertDecryptRespectsPolicy`). Writers must use policy-aware `encrypt()`. |
+| **Residual** | Offline verify without private key cannot detect V3. An old writer can still produce a mismatched file until teammates upgrade. |
 
 ### 4.5 Metadata intelligence — **Accepted**
 
@@ -134,7 +134,7 @@ Out of scope here: FORMAT v2 metadata signatures ([FORMAT_V2.md](./FORMAT_V2.md)
 
 1. **Policy mode off** unless `[policy]` section exists (no silent behavior change for solo devs).
 2. **Import with policy** MUST use merge, never full replace.
-3. **Unlock / run** MUST inject only decrypted entries (already true; add policy tests).
+3. **Unlock / run / show** MUST fail closed when decrypted keys exceed the policy slice (V3).
 4. **`up verify`** MUST NOT print values (metadata errors only).
 5. **Debug logs** MUST NOT include filtered or full entries (`UP_DEBUG` rules unchanged).
 6. **Agents** — `up keys` shows names; agents must not assume value access ([AGENTS.md](../../AGENTS.md)).
@@ -145,12 +145,15 @@ Out of scope here: FORMAT v2 metadata signatures ([FORMAT_V2.md](./FORMAT_V2.md)
 
 Sign off before merging feature PR:
 
-- [ ] ENC-05 / R2: `_raw` leakage tests pass
-- [ ] MRG-01/02: merge preserves other recipients' ciphertext
-- [ ] CLI-07: cannot import keys outside policy slice
-- [ ] No `up show` / verify / test dumps values in CI logs
-- [ ] SECURITY.md updated (pointer + half-open policy note)
-- [ ] Threat §4.1 documented in USER_GUIDE ("use new CLI for team policy files")
+- [x] ENC-05 / R2: `_raw` leakage tests pass
+- [x] MRG-01/02: merge preserves other recipients' ciphertext
+- [x] CLI-07: cannot import keys outside policy slice (MRG-03 / `mergePolicyAware` + format tests)
+- [x] No `up show` / verify / test dumps values in CI logs
+- [x] SECURITY.md updated (pointer + half-open policy note)
+- [x] Threat §4.1 documented in USER_GUIDE ("use new CLI for team policy files")
+- [x] `up reencrypt` / extension reencrypt gated on full-catalog ownership (`assertCanReencryptAll`)
+- [x] Atomic `.env.up` writes (`writeEnvUpAtomic`) on import / Safe Edit / reencrypt
+- [x] Unlock / run / Safe Edit refuse policy ciphertext supersets (`assertDecryptRespectsPolicy`)
 - [ ] Optional: semgrep / manual review of `encrypt(` call sites for policy path
 
 ---

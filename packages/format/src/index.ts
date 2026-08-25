@@ -11,6 +11,8 @@
 export {
   type EnvUpKey,
   type EnvUpHeader,
+  type EnvUpPolicy,
+  type EnvUpPolicyRow,
   type EnvUpRecipientBlock,
   type EnvUpFile,
   type EnvUpDecryptedFile,
@@ -24,7 +26,7 @@ export { serialize, serializeHeader } from './serializer.js';
 
 export { parseEnvFile, extractStructureComments, entriesMatch, entriesDiff } from './envParser.js';
 
-export { generateKeypair, encrypt, initSodium, keyFingerprint, type DecryptResult } from './crypto.js';
+export { generateKeypair, encrypt, encryptRecipientBlock, initSodium, keyFingerprint, buildRecipientPayload, type DecryptResult } from './crypto.js';
 
 // Safe deletion guard
 export { isSafeToDelete, type SafeDeleteResult } from './safeDelete.js';
@@ -119,6 +121,40 @@ export {
 // Sealed share (Approach B: true recipient encryption via crypto_box_seal)
 export { sealedShareEncrypt, sealedShareDecrypt } from './sealedShare.js';
 
+export {
+  SUPPORTED_POLICY_VERSION,
+  PolicyValidationError,
+  type PolicyErrorCode,
+  type PolicyValidationIssue,
+  type ValidatePolicyOptions,
+  type ValidatePolicyResult,
+  parsePolicySection,
+  serializePolicySection,
+  policyKeySetForRecipient,
+  assertPolicyWritable,
+  filterEntries,
+  filterRawForKeys,
+  mergePolicyAware,
+  validatePolicy,
+  verifyDecryptedSubset,
+  assertDecryptRespectsPolicy,
+  rawRespectsKeyFilter,
+} from './policy.js';
+
+export { mergeReencrypt, reencryptAll, type MergeReencryptOptions } from './mergeReencrypt.js';
+
+export {
+  revokeRecipientFromFile,
+  pruneCatalogToPolicy,
+  policyReferencedKeys,
+  canSyncAllPolicyBlocks,
+  holdsFullCatalog,
+  missingCatalogKeys,
+  assertCanReencryptAll,
+} from './recipientOps.js';
+
+export { writeEnvUpAtomic } from './atomicWrite.js';
+
 /**
  * Decrypt the values for a specific recipient from an EnvUpFile.
  * Returns entries (key-value pairs) and optionally the raw .env content.
@@ -182,6 +218,7 @@ export async function create(
   author: string,
   recipientPublicKeys: Map<string, Uint8Array>,
   rawContent?: string,
+  policy?: import('./types.js').EnvUpPolicy,
 ): Promise<import('./types.js').EnvUpFile> {
   const crypto = await import('./crypto.js');
   await crypto.initSodium();
@@ -205,7 +242,9 @@ export async function create(
   const header: import('./types.js').EnvUpHeader = {
     formatVersion: 1,
     encryptedBy: author,
-    encryptedFor: Array.from(recipientPublicKeys.keys()),
+    encryptedFor: policy
+      ? policy.rows.map((r) => r.recipient)
+      : Array.from(recipientPublicKeys.keys()),
     keyId,
     createdAt: now,
     algorithm: 'x25519-xchacha20-poly1305',
@@ -213,12 +252,54 @@ export async function create(
     keys,
   };
 
-  const encryptedBlocks = await crypto.encrypt(entries, recipientPublicKeys, rawContent);
+  const encryptedBlocks = await crypto.encrypt(entries, recipientPublicKeys, rawContent, policy);
 
   const file: import('./types.js').EnvUpFile = {
     header,
+    policy,
     encryptedBlocks,
   };
 
   return file;
+}
+
+/**
+ * Verify structural policy consistency and optional per-block decrypt subset checks.
+ */
+export async function verifyEnvUp(
+  file: import('./types.js').EnvUpFile,
+  privateKey?: Uint8Array,
+): Promise<import('./policy.js').ValidatePolicyResult> {
+  const {
+    validatePolicy,
+    verifyDecryptedSubset,
+    policyKeySetForRecipient,
+    rawRespectsKeyFilter,
+  } = await import('./policy.js');
+  const { decrypt: decryptBlock } = await import('./crypto.js');
+
+  const result = validatePolicy(file);
+  const errors = [...result.errors];
+
+  if (!privateKey || !file.policy) {
+    return { ok: errors.length === 0, errors };
+  }
+
+  for (const block of file.encryptedBlocks) {
+    try {
+      const dec = await decryptBlock(block, privateKey);
+      errors.push(...verifyDecryptedSubset(block.recipient, dec.entries, file.policy));
+      const allowed = policyKeySetForRecipient(file.policy, block.recipient);
+      if (allowed && dec.raw && !rawRespectsKeyFilter(dec.raw, allowed)) {
+        errors.push({
+          code: 'V3',
+          message: `Recipient "${block.recipient}" _raw contains keys outside policy`,
+        });
+      }
+    } catch {
+      // cannot decrypt this block with provided key — skip V3
+    }
+  }
+
+  return { ok: errors.length === 0, errors };
 }

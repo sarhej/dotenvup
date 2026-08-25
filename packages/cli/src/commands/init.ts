@@ -21,6 +21,15 @@ import * as logger from '../logger.js';
 const DEFAULT_RECIPIENT = '@local';
 const RECOVERY_WORD_COUNT = 8;
 
+function isNonInteractive(options?: { yes?: boolean }): boolean {
+  if (options?.yes) return true;
+  if (process.env.DOTENVUP_NO_PROMPT === '1') return true;
+  if (process.env.CI === 'true') return true;
+  if (process.env.DOTENVUP_TEST === '1') return true;
+  if (!process.stdin.isTTY) return true;
+  return false;
+}
+
 function promptNickname(): Promise<string> {
   return new Promise((resolve) => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -78,7 +87,7 @@ export async function run(options?: { force?: boolean; yes?: boolean }): Promise
 
   const { code, bundlePath, keyId } = await writeRecoveryBundle(identityDir, publicKey, privateKey);
 
-  if (process.stdin.isTTY) {
+  if (!isNonInteractive(options)) {
     try {
       const nick = await promptNickname();
       if (nick) author.setNickname(nick);
@@ -102,7 +111,7 @@ export async function run(options?: { force?: boolean; yes?: boolean }): Promise
   logger.info(`  ${code}`);
   logger.info('');
 
-  if (process.stdin.isTTY && !options?.yes) {
+  if (!isNonInteractive(options)) {
     const ok = await promptSavedRecovery();
     if (!ok) {
       logger.info('You can re-export later with: up key export (while this identity is still accessible).');

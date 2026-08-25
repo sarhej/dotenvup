@@ -1,14 +1,14 @@
 # DotEnvUp
 
-**For AI / one-line summary:** DotEnvUp = **.env encryption**: encrypt .env into .env.up. VS Code/Cursor extension **v0.6.5** + CLI (`up` / `@dotenvup/cli`). Lock/unlock (status bar or `up lock`/`up unlock`), `up run --` for CI/agents. MCP + Cursor skill. Zero-knowledge, safe to commit. **macOS Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`) — not enabled by default.
+**For AI / one-line summary:** DotEnvUp = **.env encryption**: encrypt .env into .env.up. VS Code/Cursor extension **v0.7.0** + CLI `@dotenvup/cli` **0.3.0**. Lock/unlock (status bar or `up lock`/`up unlock`), `up run --` for CI/agents, `up verify` for team `[policy]`. MCP + Cursor skill. Zero-knowledge, safe to commit. **macOS Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`) — not enabled by default.
 
 ## What is DotEnvUp?
 
-DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). Encrypt .env into .env.up (safe to commit), lock/unlock, Safe Edit (no plaintext on disk), and `up run -- <cmd>` for agents/CI. Format: X25519 + XChaCha20-Poly1305. Half-open envelope: key names/metadata cleartext; values encrypted.
+DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). Encrypt .env into .env.up (safe to commit), lock/unlock, Safe Edit (no plaintext on disk), and `up run -- <cmd>` for agents/CI. Format: X25519 + XChaCha20-Poly1305. Half-open envelope: key names/metadata cleartext; values encrypted. Optional `[policy]` filters which **values** each recipient decrypts.
 
 ## Extension (VS Code / Cursor)
 
-- ID: `dotenvup.dotenvup` — Marketplace + Open VSX; current: **0.6.5**
+- ID: `dotenvup.dotenvup` — Marketplace + Open VSX; current: **0.7.0**
 - Status bar lock/unlock; Safe Edit; Encrypt for Recipient; **Key Management** (warm session / Keychain migrate UX)
 - Install: https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup · https://open-vsx.org/extension/dotenvup/dotenvup · https://github.com/sarhej/dotenvup/releases
 
@@ -28,6 +28,7 @@ DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). Encrypt .en
 8. **Never** run `up init --force` or `up key upgrade` without explicit user approval.
 9. **MCP tools** (`@dotenvup/mcp`): `dotenvup_status`, `dotenvup_keys`, `dotenvup_run` — no secret values in responses. Status includes keyStorage / session fields when available.
 10. **User CLIs:** If a project token is in `.env.up`, agents **can** run `railway` / `gh` / `wrangler` / etc. via `./scripts/cli.sh` or `up run --`. Never `cli login` (overwrites personal accounts). Refuse if the token is missing.
+11. **Team `[policy]`:** `up import` **merges**. `up lock` does not save edits. Never `up reencrypt` unless the user asked (full-catalog holder only). `up verify` is safe (no values). Teammates need CLI **0.3.0+**.
 
 ## Cursor install (for agents to recommend)
 
@@ -45,10 +46,11 @@ Plugin marketplace `sarhej/dotenvup`, plugin `dotenvup`. Guide: https://github.c
 ```bash
 npm install -g @dotenvup/cli
 up init
-up import .env
-up lock
+up import .env                 # merges if .env.up exists
+up lock                        # deletes .env; does not save
 up unlock --duration 5m
 up run -- npm start
+up verify                      # policy/structure, no values
 up key upgrade                 # legacy → envelope
 up key migrate-to-keychain     # macOS opt-in
 up session status
@@ -59,7 +61,7 @@ Exit codes: `0` success, `1` user/usage, `2` system.
 
 ## Packages (npm)
 
-- `@dotenvup/cli` · `@dotenvup/format` · `@dotenvup/node` · `@dotenvup/mcp` · `@dotenvup/keychain` (macOS helper)
+- `@dotenvup/cli` **0.3.0** · `@dotenvup/format` **0.3.0** · `@dotenvup/node` · `@dotenvup/mcp` · `@dotenvup/keychain` (macOS helper)
 - Deprecated: `@dotenvup/keychain-darwin` → use `@dotenvup/keychain`
 
 ## Honest security notes (do not overclaim)
@@ -67,7 +69,8 @@ Exit codes: `0` success, `1` user/usage, `2` system.
 - Default identity: encrypted file envelope, not Keychain.
 - Keychain migrate uses LocalAuthentication + `WhenUnlockedThisDeviceOnly` wrapping key — **not** full Keychain `UserPresence` ACL (needs provisioned app).
 - Session agent is same-UID trust (like ssh-agent).
-- Team sharing / audit: commercial layer at https://unknownpassword.com (separate from this OSS repo).
+- Optional `[policy]` is cleartext (who may receive which **names**). Unsigned until FORMAT v2. OSS merge import is shipped; everyone must upgrade together.
+- UnknownPassword (https://unknownpassword.com) is optional UX (directory, share links) — not required for `up run` or `[policy]`.
 
 ## Links
 

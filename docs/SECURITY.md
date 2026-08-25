@@ -52,7 +52,7 @@ DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud,
 
 `.env.up` supports multiple recipients. Each recipient's block is encrypted with their public key. Only they can decrypt.
 
-**Team policy (planned):** optional cleartext `[policy]` defines which key *values* each recipient receives; key *names* stay visible in `[keys]` for everyone with repo access. See [design/TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md) and the pre-implementation security review [design/TEAM_SECRETS_SECURITY.md](design/TEAM_SECRETS_SECURITY.md).
+**Team policy:** optional cleartext `[policy]` defines which key *values* each recipient receives; key *names* stay visible in `[keys]` for everyone with repo access. Shipped in `@dotenvup/format` and `@dotenvup/cli` — see [design/TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md) and [design/TEAM_SECRETS_SECURITY.md](design/TEAM_SECRETS_SECURITY.md).
 
 Recipient public keys may come from manual exchange, GitHub SSH keys, or a team directory (e.g. UnknownPassword).
 

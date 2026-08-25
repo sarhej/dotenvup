@@ -44,6 +44,7 @@ npm-debug.log*
 coverage/
 .vscode-test/
 .qa-fake-project/
+.qa-fake-project-policy/
 
 # VS Code extension packaging
 *.vsix

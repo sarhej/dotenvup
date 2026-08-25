@@ -5,8 +5,8 @@
 
 import * as vscode from 'vscode';
 import * as crypto from 'crypto';
+import * as path from 'path';
 import type { ExtensionKeyStore } from '../keystore';
-import { getAuthor } from '../author';
 
 const VIEW_TYPE = 'dotenvup.safeEdit';
 
@@ -75,7 +75,7 @@ export class SafeEditCustomEditorProvider implements vscode.CustomTextEditorProv
 
     const decrypt = async (): Promise<string> => {
       const content = document.getText();
-      const { parse, decryptAny } = await import('@dotenvup/format');
+      const { parse, decryptAny, assertDecryptRespectsPolicy } = await import('@dotenvup/format');
       let privateKey: Uint8Array;
       try {
         privateKey = await this.keystore.requirePrivateKey();
@@ -85,6 +85,7 @@ export class SafeEditCustomEditorProvider implements vscode.CustomTextEditorProv
       }
       const file = parse(content);
       const result = await decryptAny(file, privateKey, '@local');
+      assertDecryptRespectsPolicy(result.recipient, result.entries, file.policy);
       return Object.entries(result.entries)
         .map(([k, v]) => `${k}="${v}"`)
         .join('\n');
@@ -110,26 +111,16 @@ export class SafeEditCustomEditorProvider implements vscode.CustomTextEditorProv
       if (message.type === 'save' && message.content !== undefined) {
         const newPlaintext = message.content;
         try {
-          const { create, serialize, parseEnvFile } = await import('@dotenvup/format');
-          const { requirePrivateKeyOrNotify } = await import('../keyErrors');
-          const privateKey = await requirePrivateKeyOrNotify(this.keystore, 'Safe Edit save');
-          const publicKey = await this.keystore.getPublicKey();
-          if (!privateKey || !publicKey) {
-            if (!publicKey) {
-              vscode.window.showErrorMessage('DotEnvUp: No public key found.');
-            }
-            return;
-          }
-          const author = await getAuthor(this.keystore.getIdentityDir());
-          const recipients = new Map<string, Uint8Array>();
-          recipients.set(author, publicKey);
+          const { parseEnvFile } = await import('@dotenvup/format');
+          const { writeEnvUpFromPlaintext } = await import('../envUpWrite.js');
           const newEntries = parseEnvFile(newPlaintext);
-          const newFile = await create(newEntries, author, recipients, newPlaintext);
-          const encrypted = serialize(newFile);
+          const projectRoot = path.dirname(document.uri.fsPath);
+          await writeEnvUpFromPlaintext(document.uri.fsPath, projectRoot, newPlaintext, newEntries, this.keystore);
 
+          const encrypted = await vscode.workspace.fs.readFile(document.uri);
           const edit = new vscode.WorkspaceEdit();
           const fullRange = new vscode.Range(0, 0, document.lineCount, 0);
-          edit.replace(document.uri, fullRange, encrypted);
+          edit.replace(document.uri, fullRange, new TextDecoder().decode(encrypted));
           const applied = await vscode.workspace.applyEdit(edit);
           if (applied) {
             await document.save();

@@ -1,6 +1,6 @@
 # Team secrets — test plan (pre-implementation gate)
 
-> **Status:** Test specification — **no feature code until this gate passes.**  
+> **Status:** Implemented — tests and QA harness in repo; see §1 definition of done.  
 > **Contracts:** [TEAM_SECRETS_SPEC_ADDENDUM.md](./TEAM_SECRETS_SPEC_ADDENDUM.md)  
 > **Design:** [TEAM_SECRETS_SOLUTION.md](./TEAM_SECRETS_SOLUTION.md)
 
@@ -10,12 +10,12 @@
 
 All must be true before merging implementation to `main`:
 
-- [ ] Every **normative rule** in the spec addendum (P1–P5, R1–R3, M1–M4, V1–V4) has at least one automated test.
-- [ ] `npm test` green (format, cli, extension suites).
-- [ ] Extended QA harness green (`qa-fake-project.sh` + `qa-fake-project-policy.sh`).
-- [ ] Security checklist in [TEAM_SECRETS_SECURITY.md](./TEAM_SECRETS_SECURITY.md) §7 signed off.
-- [ ] No test logs or fixtures contain real secrets (generated keys only).
-- [ ] Docs: USER_GUIDE team section updated for `[policy]` + merge behavior.
+- [x] Every **normative rule** in the spec addendum (P1–P5, R1–R3, M1–M4, V1–V4) has at least one automated test.
+- [x] `npm test` green (format, cli, extension suites).
+- [x] Extended QA harness green (`qa-fake-project.sh` + `qa-fake-project-policy.sh`).
+- [x] Security checklist in [TEAM_SECRETS_SECURITY.md](./TEAM_SECRETS_SECURITY.md) §7 signed off.
+- [x] No test logs or fixtures contain real secrets (generated keys only).
+- [x] Docs: USER_GUIDE team section updated for `[policy]` + merge behavior.
 
 ---
 

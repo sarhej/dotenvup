@@ -53,7 +53,7 @@
         },
         "codeRepository": "https://github.com/sarhej/dotenvup",
         "programmingLanguage": "TypeScript",
-        "softwareVersion": "0.6.5"
+        "softwareVersion": "0.7.0"
     }
     </script>
     <script type="application/ld+json">
@@ -415,8 +415,8 @@
 
             <section class="sharing-section" aria-label="Serverless sharing" style="margin: 4rem 0;">
                 <h2 style="text-align: center; font-size: 2rem; margin-bottom: 0.5rem; color: #fff;">Share secrets — no server, no account</h2>
-                <p style="text-align: center; color: #94a3b8; max-width: 640px; margin: 0 auto 2rem;">
-                    Exchange public keys with a teammate and encrypt <code>.env.up</code> for them — right from the editor. No cloud, no server, no signup. Just public-key cryptography.
+                <p style="text-align: center; color: #94a3b8; max-width: 680px; margin: 0 auto 2rem;">
+                    Exchange public keys and encrypt <code>.env.up</code> for teammates — from the editor or CLI. Optional <code>[policy]</code> gives each person only the <strong>values</strong> they need; key <strong>names</strong> stay visible (half-open envelope). No cloud, no signup. Everyone on the team must use CLI <strong>0.3.0+</strong> / extension <strong>0.7.0+</strong> (older <code>up import</code> can wipe secrets it never decrypted).
                 </p>
                 <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 820px; margin: 0 auto;">
                     <article class="feature-card" style="margin: 0;">
@@ -428,13 +428,13 @@
                     <article class="feature-card" style="margin: 0;">
                         <h3 style="margin-top: 0; color: #86efac;">2. Encrypt for recipient</h3>
                         <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
-                            Right-click <code>.env.up</code> → <strong>Encrypt for Recipient</strong>. Paste their public key, give them a label. The file is re-encrypted for both of you — works whether locked or unlocked. Atomic write with verification ensures no data loss.
+                            Right-click <code>.env.up</code> → <strong>Encrypt for Recipient</strong>, or <code>up recipients add</code>. Optional <code>[policy]</code> limits which values each block holds. Re-import <strong>merges</strong> — it does not rewrite other people's ciphertext. Atomic write with verification.
                         </p>
                     </article>
                     <article class="feature-card" style="margin: 0;">
                         <h3 style="margin-top: 0; color: #fbbf24;">3. They decrypt with their key</h3>
                         <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
-                            Share <code>.env.up</code> via Git (it&rsquo;s safe to commit). Your teammate runs <code>up unlock</code> or clicks Unlock in their editor — their private key decrypts it. No shared password, no server, no account.
+                            Share <code>.env.up</code> via Git. They run <code>up unlock</code> or Unlock in the editor — only their slice decrypts. Check with <code>up verify</code> (no values printed). Directory UX: <a href="https://unknownpassword.com" style="color: var(--primary);">UnknownPassword</a> (optional).
                         </p>
                     </article>
                 </div>
@@ -443,7 +443,7 @@
             <section id="identity" class="install-section" aria-label="Encrypted local identity and opt-in Keychain">
                 <h2>Encrypted identity · opt-in Keychain · warm session</h2>
                 <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem; max-width: 760px; margin-left: auto; margin-right: auto;">
-                    Extension <strong style="color: #e2e8f0;">0.6.5</strong> + CLI <code>@dotenvup/cli</code> —
+                    Extension <strong style="color: #e2e8f0;">0.7.0</strong> + CLI <code>@dotenvup/cli</code> <strong style="color: #e2e8f0;">0.3.0</strong> —
                     private key on your machine only. Default is an encrypted file envelope.
                     <strong style="color: #e2e8f0;">macOS Keychain / Touch ID is opt-in</strong>, not on by default.
                 </p>
@@ -503,7 +503,7 @@ up status --json</code></pre>
                         <ol>
                             <li>Or download <code>.vsix</code> from <a href="https://github.com/sarhej/dotenvup/releases">GitHub Releases</a></li>
                             <li>In your editor: <strong>Extensions</strong> → <code>...</code> → <strong>Install from VSIX...</strong></li>
-                            <li>Or from terminal: <code>code --install-extension dotenvup-0.6.5.vsix</code> / <code>cursor --install-extension dotenvup-0.6.5.vsix</code></li>
+                            <li>Or from terminal: <code>code --install-extension dotenvup-0.7.0.vsix</code> / <code>cursor --install-extension dotenvup-0.7.0.vsix</code></li>
                         </ol>
                     </div>
                     <div class="feature-card" id="cli">
@@ -513,10 +513,11 @@ up status --json</code></pre>
 <pre><code>npm install -g @dotenvup/cli
 
 up init                      <span class="comment"># identity.enc + recovery code</span>
-up import .env               <span class="comment"># encrypt to .env.up</span>
-up lock                      <span class="comment"># delete plaintext</span>
+up import .env               <span class="comment"># encrypt / merge into .env.up</span>
+up lock                      <span class="comment"># delete plaintext (does not save edits)</span>
 up unlock --duration 5m
 up run -- npm start          <span class="comment"># no file on disk</span>
+up verify                    <span class="comment"># policy checks, no values</span>
 up key upgrade               <span class="comment"># legacy plaintext → envelope</span>
 up key migrate-to-keychain   <span class="comment"># macOS opt-in</span>
 up session status</code></pre>
@@ -540,10 +541,11 @@ up session status</code></pre>
                             <li><strong style="color: #e2e8f0;">Keychain is opt-in</strong> — only run <code>up key migrate-to-keychain</code> if you asked; do not claim “Touch ID by default.”</li>
                             <li><strong style="color: #e2e8f0;">After Keychain migrate</strong>, cold IDE → warm with <code>up run -- true</code>; never suggest <code>up init</code> (creates a new Key-Id).</li>
                             <li><strong style="color: #e2e8f0;">Never</strong> print recovery codes, <code>up show</code> output, or private keys into chat.</li>
+                            <li><strong style="color: #e2e8f0;">Team <code>[policy]</code></strong> — import merges; do not run <code>up reencrypt</code> unless asked (full-catalog holder only).</li>
                         </ul>
                         <h3 style="margin-top: 1rem;">Install for Cursor</h3>
                         <ol style="color: #94a3b8; font-size: 0.95rem; margin: 0 0 0.75rem; padding-left: 1.2rem;">
-                            <li><strong style="color: #e2e8f0;">Extension</strong> — Marketplace / Open VSX ID <code>dotenvup.dotenvup</code> (v0.6.5+)</li>
+                            <li><strong style="color: #e2e8f0;">Extension</strong> — Marketplace / Open VSX ID <code>dotenvup.dotenvup</code> (v0.7.0+)</li>
                             <li><strong style="color: #e2e8f0;">Plugin / skill</strong> — Cursor Marketplace “dotenvup”, or copy <a href="https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md" style="color: var(--primary);">SKILL.md</a> into <code>.cursor/skills/dotenvup/</code></li>
                             <li><strong style="color: #e2e8f0;">MCP</strong> — Command Palette → <strong>DotEnvUp: Copy MCP config for Cursor</strong> (tools return status/keys/exit code only — no secrets)</li>
                         </ol>
@@ -647,7 +649,7 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
                 </article>
                 <article class="feature-card">
                     <h3>Multi-Recipient and CI/CD Ready</h3>
-                    <p>Encrypt once for multiple recipients — teammates (<code>@alice</code>) and machines (<code>@ci</code>). Zero-knowledge CI/CD: <code>up run -- npm test</code> in your pipeline.</p>
+                    <p>Encrypt once for multiple recipients — teammates (<code>@alice</code>) and machines (<code>@ci</code>). Optional <code>[policy]</code> filters values per person. Zero-knowledge CI/CD: <code>up run -- npm test</code>.</p>
                 </article>
             </section>
 
@@ -704,7 +706,7 @@ recipient:@bob    nonce:abc123...  ephemeral:ghi789...  payload:bGQhIFRo...</cod
                     </li>
                     <li class="feature-card" style="margin-bottom: 1rem;">
                         <h3 style="margin-top: 0; color: #fff;">Team recipients</h3>
-                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Each teammate shares their public key (right-click → <strong>Copy My Public Key</strong>, or <code>up keys --json</code>). Project owner adds each with <strong>Encrypt for Recipient</strong> in the editor or <code>up recipients add ... --label name</code> in the CLI. Teammates decrypt with <code>up unlock</code>. Recipients are stored in <code>.dotenvup.recipients.json</code> (public keys only).</p>
+                        <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Each teammate shares their public key (right-click → <strong>Copy My Public Key</strong>, or <code>up keys --json</code>). Add them with <strong>Encrypt for Recipient</strong> or <code>up recipients add ... --label name</code>. Optional cleartext <code>[policy]</code> in <code>.env.up</code> lists which key <em>values</em> each person gets; names stay in <code>[keys]</code>. <code>up import</code> merges your slice; <code>up verify</code> checks structure. All teammates need CLI 0.3.0+ / extension 0.7.0+. Optional directory UI: <a href="https://unknownpassword.com" style="color: var(--primary);">UnknownPassword</a>.</p>
                     </li>
                     <li class="feature-card" style="margin-bottom: 1rem;">
                         <h3 style="margin-top: 0; color: #fff;">Recover when key is missing</h3>

@@ -26,7 +26,7 @@ For seamless team sharing on top of this open format: **[unknownpassword.com](ht
 | **npm (format)** | https://www.npmjs.com/package/@dotenvup/format |
 
 **Paste into another chat:**
-*"DotEnvUp = extension v0.6.5 + CLI. Encrypted .env format (.env.up). VS Code/Cursor extension (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli — up lock/unlock/run. Default identity.enc; macOS Keychain/Touch ID is OPT-IN (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json. CLI tokens in .env.up let agents run railway/gh/etc without cli login. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
+*"DotEnvUp = extension v0.7.0 + CLI 0.3.0. Encrypted .env format (.env.up). VS Code/Cursor extension (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli — up lock/unlock/run/verify. Optional [policy] per-recipient values; import merges. Default identity.enc; macOS Keychain/Touch ID is OPT-IN (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json; never up reencrypt unless the user asked and holds the full catalog. CLI tokens in .env.up let agents run railway/gh/etc without cli login. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
 
 See also [docs/DOTENVUP_REFERENCE.txt](docs/DOTENVUP_REFERENCE.txt) for a copy-paste blob.
 
@@ -43,7 +43,9 @@ See also [docs/DOTENVUP_REFERENCE.txt](docs/DOTENVUP_REFERENCE.txt) for a copy-p
 | `up lock --force-delete --yes` | Lock even if `.env.up` cannot be decrypted (destructive) |
 | `up keys` | List key metadata (names, versions, timestamps) without decrypting |
 | `up keys --json` | Machine-readable key metadata (JSON to stdout) |
-| `up import .env` | Encrypt `.env` into `.env.up` |
+| `up import .env` | Encrypt `.env` into `.env.up` (**merges** if `.env.up` exists) |
+| `up verify` | Policy/structure checks (no secret values) |
+| `up reencrypt` | Full re-wrap — human + full-catalog only when `[policy]` present |
 | `up init` | Generate a keypair and store it in `~/.dotenvup/identity` |
 | `DotEnvUp: Key Management` | VS Code/Cursor webview for local key status, export/import, and key discovery |
 
@@ -97,6 +99,8 @@ Scripts and agents can branch on these codes.
 - When editing secrets: `up unlock` -> edit `.env` -> `up import .env` -> `up lock`.
 - **Never print recovery codes**, `up show` output, or private key material into chat/logs.
 - **Never run `up init --force`** or `up key upgrade` unless the user explicitly asked (identity changes / interactive recovery).
+- **Never run `up reencrypt`** unless the user asked. On `[policy]` files only a full-catalog holder may re-wrap all blocks (command refuses otherwise; old CLIs could wipe teammates).
+- **`up lock` does not save** — `up import` first if `.env` changed.
 
 ## Local identity storage (agents)
 
@@ -161,7 +165,7 @@ Use `up run -- <command>` when a command needs environment variables.
 Use `up status --json` for lock state, keyStorage, and sessionActive.
 macOS Keychain/Touch ID is opt-in only — do not claim it is default.
 You can run user CLIs (railway, gh, wrangler, …) when their token is in .env.up — never `cli login` (overwrites personal accounts); refuse if the token is missing.
-Never paste recovery codes or secrets into chat. See AGENTS.md / dotenvup.com/llms.txt.
+Never paste recovery codes or secrets into chat. Team `[policy]`: import merges; do not run `up reencrypt` unless asked. See AGENTS.md / dotenvup.com/llms.txt.
 ```
 
 ## MCP (Model Context Protocol)

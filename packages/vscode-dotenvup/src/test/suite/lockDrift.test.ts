@@ -305,4 +305,46 @@ suite('Lock with drift', () => {
 
     await fs.rm(dir, { recursive: true, force: true });
   });
+
+  test('EXT-03: envHasDrift compares only decrypted policy slice (Bob)', async function () {
+    if (!format) {
+      this.skip();
+      return;
+    }
+    const alice = await format.generateKeypair();
+    const bob = await format.generateKeypair();
+    const recipientKeys = new Map([
+      ['@alice', alice.publicKey],
+      ['bob', bob.publicKey],
+    ]);
+    const policy = {
+      version: 1,
+      rows: [
+        { recipient: '@alice', keys: ['SHARED', 'ALICE_ONLY'] },
+        { recipient: 'bob', keys: ['SHARED'] },
+      ],
+    };
+    const file = await format.create(
+      { SHARED: 'shared', ALICE_ONLY: 'secret' },
+      '@alice',
+      recipientKeys,
+      undefined,
+      policy,
+    );
+    const dir = await createTempDir();
+    const envUpPath = path.join(dir, '.env.up');
+    const envPath = path.join(dir, '.env');
+    await fs.writeFile(envUpPath, format.serialize(file), 'utf8');
+    await fs.writeFile(envPath, 'SHARED=shared\n', 'utf8');
+
+    const { envHasDrift } = lockCmd;
+    const noDrift = await envHasDrift(envPath, envUpPath, bob.privateKey);
+    assert.strictEqual(noDrift, false, 'Bob .env matching his slice should not drift');
+
+    await fs.writeFile(envPath, 'SHARED=changed\n', 'utf8');
+    const drift = await envHasDrift(envPath, envUpPath, bob.privateKey);
+    assert.strictEqual(drift, true, 'Bob edited shared key should drift');
+
+    await fs.rm(dir, { recursive: true, force: true });
+  });
 });

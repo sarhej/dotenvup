@@ -6,7 +6,13 @@
  * - Per-recipient: crypto_box_seal to wrap the symmetric key
  */
 
-import type { EnvUpRecipientBlock } from './types.js';
+import type { EnvUpPolicy, EnvUpRecipientBlock } from './types.js';
+import {
+  assertPolicyWritable,
+  filterEntries,
+  filterRawForKeys,
+  policyKeySetForRecipient,
+} from './policy.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let sodium: any = null;
@@ -60,6 +66,66 @@ export async function encrypt(
   entries: Record<string, string>,
   recipientPublicKeys: Map<string, Uint8Array>,
   rawContent?: string,
+  policy?: EnvUpPolicy,
+): Promise<EnvUpRecipientBlock[]> {
+  if (policy) {
+    assertPolicyWritable(policy);
+    const blocks: EnvUpRecipientBlock[] = [];
+    for (const row of policy.rows) {
+      const pubKey = recipientPublicKeys.get(row.recipient);
+      if (!pubKey) {
+        throw new Error(`Missing public key for policy recipient "${row.recipient}"`);
+      }
+      const allowed = new Set(row.keys);
+      const filteredEntries = filterEntries(entries, allowed);
+      const filteredRaw = filterRawForKeys(rawContent, allowed);
+      blocks.push(
+        await encryptRecipientBlock(row.recipient, pubKey, filteredEntries, filteredRaw),
+      );
+    }
+    return blocks;
+  }
+
+  return encryptLegacySharedPayload(entries, recipientPublicKeys, rawContent);
+}
+
+export async function encryptRecipientBlock(
+  recipient: string,
+  pubKey: Uint8Array,
+  entries: Record<string, string>,
+  rawContent?: string,
+): Promise<EnvUpRecipientBlock> {
+  const s = await getSodium();
+
+  const payload: Record<string, string> = { ...entries };
+  if (rawContent !== undefined) {
+    payload._raw = rawContent;
+  }
+  const payloadPlaintext = JSON.stringify(payload);
+
+  const symmetricKey = s.randombytes_buf(SYMMETRIC_KEY_BYTES);
+  const nonce = s.randombytes_buf(SECRETBOX_NONCE_BYTES);
+  const payloadCiphertext = s.crypto_secretbox_easy(payloadPlaintext, nonce, symmetricKey);
+  const sealedKey = s.crypto_box_seal(symmetricKey, pubKey);
+  const ephemeralPk = sealedKey.slice(0, EPHEMERAL_PK_BYTES);
+
+  const combinedPayload = new Uint8Array(sealedKey.length + payloadCiphertext.length);
+  combinedPayload.set(sealedKey);
+  combinedPayload.set(payloadCiphertext, sealedKey.length);
+
+  return {
+    recipient,
+    nonce: s.to_base64(nonce),
+    ephemeral: s.to_base64(ephemeralPk),
+    payload: s.to_base64(combinedPayload),
+  };
+}
+
+/** Legacy: one payload sealed for every recipient (same ciphertext). */
+async function encryptLegacySharedPayload(
+  entries: Record<string, string>,
+  recipientPublicKeys: Map<string, Uint8Array>,
+  rawContent?: string,
 ): Promise<EnvUpRecipientBlock[]> {
   const s = await getSodium();
 
@@ -69,11 +135,9 @@ export async function encrypt(
   }
   const payloadPlaintext = JSON.stringify(payload);
 
-  // Generate symmetric key and nonce for secretbox
   const symmetricKey = s.randombytes_buf(SYMMETRIC_KEY_BYTES);
   const nonce = s.randombytes_buf(SECRETBOX_NONCE_BYTES);
 
-  // Encrypt payload with symmetric key
   const payloadCiphertext = s.crypto_secretbox_easy(
     payloadPlaintext,
     nonce,
@@ -83,14 +147,9 @@ export async function encrypt(
   const blocks: EnvUpRecipientBlock[] = [];
 
   for (const [recipient, pubKey] of recipientPublicKeys) {
-    // Seal the symmetric key for this recipient (box_seal outputs: ephemeral_pk || ciphertext)
     const sealedKey = s.crypto_box_seal(symmetricKey, pubKey);
-
-    // sealedKey: first 32 bytes = ephemeral public key, rest = encrypted symmetric key
     const ephemeralPk = sealedKey.slice(0, EPHEMERAL_PK_BYTES);
-    const sealedCiphertext = sealedKey.slice(EPHEMERAL_PK_BYTES);
 
-    // Combined payload: sealed_key_output (80 bytes) + secretbox_output
     const combinedPayload = new Uint8Array(sealedKey.length + payloadCiphertext.length);
     combinedPayload.set(sealedKey);
     combinedPayload.set(payloadCiphertext, sealedKey.length);
@@ -104,6 +163,22 @@ export async function encrypt(
   }
 
   return blocks;
+}
+
+/** @internal Exported for tests — build per-recipient payload from policy slice. */
+export function buildRecipientPayload(
+  entries: Record<string, string>,
+  rawContent: string | undefined,
+  recipientId: string,
+  policy: EnvUpPolicy,
+): { entries: Record<string, string>; raw?: string } {
+  const allowed = policyKeySetForRecipient(policy, recipientId);
+  if (!allowed) {
+    throw new Error(`No policy row for recipient "${recipientId}"`);
+  }
+  const filteredEntries = filterEntries(entries, allowed);
+  const filteredRaw = filterRawForKeys(rawContent, allowed);
+  return { entries: filteredEntries, raw: filteredRaw };
 }
 
 export interface DecryptResult {

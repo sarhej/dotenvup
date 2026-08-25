@@ -2,9 +2,10 @@
  * @dotenvup/format — Parser for .env.up file format
  */
 
-import type { EnvUpFile, EnvUpHeader, EnvUpKey, EnvUpRecipientBlock } from './types.js';
+import type { EnvUpFile, EnvUpHeader, EnvUpKey, EnvUpPolicy, EnvUpRecipientBlock } from './types.js';
 import { ParseError } from './types.js';
 import { FORMAT_MAGIC, FORMAT_VERSION } from './constants.js';
+import { parsePolicySection } from './policy.js';
 
 /** Parse header fields from # Key: Value lines */
 function parseHeaderFields(lines: string[]): Record<string, string> {
@@ -153,29 +154,45 @@ export function parseHeader(content: string): EnvUpHeader {
 }
 
 /**
- * Parse a complete .env.up file (header + encrypted blocks).
+ * Parse a complete .env.up file (header + optional policy + encrypted blocks).
  */
 export function parse(content: string): EnvUpFile {
   const header = parseHeader(content);
 
   const lines = content.split(/\r?\n/);
-  let inEncrypted = false;
+  let section: 'policy' | 'encrypted' | 'other' | null = null;
+  const policyLines: string[] = [];
   const encryptedLines: string[] = [];
 
   for (const line of lines) {
-    if (line.trim() === '[encrypted]') {
-      inEncrypted = true;
+    const trim = line.trim();
+    if (trim === '[policy]') {
+      section = 'policy';
       continue;
     }
-    if (inEncrypted) {
-      encryptedLines.push(line);
+    if (trim === '[encrypted]') {
+      section = 'encrypted';
+      continue;
     }
+    if (trim.startsWith('[') && trim.endsWith(']')) {
+      section = 'other';
+      continue;
+    }
+
+    if (section === 'policy') policyLines.push(line);
+    else if (section === 'encrypted') encryptedLines.push(line);
+  }
+
+  let policy: EnvUpPolicy | undefined;
+  if (policyLines.length > 0) {
+    policy = parsePolicySection(policyLines);
   }
 
   const encryptedBlocks = parseEncryptedSection(encryptedLines);
 
   return {
     header,
+    policy,
     encryptedBlocks,
   };
 }

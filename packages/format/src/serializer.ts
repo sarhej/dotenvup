@@ -4,6 +4,7 @@
 
 import type { EnvUpFile, EnvUpHeader } from './types.js';
 import { FORMAT_MAGIC } from './constants.js';
+import { serializePolicySection } from './policy.js';
 
 const COLUMN_WIDTHS = {
   name: 24,
@@ -78,13 +79,18 @@ export function serializeHeader(header: EnvUpHeader): string {
  * Serialize an EnvUpFile to the .env.up text format.
  */
 export function serialize(file: EnvUpFile): string {
-  const headerStr = serializeHeader(file.header);
-  const lines: string[] = [headerStr, '', '[encrypted]'];
+  const parts: string[] = [serializeHeader(file.header)];
+
+  if (file.policy) {
+    parts.push('', serializePolicySection(file.policy));
+  }
+
+  parts.push('', '[encrypted]');
 
   for (const block of file.encryptedBlocks) {
     const line = `recipient:${block.recipient}  nonce:${block.nonce}  ephemeral:${block.ephemeral}  payload:${block.payload}`;
-    lines.push(line);
+    parts.push(line);
   }
 
-  return lines.join('\n') + '\n';
+  return parts.join('\n') + '\n';
 }

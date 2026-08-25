@@ -1,6 +1,6 @@
 {
   "name": "@dotenvup/cli",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "CLI tool for managing .env.up encrypted environment files",
   "keywords": [
     "dotenv",
@@ -28,6 +28,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -37,7 +38,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@dotenvup/format": "^0.2.1",
+    "@dotenvup/format": "^0.3.0",
     "@dotenvup/secret-generator": "^0.1.0",
     "dotenv": "^17.3.1"
   },

@@ -242,22 +242,52 @@ If you lock without importing, your edits are lost. The lock command will warn y
 
 ### Team recipient workflow
 
-> **Design:** [TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md). **Today:** multi-recipient blocks work; each recipient gets the **same** values. **Target:** optional `[policy]` + per-recipient value subsets + merge re-encrypt. Key names always cleartext.
+> **Design:** [TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md). Optional **`[policy]`** defines which **values** each recipient gets; **key names** stay cleartext in `[keys]` for everyone with repo access.
+>
+> **Upgrade:** every teammate MUST use `@dotenvup/cli` **0.3.0+** (and extension **0.7.0+**). An older `up import` still full-replaces `.env.up` and can destroy secrets it never decrypted.
 
-1. Each teammate shares their **public** key: their public key file (e.g. `~/.dotenvup/identity.pub`) or the `publicKey` value from `up keys --json`.
+1. Each teammate shares their **public** key (`identity.pub` or `up keys --json`).
 2. Project owner adds recipients:
 
 ```bash
 up recipients add /path/to/teammate.pub --label teammate-name
 ```
 
-3. Re-import secrets so new recipients are included:
+3. Re-import so all recipient blocks exist:
 
 ```bash
 up import .env
 ```
 
-4. Teammate can now `up unlock` with their own private key.
+4. Optional: add a **`[policy]`** section (see design doc) and run a full re-encrypt so each block holds only that person's key subset.
+5. Teammate runs `up unlock` or `up run --` with their own private key.
+
+**Merge import:** If `.env.up` already exists, `up import` **merges** into your recipient block only — other people's ciphertext is preserved. Your `~/.dotenvup/` identity is **not** recreated.
+
+**Shared secrets:** If Bob changes `API_KEY`, only **Bob's** encrypted block updates until Alice (or CI) re-imports their slice. Git history keeps old commits decryptable with the same keys.
+
+**Lock vs import:** `up lock` only deletes `.env`; it does **not** save edits into `.env.up`. After unlock, always `up import .env` before lock when you changed secrets.
+
+**Verify policy:**
+
+```bash
+up verify
+up verify --json
+```
+
+**Remove a value (policy files):** Delete the line from your `.env` and `up import` — your policy slice is authoritative. Names only in your slice are dropped from `[keys]` when no policy row references them anymore.
+
+**Revoke a teammate:**
+
+```bash
+up recipients remove bob          # updates .dotenvup.recipients.json and .env.up [policy]
+up recipients remove bob --no-env-up   # config only
+up reencrypt                      # full-catalog holder only; after policy / recipient changes
+```
+
+When you hold the **full catalog** and all teammate public keys are in `.dotenvup.recipients.json`, your `up import` **syncs shared keys** to every recipient block (not only yours). `up reencrypt` is refused if your decrypted slice is missing catalog keys (prevents wiping teammates' secrets).
+
+**Unlock / run fail closed:** If ciphertext contains keys outside your `[policy]` row (stale or legacy block), `up unlock` and `up run` refuse until a full-catalog holder runs `up reencrypt`. Use `up verify` to diagnose.
 
 ### Sharing with one other person
 

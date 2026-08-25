@@ -4,7 +4,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { parse, decryptAny } from '@dotenvup/format';
+import { parse, decryptAny, assertDecryptRespectsPolicy, PolicyValidationError } from '@dotenvup/format';
 import * as keystore from '../keystore.js';
 import * as logger from '../logger.js';
 
@@ -29,7 +29,17 @@ export async function run(keyName?: string): Promise<void> {
 
   const content = fs.readFileSync(envUpPath, 'utf8');
   const file = parse(content);
-  const { entries } = await decryptAny(file, privateKey, '@local');
+  const { entries, recipient } = await decryptAny(file, privateKey, '@local');
+
+  try {
+    assertDecryptRespectsPolicy(recipient, entries, file.policy);
+  } catch (err) {
+    if (err instanceof PolicyValidationError) {
+      logger.error(err.message);
+      process.exit(1);
+    }
+    throw err;
+  }
 
   if (keyName) {
     if (!(keyName in entries)) {

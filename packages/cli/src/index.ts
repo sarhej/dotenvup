@@ -25,6 +25,8 @@ import {
   runStop as runSessionStop,
 } from './commands/session.js';
 import { run as runRecover } from './commands/recover.js';
+import { run as runVerify } from './commands/verify.js';
+import { run as runReencrypt } from './commands/reencrypt.js';
 import { createRequire } from 'node:module';
 import * as recipientsCmd from './commands/recipients.js';
 import * as logger from './logger.js';
@@ -66,11 +68,13 @@ const COMMANDS: Record<
       deep: opts?.deep as boolean,
       json: opts?.json as boolean,
     }),
+  verify: async (_args, opts) => runVerify({ json: opts?.json as boolean }),
+  reencrypt: async () => runReencrypt(),
   recipients: async (args, opts) => {
     const sub = args[0];
     if (sub === 'list') return recipientsCmd.runList();
     if (sub === 'add') return recipientsCmd.runAdd(args[1], opts);
-    if (sub === 'remove') return recipientsCmd.runRemove(args[1]);
+    if (sub === 'remove') return recipientsCmd.runRemove(args[1], opts);
     if (sub === 'discover') return recipientsCmd.runDiscover(opts);
     console.error('Usage: up recipients <list|add|remove|discover> [args]');
     process.exit(1);
@@ -199,6 +203,8 @@ Commands:
   keys                 List key metadata (no decryption)
   status               Lock state, key freshness, keypair status
   recover [file]       Scan local files for a matching key id (default: .env.up)
+  verify               Validate [policy] vs [keys] and encrypted blocks (no values printed)
+  reencrypt            Re-encrypt .env.up for all recipients (policy-aware)
   recipients <cmd>     Manage additional recipients (list/add/remove/discover)
 
 Options:

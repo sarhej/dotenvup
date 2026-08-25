@@ -116,7 +116,7 @@ describe('CLI commands', () => {
   it('--version shows version', async () => {
     const result = await runUp(['--version'], testDir);
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain('0.2.1');
+    expect(result.stdout).toContain('0.3.0');
   });
 
   it('session status works when cold', async () => {

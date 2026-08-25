@@ -30,13 +30,14 @@ The **DotEnvUp Format** (`.env.up`) is an encrypted file format for storing envi
 
 ## 2. File Structure
 
-A `.env.up` file is a UTF-8 text file composed of three sections in order:
+A `.env.up` file is a UTF-8 text file composed of sections in order:
 
 1.  **Header** — Magic line, file-level metadata, optional context blocks.
 2.  **Keys** (`[keys]`) — Cleartext table of key metadata.
-3.  **Encrypted** (`[encrypted]`) — Encrypted payload blocks, one per recipient.
+3.  **Policy** (`[policy]`) — OPTIONAL. Per-recipient value ACL (cleartext key names).
+4.  **Encrypted** (`[encrypted]`) — Encrypted payload blocks, one per recipient.
 
-Lines starting with `#` are comments. Blank lines are ignored by parsers.
+Lines starting with `#` are comments. Blank lines are ignored by parsers. Parsers MUST ignore unknown sections (forward compatibility).
 
 ### 2.1. Magic Line
 
@@ -134,7 +135,30 @@ DB_HOST          v1  2026-02-25T10:00:00Z  @alice
 API_KEY          v3  2026-02-26T14:30:00Z  @bob
 ```
 
-### 2.6. Encrypted Section (`[encrypted]`)
+### 2.6. Policy Section (`[policy]`) — OPTIONAL
+
+When present, `[policy]` is **cleartext**. It names which catalog keys each recipient may receive **values** for. Key **names** remain visible to anyone with repo access (half-open envelope).
+
+```ini
+[policy]
+version: 1
+recipient:@alice  keys:DB_HOST,API_KEY,PROD_DB_URL,JWT_SECRET
+recipient:@bob    keys:DB_HOST,API_KEY
+recipient:@ci     keys:API_KEY
+```
+
+**Rules (normative when `[policy]` is present):**
+
+- `version:` MUST be `1` for this spec.
+- Each `recipient:` id MUST match an `[encrypted]` block and SHOULD appear in `Encrypted-For`.
+- Every policy key name MUST appear in `[keys]`.
+- Encrypt MUST put only that recipient's keys in their payload (including `_raw`).
+- Absent `[policy]` → legacy behavior: every recipient block contains **all** catalog keys.
+- Team files MUST be written with a tool that implements merge re-encrypt. Older writers that full-replace on import can destroy secrets other recipients hold.
+
+Full workflow: [TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md). Verify: `up verify`.
+
+### 2.7. Encrypted Section (`[encrypted]`)
 
 Contains one or more recipient blocks. Each block allows one recipient to decrypt the file.
 
@@ -311,6 +335,7 @@ The following is **NOT** encrypted:
 - **Recipient list** (who can decrypt).
 - **Project context** (if `Project` / `Repository` headers are present).
 - **Approximate value sizes** (via ciphertext length).
+- **Policy rows** (if `[policy]` is present — who is allowed which **names**, not values).
 
 *Rationale:* This metadata is generally low-risk and provides high-value developer experience (auditing, validation, onboarding).
 
@@ -323,8 +348,8 @@ The following are defined in v1 but reserved for future use:
 | Field | Location | Status |
 | :--- | :--- | :--- |
 | `env` | `[keys]` column | Reserved. Intended for environment tags (e.g. `dev`, `staging`, `prod`). |
-| `signature` | Between `[keys]` and `[encrypted]` | Reserved for v2. Header + `[keys]` + `[policy]` signature for tamper evidence. See [design/FORMAT_V2.md](design/FORMAT_V2.md). |
-| `policy` | Between `[keys]` and `[encrypted]` | **Proposed** (optional). Per-recipient key subsets (cleartext). See [design/TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md). |
+| `signature` | Between `[keys]`/`[policy]` and `[encrypted]` | Reserved for v2. Header + `[keys]` + `[policy]` signature for tamper evidence. See [design/FORMAT_V2.md](design/FORMAT_V2.md). |
+| `policy` | Between `[keys]` and `[encrypted]` | **Specified** (optional). See §2.6 and [design/TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md). |
 | `identity` | `[encrypted]` block | Optional in v1. Links recipients to external accounts. |
 | `Project` | Header | Optional in v1. Project name. |
 | `Repository` | Header | Optional in v1. Git repository URL. |

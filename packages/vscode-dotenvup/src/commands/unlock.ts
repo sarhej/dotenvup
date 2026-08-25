@@ -77,16 +77,19 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
     return;
   }
 
-  const { parse, decryptAny, parseEnvFile, entriesMatch, create, serialize } = await import('@dotenvup/format');
+  const { parse, decryptAny, parseEnvFile, entriesMatch, create, serialize, assertDecryptRespectsPolicy } =
+    await import('@dotenvup/format');
   const content = await fs.readFile(envUpPath, 'utf8');
   const file = parse(content);
 
   let entries: Record<string, string>;
   let rawContent: string | undefined;
+  let recipient: string;
   try {
     const result = await decryptAny(file, privateKey, '@local');
     entries = result.entries;
     rawContent = result.raw;
+    recipient = result.recipient;
   } catch (err) {
     if (file.header.keyId) {
       const { keyFingerprint } = await import('@dotenvup/format');
@@ -114,10 +117,18 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string): 
       const retry = await decryptAny(file, privateKey, '@local');
       entries = retry.entries;
       rawContent = retry.raw;
+      recipient = retry.recipient;
     } else {
       logger.error('DotEnvUp: Decryption failed', err);
       return;
     }
+  }
+
+  try {
+    assertDecryptRespectsPolicy(recipient, entries, file.policy);
+  } catch (err) {
+    logger.error(err instanceof Error ? err.message : String(err));
+    return;
   }
 
   const envUpRaw = rawContent ?? Object.entries(entries).map(([k, v]) => formatEnv(k, v)).join('\n') + '\n';

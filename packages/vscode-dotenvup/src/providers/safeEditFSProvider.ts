@@ -11,7 +11,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { ExtensionKeyStore } from '../keystore';
-import { getAuthor } from '../author';
 
 export class SafeEditFSProvider implements vscode.FileSystemProvider {
   private _onDidChangeFile = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
@@ -68,12 +67,13 @@ export class SafeEditFSProvider implements vscode.FileSystemProvider {
 
     try {
       const content = await fs.readFile(realPath, 'utf8');
-      const { parse, decryptAny, parseEnvFile } = await import('@dotenvup/format');
+      const { parse, decryptAny, parseEnvFile, assertDecryptRespectsPolicy } = await import('@dotenvup/format');
 
       const privateKey = await this.keystore.requirePrivateKey();
 
       const file = parse(content);
       const result = await decryptAny(file, privateKey, '@local');
+      assertDecryptRespectsPolicy(result.recipient, result.entries, file.policy);
       const envUpRaw =
         result.raw ??
         Object.entries(result.entries)
@@ -117,63 +117,11 @@ export class SafeEditFSProvider implements vscode.FileSystemProvider {
     const plaintext = new TextDecoder().decode(content);
 
     try {
-      const { parse, create, serialize, parseEnvFile } = await import('@dotenvup/format');
-      const privateKey = await this.keystore.requirePrivateKey();
-      const publicKey = await this.keystore.getPublicKey();
-      if (!publicKey) {
-        throw new Error('No public key available.');
-      }
-
-      // 1. Read existing .env.up to preserve recipients and metadata
-      let existingFile;
-      try {
-        const existingContent = await fs.readFile(realPath, 'utf8');
-        existingFile = parse(existingContent);
-      } catch {
-        // If file doesn't exist, we are creating new? 
-        // Safe Edit usually implies editing existing.
-        if (!options.create) throw vscode.FileSystemError.FileNotFound(uri);
-      }
-
-      // 2. Parse the new plaintext content to get entries
+      const { parseEnvFile } = await import('@dotenvup/format');
+      const { writeEnvUpFromPlaintext } = await import('../envUpWrite.js');
       const newEntries = parseEnvFile(plaintext);
-
-      // 3. Determine recipients
-      // If existing file, we want to keep existing recipients.
-      // We need their public keys. The format file header might have `Encrypted-For`.
-      // But to re-encrypt for them, we need their actual public keys.
-      // The `create` function takes `recipientPublicKeys`.
-      // If we don't have the original public keys of other recipients, we can't re-encrypt for them 
-      // UNLESS the format supports "partial update" or we have a local store of their keys.
-      // 
-      // CRITICAL: If we re-encrypt, we need ALL public keys.
-      // If `.env.up` header stores public keys (unlikely, usually just names/fingerprints), we are stuck.
-      // Typically `dotenvup` relies on `.dotenvup/recipients` or similar to know keys.
-      // Or the user provides them.
-      // 
-      // For this MVP, let's assume we re-encrypt for the current user (`@local`) 
-      // AND try to find other recipients if possible.
-      // If we can't find other keys, we might warn or fail?
-      // 
-      // Let's look at `import.ts` or `lock.ts`. They typically use `keystore` and maybe a recipients list.
-      // For now, we'll re-encrypt for the current user (and any others we can find/resolve).
-      
-      const author = await getAuthor(this.keystore.getIdentityDir());
-      
-      // We need a map of public keys for recipients
-      // Always include self.
-      const recipients = new Map<string, Uint8Array>();
-      recipients.set(author, publicKey);
-      
-      // TODO: Load other recipients from project config if available.
-      
-      // 4. Create new .env.up structure
-      // We pass the *full plaintext content* to `create` so it preserves comments/structure inside the encrypted block.
-      const newFile = await create(newEntries, author, recipients, plaintext);
-      
-      // 5. Serialize and write
-      const serialized = serialize(newFile);
-      await fs.writeFile(realPath, serialized, 'utf8');
+      const projectRoot = path.dirname(realPath);
+      await writeEnvUpFromPlaintext(realPath, projectRoot, plaintext, newEntries, this.keystore);
 
       // Notify change
       this._onDidChangeFile.fire([{ type: vscode.FileChangeType.Changed, uri }]);

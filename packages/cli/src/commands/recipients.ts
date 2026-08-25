@@ -4,11 +4,16 @@ import * as os from 'os';
 import {
   addRecipient,
   discoverLocalKeyCandidates,
+  parse,
   parseKeyBundle,
   readRecipientsConfig,
   removeRecipient,
+  revokeRecipientFromFile,
+  serialize,
+  writeEnvUpAtomic,
 } from '@dotenvup/format';
 import * as logger from '../logger.js';
+import * as keystore from '../keystore.js';
 
 function ensurePublicKey32(base64: string): Uint8Array {
   const pub = new Uint8Array(Buffer.from(base64.trim(), 'base64'));
@@ -68,18 +73,58 @@ export async function runAdd(
   }
 }
 
-export async function runRemove(idOrLabel: string | undefined, rootDir = process.cwd()): Promise<void> {
+export async function runRemove(
+  idOrLabel: string | undefined,
+  options?: Record<string, boolean | string>,
+  rootDir = process.cwd(),
+): Promise<void> {
   if (!idOrLabel) {
-    logger.error('Usage: up recipients remove <keyId|label>');
+    logger.error('Usage: up recipients remove <keyId|label> [--no-env-up]');
     process.exitCode = 1;
     return;
   }
+
+  const cfg = await readRecipientsConfig(rootDir);
+  const match = cfg.find((r) => r.keyId === idOrLabel || r.label === idOrLabel);
+  const recipientId = match?.label?.trim() || idOrLabel;
+
   const removed = await removeRecipient(rootDir, idOrLabel);
   if (!removed) {
-    logger.warn(`No recipient found for "${idOrLabel}"`);
+    logger.warn(`No recipient found in config for "${idOrLabel}"`);
     process.exitCode = 1;
     return;
   }
+
+  const skipEnvUp = options?.noEnvUp === true || options?.['no-env-up'] === true;
+  const envUpPath = path.join(rootDir, '.env.up');
+
+  if (!skipEnvUp && fs.existsSync(envUpPath)) {
+    try {
+      const file = parse(fs.readFileSync(envUpPath, 'utf8'));
+      if (!file.policy) {
+        logger.warn(
+          'Removed from .dotenvup.recipients.json. No [policy] in .env.up — run: up reencrypt after editing recipients manually.',
+        );
+      } else {
+        const privateKey = await keystore.getPrivateKey();
+        if (!privateKey) {
+          logger.error(
+            'Removed from config but cannot update .env.up: no keypair. Run: up init',
+          );
+          process.exitCode = 1;
+          return;
+        }
+        const updated = revokeRecipientFromFile(file, recipientId);
+        await writeEnvUpAtomic(envUpPath, serialize(updated), privateKey);
+        logger.info(`Removed recipient "${recipientId}" from [policy] and [encrypted] in .env.up`);
+      }
+    } catch (err) {
+      logger.error('Removed from config but failed to update .env.up', err);
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   logger.info(`Removed recipient: ${idOrLabel}`);
 }
 

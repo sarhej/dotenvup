@@ -18,9 +18,9 @@ It never touches your real `~/.dotenvup` keys.
 5. Decrypts same `.env.up` as Bob (proves multi-recipient works).
 6. Runs key recovery scan as Charlie.
 
-### Policy harness (planned)
+### Policy harness (`qa-fake-project-policy.sh`)
 
-`qa-fake-project-policy.sh` — subset ACL, merge re-encrypt, and `up verify`. Spec: [design/TEAM_SECRETS_TEST_PLAN.md](design/TEAM_SECRETS_TEST_PLAN.md) §6.2.
+Subset ACL, Bob merge without wiping Alice-only keys, owner shared-key sync, `up recipients remove`, CI `up run`, and `up verify`. Isolated identities under `.qa-fake-project-policy/` (gitignored). Spec: [design/TEAM_SECRETS_TEST_PLAN.md](design/TEAM_SECRETS_TEST_PLAN.md) §6.2.
 
 ## Run
 
@@ -30,6 +30,7 @@ From repo root:
 npm run build --workspace @dotenvup/format
 npm run build --workspace @dotenvup/cli
 bash ./qa-fake-project.sh
+bash ./qa-fake-project-policy.sh   # [policy] subsets + merge import
 ```
 
 Optional custom QA workspace path:
@@ -42,8 +43,10 @@ DOTENVUP_QA_ROOT=/tmp/dotenvup-qa bash ./qa-fake-project.sh
 
 - Uses isolated env vars for identity location:
   - `DOTENVUP_TEST=1`
+  - `DOTENVUP_NO_PROMPT=1` (no nickname / recovery prompts in CI or Cursor terminal)
   - `DOTENVUP_IDENTITY_DIR`
   - `DOTENVUP_TEST_IDENTITY_DIR`
   - `HOME` / `USERPROFILE`
+- Harness runs `up init --yes` with stdin from `/dev/null` so a TTY never blocks automation.
 - Stores all generated data under `.qa-fake-project/` (or your custom path).
 

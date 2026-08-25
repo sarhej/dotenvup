@@ -1,8 +1,8 @@
 # Team secrets — agreed solution (DotEnvUp + UnknownPassword)
 
-> **Status:** Design agreed — **not fully implemented**.  
+> **Status:** Implemented in `@dotenvup/format` / `@dotenvup/cli` (merge import, per-recipient payloads, `up verify`, `up reencrypt`).  
 > **Canonical doc** for sharing, policy, and team workflow.  
-> **Spec today:** [FORMAT_SPEC.md](../FORMAT_SPEC.md) (v1). **Implementation map:** [SHARING_MODEL.md](./SHARING_MODEL.md).
+> **Spec:** [FORMAT_SPEC.md](../FORMAT_SPEC.md) §2.6. **Implementation map:** [SHARING_MODEL.md](./SHARING_MODEL.md).
 
 ---
 
@@ -69,16 +69,18 @@ Parsers **MUST ignore** unknown sections → old tools keep reading files that a
 
 ## What exists today vs target
 
-| Capability | v1 shipped | Target |
-|------------|------------|--------|
-| Multiple `recipient:` blocks | Yes | Yes |
-| Each person decrypts with own key | Yes | Yes |
-| Same JSON in every block | **Yes (today)** | **No** — filtered per `[policy]` |
-| `[policy]` section | No | Yes (optional, backward compatible) |
-| Merge re-encrypt | No | Yes |
-| `up recipients add` + `import` | Yes (manual) | Yes + policy-aware encrypt |
+| Capability | Status |
+|------------|--------|
+| Multiple `recipient:` blocks | Shipped |
+| Each person decrypts with own key | Shipped |
+| Same JSON in every block (no `[policy]`) | Shipped (legacy mode) |
+| `[policy]` + filtered payload per recipient | Shipped |
+| Merge re-encrypt on import | Shipped |
+| `up verify` / `up reencrypt` / `up recipients remove` | Shipped |
+| Signed `[policy]` | Not in v1 — [FORMAT_V2.md](./FORMAT_V2.md) |
+| `up lock` merge | Not in v1 — import first, then lock |
 
-See [SHARING_MODEL.md](./SHARING_MODEL.md) for code pointers and QA (`qa-fake-project.sh`).
+See [SHARING_MODEL.md](./SHARING_MODEL.md) for code pointers and QA (`qa-fake-project.sh`, `qa-fake-project-policy.sh`).
 
 ---
 

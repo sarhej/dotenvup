@@ -1,12 +1,12 @@
 # DotEnvUp — canonical reference (paste into other chats/agents)
 
-DotEnvUp: .env encryption — encrypted .env format (.env.up), VS Code/Cursor extension **v0.6.5** (ID: dotenvup.dotenvup), CLI (`up` / npm i -g @dotenvup/cli), MCP (`npx -y @dotenvup/mcp`).
+DotEnvUp: .env encryption — encrypted .env format (.env.up), VS Code/Cursor extension **v0.7.0** (ID: dotenvup.dotenvup), CLI `@dotenvup/cli` **0.3.0** (`up` / npm i -g @dotenvup/cli), MCP (`npx -y @dotenvup/mcp`). Optional `[policy]` per-recipient values; import merges; `up verify`.
 
 Zero-knowledge: keys stay on the machine. Default identity = encrypted `identity.enc` under ~/.dotenvup/ + recovery code. Legacy plaintext → `up key upgrade` (opt-in, same Key-Id).
 
 **macOS Keychain / Touch ID is OPT-IN** (`up key migrate-to-keychain`) — NOT default. Session agent warms after one unlock (`up session status`). If IDE decrypt fails after migrate: `up run -- true` — NEVER `up init` (new Key-Id).
 
-Agents: never assume .env exists; use `up run -- <cmd>` and `up status --json` (keyStorage, sessionActive). Agents can run user CLIs when the token is in .env.up (`scripts/cli.sh` / `up run --`) — never `railway login` / `gh auth login`. Never paste recovery codes or up show into chat. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · AGENTS.md · https://dotenvup.com/llms.txt · docs/CURSOR.md
+Agents: never assume .env exists; use `up run -- <cmd>` and `up status --json` (keyStorage, sessionActive). Never `up reencrypt` unless the user asked (full-catalog holder). Agents can run user CLIs when the token is in .env.up (`scripts/cli.sh` / `up run --`) — never `railway login` / `gh auth login`. Never paste recovery codes or up show into chat. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · AGENTS.md · https://dotenvup.com/llms.txt · docs/CURSOR.md
 
 Repo:      https://github.com/sarhej/dotenvup
 Extension: .env Up (DotEnvUp) — ID: dotenvup.dotenvup

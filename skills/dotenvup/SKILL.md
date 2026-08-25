@@ -7,7 +7,7 @@ description: "Manages DotEnvUp encrypted env files (.env.up). Use for .env.up pr
 
 This project uses DotEnvUp: secrets live in `.env.up` (encrypted, safe to commit). The plaintext `.env` may not exist on disk (it is "locked").
 
-**Current public versions (explain accurately):** Extension **0.6.5** · CLI `@dotenvup/cli` · MCP `@dotenvup/mcp` · Keychain helper `@dotenvup/keychain` (macOS). Site: https://dotenvup.com · Agents: https://github.com/sarhej/dotenvup/blob/main/AGENTS.md
+**Current versions (this repo):** Extension **0.7.0** · CLI `@dotenvup/cli` **0.3.0** · MCP `@dotenvup/mcp` · Keychain helper `@dotenvup/keychain` (macOS). Site: https://dotenvup.com · Agents: https://github.com/sarhej/dotenvup/blob/main/AGENTS.md
 
 ## Explain to the user (short, honest)
 
@@ -45,12 +45,14 @@ When the user asks how DotEnvUp stores keys, Touch ID, or “is it safe,” say:
 | `up key upgrade` | Opt-in: recovery + migrate legacy plaintext identity (same Key-Id) |
 | `up key migrate-to-keychain` | macOS opt-in: move wrapping key to Keychain (user must ask) |
 | `up session status` / `up session stop` | Warm session agent status / stop |
-| `up import .env [--delete]` | Encrypt `.env` → `.env.up` |
+| `up import .env [--delete]` | Encrypt `.env` → `.env.up` (**merges** if `.env.up` already exists) |
 | `up unlock [--duration 15m]` | Decrypt `.env.up` → `.env` with auto-lock timer |
-| `up lock [--yes] [--force]` | Delete plaintext `.env` |
+| `up lock [--yes] [--force]` | Delete plaintext `.env` — does **not** save edits; import first |
 | `up run -- <cmd>` | Inject decrypted env into a process; no `.env` written |
 | `up show [KEY]` | Print decrypted value(s) — for the user, never echo in chat |
 | `up keys` / `up keys --json` | Key metadata without decrypting |
+| `up verify` / `up verify --json` | Policy/structure checks (names + codes only; no values) |
+| `up reencrypt` | Full re-wrap — **full-catalog holder only** when `[policy]` is present |
 
 Exit codes: `0` success, `1` user/usage error, `2` system error.
 
@@ -116,6 +118,16 @@ source scripts/cli.sh env
 
 If the repo has no wrapper: `up keys --json` to confirm the key exists, then `up run -- <cli> …`. Same pattern for any service.
 
+## Team files (`[policy]`)
+
+Optional cleartext `[policy]` in `.env.up` lists which **key names** each recipient may decrypt. Names stay visible in `[keys]`; values are filtered per recipient.
+
+- `up import` **merges** into the editor's block; do not assume a full-file rewrite.
+- `up lock` only deletes `.env` — always `up import` first if secrets changed.
+- `up reencrypt` **wipes other recipients' secrets** if the caller only holds a policy slice — never run it unless the user asked **and** they hold the full catalog (or the command errors).
+- `up verify` is safe for agents (no values). If unlock/run fails with V3 / policy mismatch, tell the human to upgrade CLI to **0.3.0+** and have a full-catalog holder reencrypt.
+- Every teammate must use CLI **0.3.0+** / extension **0.7.0+**. Older `up import` can destroy keys it never decrypted.
+
 ## Vite and other file-based bundlers
 
 `up run --` injects `process.env`, but Vite reads `import.meta.env` from `.env*` files on disk. For Vite SPAs, prefer `up unlock` + `.env` over `up run --`.
@@ -130,5 +142,7 @@ If the repo has no wrapper: `up keys --json` to confirm the key exists, then `up
 - Suggesting `up init` after Keychain migrate when decrypt fails.
 - Running `railway login` / `gh auth login` / `wrangler login` on the user's machine.
 - Running a bare CLI when the project token is missing (falls through to personal login).
+- Running `up reencrypt` for a teammate who only has a policy slice.
+- Treating `up lock` as “save to `.env.up`” (it is not; import first).
 
 Full automation guide: [AGENTS.md](https://github.com/sarhej/dotenvup/blob/main/AGENTS.md). Cursor: [CURSOR.md](https://github.com/sarhej/dotenvup/blob/main/docs/CURSOR.md). LLM digest: https://dotenvup.com/llms.txt

@@ -131,11 +131,60 @@ export async function run(keystore: ExtensionKeyStore, workspaceRoot?: string, o
 
   const { getAuthor } = await import('../author');
   const author = await getAuthor(keystore.getIdentityDir());
-  const { create, serialize, resolveRecipientPublicKeys } = await import('@dotenvup/format');
+  const {
+    parse,
+    serialize,
+    create,
+    decryptAny,
+    mergeReencrypt,
+    resolveRecipientPublicKeys,
+    PolicyValidationError,
+    writeEnvUpAtomic,
+  } = await import('@dotenvup/format');
   const recipientPublicKeys = await resolveRecipientPublicKeys(path.dirname(srcPath), publicKey);
-  const file = await create(entries, author, recipientPublicKeys, content);
+  const privateKeyForImport = await keystore.getPrivateKey();
+  if (!privateKeyForImport) {
+    logger.error('DotEnvUp: No private key available for import.');
+    return false;
+  }
+
+  let file;
+  try {
+    try {
+      await fs.access(outPath);
+      const existing = parse(await fs.readFile(outPath, 'utf8'));
+      const { recipient } = await decryptAny(existing, privateKeyForImport, '@local');
+      file = await mergeReencrypt({
+        existing,
+        editorRecipientId: recipient,
+        newEntries: entries,
+        rawContent: content,
+        privateKey: privateKeyForImport,
+        recipientPublicKeys,
+        author,
+      });
+    } catch (accessErr) {
+      if ((accessErr as NodeJS.ErrnoException).code === 'ENOENT') {
+        file = await create(entries, author, recipientPublicKeys, content);
+      } else {
+        throw accessErr;
+      }
+    }
+  } catch (err) {
+    if (err instanceof PolicyValidationError) {
+      logger.error(`DotEnvUp: ${err.message}`);
+      return false;
+    }
+    throw err;
+  }
+
   const output = serialize(file);
-  await fs.writeFile(outPath, output, 'utf8');
+  try {
+    await writeEnvUpAtomic(outPath, output, privateKeyForImport);
+  } catch (err) {
+    logger.error(`DotEnvUp: ${err instanceof Error ? err.message : String(err)}`);
+    return false;
+  }
 
   // Verify the written .env.up is decryptable before offering to delete source
   const { requirePrivateKeyOrNotify } = await import('../keyErrors');

@@ -41,6 +41,7 @@ This package implements the **DotEnvUp v1** open standard:
 - **Cryptography:** X25519 key exchange + XChaCha20-Poly1305 (AEAD), via libsodium.
 - **Multi-recipient:** Encrypt once, decrypt by any authorized recipient (users or CI/CD machines).
 - **Lossless roundtrip:** Comments, blank lines, and key ordering from the original `.env` are preserved.
+- **Optional `[policy]`:** Per-recipient value subsets; merge import so teammates cannot wipe keys they never decrypted.
 
 ## Documentation
 

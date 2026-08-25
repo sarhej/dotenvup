@@ -47,9 +47,21 @@ export interface EnvUpRecipientBlock {
   payload: string;
 }
 
+export interface EnvUpPolicyRow {
+  recipient: string;
+  keys: string[];
+}
+
+export interface EnvUpPolicy {
+  version: number;
+  rows: EnvUpPolicyRow[];
+}
+
 export interface EnvUpFile {
   /** Cleartext header with metadata */
   header: EnvUpHeader;
+  /** Optional per-recipient value ACL (cleartext) */
+  policy?: EnvUpPolicy;
   /** Signature over the header (V2, not used in V1) */
   signature?: {
     headerHash: string;
