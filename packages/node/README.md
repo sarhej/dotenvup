@@ -21,6 +21,4 @@ Your code keeps using `process.env.DB_HOST` as usual. Values are decrypted in me
 npm install @dotenvup/node
 ```
 
-## Status
-
-Early development. Not yet functional. See [PRODUCT_VISION.md](../../docs/PRODUCT_VISION.md).
+Requires `@dotenvup/format` **0.3.0+** (optional `[policy]` / merge re-encrypt). See the [User Guide](https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md).
