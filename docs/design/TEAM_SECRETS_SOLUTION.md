@@ -132,7 +132,7 @@ Re-encrypt **without** their `recipient:` line (and remove from `[policy]` / `En
 | Share links (`sealedShare` + API) | Extension Receive Share |
 | Compliance / audit UX | Git log + cleartext `[keys]` / `[policy]` |
 
-UP does **not** need to be online for `up run`. Zero-knowledge: UP sees policy, pub keys, ciphertext — not plaintext.
+UP does **not** need to be online for `up run`. No server: UP sees policy, pub keys, ciphertext, not plaintext.
 
 ---
 

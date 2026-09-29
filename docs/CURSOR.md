@@ -60,13 +60,16 @@ The rule is always in context (cheap, minimal); the skill adds full workflows (b
 | IDE can’t decrypt after migrate | Run `up run -- true` to warm — **do not** `up init` (new Key-Id). |
 | How do agents run tests? | `up run -- npm test` (or MCP `dotenvup_run`) — no plaintext `.env` required. |
 | How do agents run my CLIs? | Token in `.env.up`, then `./scripts/cli.sh` / `up run --`. Never `cli login`. |
+| Local build when CI minutes run out? | Mirror host env → `.env.up` (prefer explicit prod context), then `up run -- npm run build`. Example: [examples/sync-netlify-env-to-dotenvup.sh](examples/sync-netlify-env-to-dotenvup.sh). |
+| Seed env for a coding agent? | Same mirror pipeline; prefer **non-prod** context. Teach skill + `up run --`. Laptop = user identity; remote = `UP_KEY` / CI recipient. |
 
 LLM digest for crawlers/agents: https://dotenvup.com/llms.txt
 
 ## How Cursor agents work with DotEnvUp
 
 - **Agent runs shell commands**: Check `up status` / prefer `up run --`. Never invent secret values. User CLIs: tokens in `.env.up`, never `*:login`.
-- **Skills**: [skills/dotenvup/SKILL.md](../skills/dotenvup/SKILL.md) — lock/unlock, Keychain honesty, Vite caveat.
+- **Mirror host env**: If the user asks to pull Netlify/Railway/Vercel env into the repo, use a sync recipe (or dump → `up import --delete`); print names only; confirm context first.
+- **Skills**: [skills/dotenvup/SKILL.md](../skills/dotenvup/SKILL.md) — lock/unlock, Keychain honesty, Vite caveat, mirror/agent workflows.
 - **Rules**: `.cursor/rules/dotenvup.mdc` for a one-paragraph reminder.
 - **MCP**: [@dotenvup/mcp](../packages/dotenvup-mcp) — Command Palette **DotEnvUp: Copy MCP config for Cursor**.
 

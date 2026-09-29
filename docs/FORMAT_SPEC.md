@@ -14,7 +14,7 @@ The **DotEnvUp Format** (`.env.up`) is an encrypted file format for storing envi
 
 ### 1.1. Design Goals
 
-1.  **Zero-Knowledge / Zero-Trust:** No central server or key management service is required. Security relies entirely on standard public-key cryptography.
+1.  **No server / local keys only:** No central server or key management service is required. Security relies entirely on standard public-key cryptography.
 2.  **Git-Friendly:** The file is text-based, safe to commit, and provides visible metadata diffs.
 3.  **Metadata Visibility:** Developers can see *which* keys exist, *who* changed them, and *when*, without decryption. This replaces `.env.example`.
 4.  **Multi-Recipient:** A single file can be encrypted for multiple users and machines.
@@ -32,10 +32,10 @@ The **DotEnvUp Format** (`.env.up`) is an encrypted file format for storing envi
 
 A `.env.up` file is a UTF-8 text file composed of sections in order:
 
-1.  **Header** — Magic line, file-level metadata, optional context blocks.
-2.  **Keys** (`[keys]`) — Cleartext table of key metadata.
-3.  **Policy** (`[policy]`) — OPTIONAL. Per-recipient value ACL (cleartext key names).
-4.  **Encrypted** (`[encrypted]`) — Encrypted payload blocks, one per recipient.
+1.  **Header** - Magic line, file-level metadata, optional context blocks.
+2.  **Keys** (`[keys]`) - Cleartext table of key metadata.
+3.  **Policy** (`[policy]`) - OPTIONAL. Per-recipient value ACL (cleartext key names).
+4.  **Encrypted** (`[encrypted]`) - Encrypted payload blocks, one per recipient.
 
 Lines starting with `#` are comments. Blank lines are ignored by parsers. Parsers MUST ignore unknown sections (forward compatibility).
 
@@ -87,7 +87,7 @@ The header MAY contain a machine-readable context block for AI coding agents. Th
 #
 # AI-AGENT-CONTEXT:
 # This file contains encrypted environment secrets (.env.up format).
-# The plaintext .env may not exist on disk — it is "locked" by default.
+# The plaintext .env may not exist on disk - it is "locked" by default.
 # Do NOT assume .env exists. Use `up run -- <command>` to run with decrypted env.
 # ...
 ```
@@ -135,7 +135,7 @@ DB_HOST          v1  2026-02-25T10:00:00Z  @alice
 API_KEY          v3  2026-02-26T14:30:00Z  @bob
 ```
 
-### 2.6. Policy Section (`[policy]`) — OPTIONAL
+### 2.6. Policy Section (`[policy]`) - OPTIONAL
 
 When present, `[policy]` is **cleartext**. It names which catalog keys each recipient may receive **values** for. Key **names** remain visible to anyone with repo access (half-open envelope).
 
@@ -201,7 +201,7 @@ The v1 format uses **Hybrid Public-Key Authenticated Encryption**.
 
 To encrypt entries `E = { key: value, ... }` with optional raw content `R` for recipients `[R1, R2, ...]`:
 
-**Step 1 — Prepare Payload**
+**Step 1 - Prepare Payload**
 
 Construct a JSON object:
 ```json
@@ -212,14 +212,14 @@ The `_raw` field is OPTIONAL. When present, it contains the full original `.env`
 
 > **Reserved key:** `_raw` is a reserved name within the encrypted payload. Environment variables MUST NOT use this name.
 
-**Step 2 — Symmetric Encryption**
+**Step 2 - Symmetric Encryption**
 
 1. Generate a random 32-byte `symmetric_key`.
 2. Generate a random 24-byte `nonce`.
 3. Encrypt the JSON payload with `crypto_secretbox_easy(payload, nonce, symmetric_key)`.
    Result: `ciphertext`.
 
-**Step 3 — Per-Recipient Key Wrapping**
+**Step 3 - Per-Recipient Key Wrapping**
 
 For each recipient with public key `pk`:
 
@@ -295,11 +295,11 @@ recipient:@alice  identity:github:alice-dev  nonce:...  ephemeral:...  payload:.
 recipient:@ci     identity:github-actions:org/my-app  nonce:...  ephemeral:...  payload:...
 ```
 
-**Purpose:** Allows tools and dashboards to display "encrypted for Alice (github.com/alice-dev)" instead of just "@alice". This is informational only — the cryptographic key remains the sole authority for decryption.
+**Purpose:** Allows tools and dashboards to display "encrypted for Alice (github.com/alice-dev)" instead of just "@alice". This is informational only - the cryptographic key remains the sole authority for decryption.
 
 ### 4.4. CI/CD & Machine Users
 
-The format explicitly supports non-human recipients. This enables **Zero-Knowledge CI/CD**:
+The format explicitly supports non-human recipients. This enables CI/CD without a DotEnvUp server:
 
 1. Generate a keypair for the CI environment.
 2. Add the CI's **public key** as a recipient to `.env.up`.
@@ -335,7 +335,7 @@ The following is **NOT** encrypted:
 - **Recipient list** (who can decrypt).
 - **Project context** (if `Project` / `Repository` headers are present).
 - **Approximate value sizes** (via ciphertext length).
-- **Policy rows** (if `[policy]` is present — who is allowed which **names**, not values).
+- **Policy rows** (if `[policy]` is present - who is allowed which **names**, not values).
 
 *Rationale:* This metadata is generally low-risk and provides high-value developer experience (auditing, validation, onboarding).
 
@@ -384,7 +384,7 @@ Parsers MUST ignore unknown header fields and unknown `key:value` pairs in `[enc
 #
 # AI-AGENT-CONTEXT:
 # This file contains encrypted environment secrets (.env.up format).
-# The plaintext .env may not exist on disk — it is "locked" by default.
+# The plaintext .env may not exist on disk - it is "locked" by default.
 # Do NOT assume .env exists. Use `up run -- <command>` to run with decrypted env.
 #
 # Git-safe: Safe to commit this file. Key names are visible in the header;
@@ -413,10 +413,10 @@ recipient:@ci     identity:github-actions:acme/my-saas-app  nonce:abc123...  eph
 ## 9. References
 
 - [libsodium Documentation](https://doc.libsodium.org/)
-- [RFC 4648 — Base Encodings](https://www.rfc-editor.org/rfc/rfc4648)
-- [RFC 2119 — Requirement Level Keywords](https://www.rfc-editor.org/rfc/rfc2119)
-- [X25519 — RFC 7748](https://www.rfc-editor.org/rfc/rfc7748)
-- [XChaCha20-Poly1305 — Draft RFC](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-xchacha)
+- [RFC 4648 - Base Encodings](https://www.rfc-editor.org/rfc/rfc4648)
+- [RFC 2119 - Requirement Level Keywords](https://www.rfc-editor.org/rfc/rfc2119)
+- [X25519 - RFC 7748](https://www.rfc-editor.org/rfc/rfc7748)
+- [XChaCha20-Poly1305 - Draft RFC](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-xchacha)
 - [DotEnvUp Security Model](SECURITY.md)
 - [DotEnvUp Reference Implementation](https://github.com/sarhej/dotenvup/tree/main/packages/format)
 

@@ -1,6 +1,6 @@
 # @dotenvup/cli
 
-CLI for `.env.up` — encrypt `.env`, lock/unlock, inject env without writing plaintext (`up run --`).
+CLI for `.env.up` - encrypt `.env`, lock/unlock, inject env without writing plaintext (`up run --`).
 
 ```bash
 npm install -g @dotenvup/cli
@@ -22,8 +22,8 @@ up reencrypt             # Full re-wrap (full-catalog holder only when [policy] 
 up recipients add|list|remove
 ```
 
-Team files with `[policy]`: merge import, per-recipient payloads, `up verify`. All teammates MUST use this CLI version — older `up import` can wipe secrets other people hold. Guide: [USER_GUIDE.md](https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md).
+Team files with `[policy]`: merge import, per-recipient payloads, `up verify`. All teammates MUST use this CLI version - older `up import` can wipe secrets other people hold. Guide: [USER_GUIDE.md](https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md).
 
 ## License
 
-MIT — [dotenvup.com](https://dotenvup.com)
+MIT - [dotenvup.com](https://dotenvup.com)

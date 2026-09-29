@@ -56,7 +56,9 @@ up run -- npm start
 
 This injects decrypted env into the child process and does **not** write `.env` to disk — ideal for an agent that should not persist secrets.
 
-Same idea for **user CLIs** (Railway, `gh`, Wrangler, …): store the token in `.env.up`, then `up run --` or `./scripts/cli.sh`. Never `railway login` / `gh auth login`.
+Same idea for **user CLIs** (Railway, `gh`, Wrangler, Netlify, …): store the token in `.env.up`, then `up run --` or `./scripts/cli.sh`. Never `railway login` / `gh auth login`.
+
+**Mirror host env for agents or local builds:** pull stage/prod-like vars from the host into `.env.up` (prefer non-prod for agents; production when CI minutes are exhausted and the user asked). Example recipe: [examples/sync-netlify-env-to-dotenvup.sh](examples/sync-netlify-env-to-dotenvup.sh). Then `up run --` — never paste values into chat. Laptop agents use the user’s identity; remote/CI uses `UP_KEY` / `DOTENVUP_PRIVATE_KEY`.
 
 ### 2. Check state with `up status` or `up status --json`
 
@@ -98,6 +100,7 @@ That gives Claude Code immediate context at session start.
 | Run tests/build/start with secrets | `up run -- npm test` (and similar) |
 | Know if .env is present / drift | `up status` or `up status --json` |
 | Teach Claude the rules | DotEnvUp skill in `.claude/skills/` |
+| Seed from Netlify/Railway/etc. | Mirror host → `.env.up` ([example](examples/sync-netlify-env-to-dotenvup.sh)); then `up run --` |
 | Session-level context | One-line DotEnvUp note in `CLAUDE.md` |
 | Optional automation | SessionStart hook that runs `up status --json` |
 

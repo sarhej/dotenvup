@@ -1,4 +1,4 @@
-# DotEnvUp — Claude Code Context
+# DotEnvUp - Claude Code Context
 
 DotEnvUp is an open-source encrypted `.env` file format (`.env.up`) and tooling ecosystem.
 CLI and format are **implemented and production-ready** (except Windows testing).
@@ -8,19 +8,19 @@ For seamless team sharing: **[unknownpassword.com](https://unknownpassword.com)*
 
 ## Key Directories
 
-- `packages/format/` — Core `.env.up` parser and writer (`@dotenvup/format`)
-- `packages/cli/` — CLI tool (`up` command, `@dotenvup/cli`)
-- `packages/node/` — Drop-in `dotenv` replacement (`@dotenvup/node`)
-- `packages/vscode-dotenvup/` — VS Code extension
-- `docs/` — User guide, troubleshooting, security model
+- `packages/format/` - Core `.env.up` parser and writer (`@dotenvup/format`)
+- `packages/cli/` - CLI tool (`up` command, `@dotenvup/cli`)
+- `packages/node/` - Drop-in `dotenv` replacement (`@dotenvup/node`)
+- `packages/vscode-dotenvup/` - VS Code extension
+- `docs/` - User guide, troubleshooting, security model
 
 ## For AI Agents
 
 See [AGENTS.md](AGENTS.md) for the full automation guide. **Claude Code users:** [docs/CLAUDE_CODE.md](docs/CLAUDE_CODE.md) and the [DotEnvUp skill](docs/claude-code/dotenvup.skill.md) for your project’s `.claude/skills/`. Key points:
 
-- **Never assume `.env` exists** — it may be locked. Use `up run -- <command>` to inject env.
+- **Never assume `.env` exists** - it may be locked. Use `up run -- <command>` to inject env.
 - `up status` or `up status --json` to check lock state and drift.
-- `up run -- npm test`, `up run -- npm start` — run commands with decrypted env (no file written).
+- `up run -- npm test`, `up run -- npm start` - run commands with decrypted env (no file written).
 - User CLIs: token in `.env.up`, then `./scripts/cli.sh` or `up run --`. Never `railway login` / `gh auth login`.
 - Non-interactive flags: `--yes`, `--force`, `--duration`, `--force-delete`, `--json`.
 - Exit codes: `0` success, `1` user/usage error, `2` system error.

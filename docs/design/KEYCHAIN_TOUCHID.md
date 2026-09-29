@@ -96,7 +96,7 @@ Without a cross-process cache, every `up run --` re-prompts. The agent is what t
 - Holds the unwrapped identity **in memory only**. Never written to disk, never swapped to a temp file.
 - Newline-delimited JSON: `get`, `put`, `status`, `stop`.
 - Timers, per the standards review in the plan: **30 minutes idle** (reset on each use, matching NIST SP 800-63B AAL2 inactivity and gpg-agent's SSH default) and **8 hours absolute** (inside NIST's 12 hour ceiling).
-- Wipes on screen lock, sleep, and logout via `watch-presence`. This is what makes a long timer honest — walking away ends the session regardless of the clock, mirroring the `UserPresence` semantic of the ACL itself.
+- Wipes on screen lock, sleep, and logout via `watch-presence` **on macOS when the Keychain helper is installed**. Not implemented on Linux or Windows. On macOS we have not published a measured test of every sleep path.
 - Configurable through `dotenvup.session.idleTtl` / `dotenvup.session.absoluteTtl` and `DOTENVUP_SESSION_TTL`, capped at 12 hours absolute, with a policy setting so regulated teams can force shorter.
 
 ## Non-interactive contract

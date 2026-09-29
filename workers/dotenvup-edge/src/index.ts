@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { markdownToHtml, wrapDocHtml } from "./markdown";
+
 const OIDC_DELEGATE = "https://unknownpassword.com/.well-known/openid-configuration";
 const OAUTH_AS_DELEGATE = "https://unknownpassword.com/.well-known/oauth-authorization-server";
 
@@ -45,12 +47,17 @@ function isSafePath(pathname: string): boolean {
     "/llms.txt",
     "/markdown.md",
     "/favicon.ico",
+    "/security",
+    "/security.html",
+    "/SECURITY.md",
   ]);
   return exact.has(pathname);
 }
 
 function upstreamPath(pathname: string): string {
-  return pathname === "/" || pathname === "" ? "/index.html" : pathname;
+  if (pathname === "/" || pathname === "") return "/index.html";
+  if (pathname === "/security" || pathname === "/security.html") return "/SECURITY.md";
+  return pathname;
 }
 
 function contentTypeForPath(pathname: string): string | undefined {
@@ -121,6 +128,34 @@ export default {
 
     if (pathname === "/.well-known/oauth-authorization-server") {
       return delegateJsonMetadata(OAUTH_AS_DELEGATE, request.method);
+    }
+
+    const securityPage = pathname === "/security" || pathname === "/security.html";
+    if (securityPage) {
+      if (request.method === "HEAD") {
+        const head = await fetchRaw(env, "/SECURITY.md", "HEAD");
+        const headers = new Headers();
+        headers.set("Content-Type", "text/html; charset=utf-8");
+        headers.set("Cache-Control", "public, max-age=60");
+        return new Response(null, { status: head.ok ? 200 : head.status, headers });
+      }
+      const mdRes = await fetchRaw(env, "/SECURITY.md", "GET");
+      if (!mdRes.ok) {
+        return new Response("Security document unavailable", { status: 502 });
+      }
+      const md = await mdRes.text();
+      const body = markdownToHtml(md).replace(
+        /href="(\.\.\/SECURITY\.md)"/g,
+        'href="https://github.com/sarhej/dotenvup/blob/main/SECURITY.md"',
+      ).replace(
+        /href="((?!https?:|\/|#)[^"]+)"/g,
+        'href="https://github.com/sarhej/dotenvup/blob/main/docs/$1"',
+      );
+      const html = wrapDocHtml("DotEnvUp security model", body);
+      const headers = new Headers();
+      headers.set("Content-Type", "text/html; charset=utf-8");
+      headers.set("Cache-Control", "public, max-age=60");
+      return new Response(html, { status: 200, headers });
     }
 
     const homePath = pathname === "/" || pathname === "/index.html";
