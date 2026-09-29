@@ -1,15 +1,17 @@
 {
   "name": "dotenvup-edge",
   "private": true,
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
-    "test": "node --experimental-strip-types src/markdown.test.ts"
+    "test": "node --experimental-strip-types src/markdown.test.ts",
+    "audit": "npm audit --audit-level=high"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250523.0",
+    "@cloudflare/workers-types": "^5.20260929.1",
     "typescript": "^5.7.0",
-    "wrangler": "^4.90.0"
+    "wrangler": "^4.144.0"
   }
 }

@@ -10,7 +10,7 @@ Living notes for GitHub Security / CodeQL / Scorecard findings that are **accept
 | Secret scanning + push protection | Enabled |
 | CodeQL (`security-extended`) | On every Security workflow run |
 | OpenSSF Scorecard | Weekly + PR |
-| `npm run security:check` | Fail on high/critical; target **0** vulns |
+| `npm run security:check` | Fail on high/critical; audits **root** and `workers/dotenvup-edge` | **0** vulns |
 
 ## Secret scanning
 

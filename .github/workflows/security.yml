@@ -32,6 +32,12 @@ jobs:
       - run: npm ci
       - name: npm audit (fail on high or critical)
         run: npm run security:check
+      - name: Edge worker npm ci
+        run: npm ci
+        working-directory: workers/dotenvup-edge
+      - name: Edge worker npm audit
+        run: npm audit --audit-level=high
+        working-directory: workers/dotenvup-edge
 
   scorecard:
     name: OpenSSF Scorecard
