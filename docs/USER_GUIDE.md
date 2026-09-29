@@ -2,7 +2,7 @@
 
 ## Overview
 
-DotEnvUp encrypts your `.env` file into a `.env.up` format. **Zero-knowledge, zero-trust** — no server, no cloud; your keys stay on your machine and we never see your secrets. Secrets stay encrypted on disk. You unlock temporarily when working, and lock when done.
+DotEnvUp encrypts your `.env` file into a `.env.up` format. No server. Keys are generated on your machine and never leave it. Secrets stay encrypted on disk. You unlock temporarily when working, and lock when done.
 
 ## Commands
 
@@ -88,7 +88,36 @@ This repo’s example wrapper: [scripts/cli.sh](../scripts/cli.sh). Copy it into
 ./scripts/cli.sh run --require CLOUDFLARE_API_TOKEN -- wrangler whoami
 ```
 
-The user fills token values locally (`up unlock` → edit `.env` → `up import .env --delete` → `up lock`). Agents must not invent tokens. If the token is missing, do not run the bare CLI — it often falls through to a personal login.
+The user fills token values locally (`up unlock` → edit `.env` → `up import .env --delete` → `up lock`). Agents must not invent tokens. If the token is missing, do not run the bare CLI - it often falls through to a personal login.
+
+### Mirror host env (local builds + agent-ready repos)
+
+Pull environment variables from a host (Netlify, Railway, Vercel, …) into encrypted `.env.up`, then build locally or let coding agents use `up run --` — without leaving plaintext on disk and without pasting secrets into chat.
+
+**Prefer a non-prod context** when seeding agents (e.g. Netlify `deploy-preview` or a custom staging context). Use **production** when you need local build/deploy parity (for example CI build minutes exhausted).
+
+Example recipe (copy into your app repo as `scripts/…`): [docs/examples/sync-netlify-env-to-dotenvup.sh](examples/sync-netlify-env-to-dotenvup.sh).
+
+```bash
+./scripts/sync-netlify-env-to-dotenvup.sh --context=deploy-preview   # default in the example
+./scripts/sync-netlify-env-to-dotenvup.sh --context=production
+./scripts/sync-netlify-env-to-dotenvup.sh --dry-run                  # prints key names only
+
+up run -- npm run build
+up run -- netlify deploy --prod --dir=dist --no-build   # optional; needs NETLIFY_AUTH_TOKEN in vault
+```
+
+Generic pattern for any host: host CLI dumps env (JSON or dotenv) → brief `.env` → `up import .env --delete` → confirm `up status` shows LOCKED. Agents may print **key names and counts only**, never values.
+
+### Agent identity (laptop vs remote)
+
+| Where the agent runs | Decrypt with |
+|----------------------|--------------|
+| Your machine (Cursor / Claude Code) | Your `~/.dotenvup/` identity |
+| CI / headless / cloud agent VM | `UP_KEY` or `DOTENVUP_PRIVATE_KEY` (prefer a dedicated CI recipient in `.env.up`) |
+| Future provider-native agent identity | Same `.env.up`; providers inject key material — DotEnvUp only decrypts |
+
+Commit `.env.up`, add the DotEnvUp skill/plugin so agents use `up run --`, and inject a machine key for remote runners. DotEnvUp does not replace Claude/Cursor cloud identity products.
 
 ### up keys
 
@@ -262,7 +291,7 @@ up import .env
 4. Optional: add a **`[policy]`** section (see design doc) and run a full re-encrypt so each block holds only that person's key subset.
 5. Teammate runs `up unlock` or `up run --` with their own private key.
 
-**Merge import:** If `.env.up` already exists, `up import` **merges** into your recipient block only — other people's ciphertext is preserved. Your `~/.dotenvup/` identity is **not** recreated.
+**Merge import:** If `.env.up` already exists, `up import` **merges** into your recipient block only - other people's ciphertext is preserved. Your `~/.dotenvup/` identity is **not** recreated.
 
 **Shared secrets:** If Bob changes `API_KEY`, only **Bob's** encrypted block updates until Alice (or CI) re-imports their slice. Git history keeps old commits decryptable with the same keys.
 
@@ -275,7 +304,7 @@ up verify
 up verify --json
 ```
 
-**Remove a value (policy files):** Delete the line from your `.env` and `up import` — your policy slice is authoritative. Names only in your slice are dropped from `[keys]` when no policy row references them anymore.
+**Remove a value (policy files):** Delete the line from your `.env` and `up import` - your policy slice is authoritative. Names only in your slice are dropped from `[keys]` when no policy row references them anymore.
 
 **Revoke a teammate:**
 
@@ -291,7 +320,7 @@ When you hold the **full catalog** and all teammate public keys are in `.dotenvu
 
 ### Sharing with one other person
 
-Use this when you want a single collaborator (or a deploy key, CI key, etc.) to be able to decrypt the same `.env.up` without any server or account — still the free, zero-knowledge model.
+Use this when you want a single collaborator (or a deploy key, CI key, etc.) to be able to decrypt the same `.env.up` without any server or account.
 
 **You (owner):**
 
@@ -319,12 +348,12 @@ Use this when you want a single collaborator (or a deploy key, CI key, etc.) to 
 
 If you use the DotEnvUp extension in VS Code or Cursor:
 
-- **Open as folder** — Open your project with **File → Open Folder** (not a single file) so the extension can detect `.env` and `.env.up`. Root-level files are always detected even when excluded from search (e.g. in `.gitignore`).
-- **Status bar** — Click to lock or unlock; the label shows current state (Locked / Unlocked, drift).
-- **Command Palette** — Run **DotEnvUp: Unlock**, **DotEnvUp: Lock**, **DotEnvUp: Import**, **DotEnvUp: Show Keys**, **DotEnvUp: Status**, **DotEnvUp: Key Management** (webview for backup/recovery and key discovery), **DotEnvUp: Recipients: Add / List / Remove**, **DotEnvUp: Recover Key Mismatch** (when `.env.up` was encrypted with another key).
-- **First Protect** — When the workspace has only `.env` and no `.env.up`, the extension can guide you to encrypt it for the first time.
-- **Import All** — Encrypt all `.env` files across workspace folders in one go.
-- **Settings** — See the extension README for options such as `confirmOnLock`, `defaultUnlockDuration`, `createBackupBeforeLock` (encrypted `.env.up.bak-<timestamp>` before lock), and `encryptAllEnvFiles`.
+- **Open as folder** - Open your project with **File → Open Folder** (not a single file) so the extension can detect `.env` and `.env.up`. Root-level files are always detected even when excluded from search (e.g. in `.gitignore`).
+- **Status bar** - Click to lock or unlock; the label shows current state (Locked / Unlocked, drift).
+- **Command Palette** - Run **DotEnvUp: Unlock**, **DotEnvUp: Lock**, **DotEnvUp: Import**, **DotEnvUp: Show Keys**, **DotEnvUp: Status**, **DotEnvUp: Key Management** (webview for backup/recovery and key discovery), **DotEnvUp: Recipients: Add / List / Remove**, **DotEnvUp: Recover Key Mismatch** (when `.env.up` was encrypted with another key).
+- **First Protect** - When the workspace has only `.env` and no `.env.up`, the extension can guide you to encrypt it for the first time.
+- **Import All** - Encrypt all `.env` files across workspace folders in one go.
+- **Settings** - See the extension README for options such as `confirmOnLock`, `defaultUnlockDuration`, `createBackupBeforeLock` (encrypted `.env.up.bak-<timestamp>` before lock), and `encryptAllEnvFiles`.
 
 ## Drift Explained
 
@@ -355,8 +384,8 @@ If you use the DotEnvUp extension in VS Code or Cursor:
 | Code | Meaning |
 |------|---------|
 | `0` | Success |
-| `1` | User/usage error — missing file, invalid option, refusal (e.g. drift without `--force`) |
-| `2` | System error — e.g. `lock` could not remove `.env` from disk |
+| `1` | User/usage error - missing file, invalid option, refusal (e.g. drift without `--force`) |
+| `2` | System error - e.g. `lock` could not remove `.env` from disk |
 
 Scripts and agents can branch on these codes. For example:
 

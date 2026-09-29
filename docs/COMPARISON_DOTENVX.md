@@ -1,6 +1,8 @@
 # DotEnvUp vs dotenvx
 
-A concise comparison of **DotEnvUp** (this project) and **[dotenvx](https://github.com/dotenvx/dotenvx)** (“a secure dotenv” from the creator of the original `dotenv`). Both aim to improve .env security; they differ in format, workflow, and where they run.
+A concise comparison of **DotEnvUp** (this project) and **[dotenvx](https://github.com/dotenvx/dotenvx)** ("a secure dotenv" from the creator of the original `dotenv`). Both encrypt env for git. They differ in key sharing and editor workflow.
+
+The current table (re-checked August 2026) lives in the [README](../README.md#compared-with-dotenvx-sops-age-and-doppler) and on [dotenvup.com](https://dotenvup.com/#compare). dotenvx has a VS Code extension (`dotenv.dotenvx-vscode`). It does not do per-person recipients. Private keys are one per environment file (`.env.keys` / `DOTENV_PRIVATE_KEY`). Crypto: secp256k1 ECIES, BSD-3.
 
 ---
 
@@ -8,7 +10,7 @@ A concise comparison of **DotEnvUp** (this project) and **[dotenvx](https://gith
 
 | | DotEnvUp | dotenvx |
 |---|----------|--------|
-| **Tagline** | “.env files, but with memory — and a lock.” | “A secure dotenv” — run anywhere, multi-env, encrypted envs. |
+| **Tagline** | “.env files, but with memory - and a lock.” | “A secure dotenv” - run anywhere, multi-env, encrypted envs. |
 | **Core idea** | Encrypted **.env.up** file; unlock temporarily to get a normal **.env**; lock removes it. App code unchanged. | **.env** stays in repo with encrypted values; **dotenvx run** decrypts and injects at runtime. No plaintext .env on disk in prod. |
 
 ---
@@ -17,8 +19,8 @@ A concise comparison of **DotEnvUp** (this project) and **[dotenvx](https://gith
 
 | Aspect | DotEnvUp | dotenvx |
 |--------|----------|--------|
-| **Main file** | **.env.up** — new format: cleartext header (key names, versions, timestamps) + encrypted value blocks. | **.env** — same filename; values stored as `KEY="encrypted:...";` public key in file. |
-| **Key storage** | **~/.dotenvup/identity** (one keypair per machine; shared across projects). Optional per-repo keys. | **.env.keys** (gitignored) — holds `DOTENV_PRIVATE_KEY` per env file. |
+| **Main file** | **.env.up** - new format: cleartext header (key names, versions, timestamps) + encrypted value blocks. | **.env** - same filename; values stored as `KEY="encrypted:...";` public key in file. |
+| **Key storage** | **~/.dotenvup/identity** (one keypair per machine; shared across projects). Optional per-repo keys. | **.env.keys** (gitignored) - holds `DOTENV_PRIVATE_KEY` per env file. |
 | **Safe to commit?** | Yes. **.env.up** can be committed; only metadata is visible; values are encrypted. | Partially. **.env** with `encrypted:...` and `DOTENV_PUBLIC_KEY` can be committed; **.env.keys** must not be. |
 | **Plaintext .env** | Created only when “unlocked”; deleted on lock or timer. | Not written by default; decryption happens in process via `dotenvx run`. |
 
@@ -30,7 +32,7 @@ A concise comparison of **DotEnvUp** (this project) and **[dotenvx](https://gith
 |--------|----------|--------|
 | **Crypto** | X25519-XChaCha20-Poly1305 (per-recipient). | ECIES + AES-256. |
 | **Key model** | Single user keypair (or per-repo); multi-recipient support in .env.up. | Per-file or per-environment keypair; public key in .env, private in .env.keys. |
-| **What’s visible in repo** | Key names, versions, timestamps, authors — no values. | Key names and `encrypted:...` blobs; public key in file. |
+| **What’s visible in repo** | Key names, versions, timestamps, authors - no values. | Key names and `encrypted:...` blobs; public key in file. |
 | **Runtime secret exposure** | Plaintext only in memory and (if unlocked) in .env on disk until lock. | No .env file by default; secrets injected by CLI into process env. |
 
 ---
@@ -64,7 +66,7 @@ A concise comparison of **DotEnvUp** (this project) and **[dotenvx](https://gith
 | **CLI name** | `up` (`@dotenvup/cli`). | `dotenvx`. |
 | **Install** | `npm install -g @dotenvup/cli`. | `npm i @dotenvx/dotenvx`, or curl/brew/docker/winget. |
 | **Run without .env on disk** | `up run -- node index.js` (decrypt in process, inject, no .env). | `dotenvx run -- node index.js` (same idea). |
-| **Cross-platform / any language** | `up run` works for any process; env is injected by the CLI. | Strong focus: “run anywhere” — any language/framework via `dotenvx run`. |
+| **Cross-platform / any language** | `up run` works for any process; env is injected by the CLI. | Strong focus: “run anywhere” - any language/framework via `dotenvx run`. |
 | **Comments / structure** | Preserved in .env.up and in the generated .env (headers, blank lines, comments). | Encrypted .env is key-value focused; structure may differ. |
 | **Commercial / team** | UnknownPassword (future) for sharing and team features. | dotenvx Pro (keypair management, etc.). |
 
@@ -84,7 +86,7 @@ A concise comparison of **DotEnvUp** (this project) and **[dotenvx](https://gith
 
 - To keep using the **.env** filename and have encryption **inside** that file.
 - **Multi-environment** (.env, .env.production, …) with per-file keys and a mature CLI.
-- **“Run anywhere”** — same CLI and flow across languages and platforms.
+- **“Run anywhere”** - same CLI and flow across languages and platforms.
 - **No plaintext .env** on disk in prod; decryption only at run via `dotenvx run`.
 - Ecosystem from the **creator of dotenv** and a large community (e.g. 5k+ GitHub stars).
 

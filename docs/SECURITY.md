@@ -1,103 +1,121 @@
 # DotEnvUp Security Model
 
-## Zero-knowledge, zero-trust
+Canonical URL: [https://dotenvup.com/security](https://dotenvup.com/security)
 
-DotEnvUp is **zero-knowledge** and **zero-trust**: there is no server, no cloud, and no third party that ever sees your secrets or your decryption keys. Encryption and decryption happen only on your machine. Your keypair lives under `~/.dotenvup/` (encrypted envelope by default on new installs); we never have access to it. You don't have to trust us — or anyone else — with your values.
+There is no DotEnvUp server. Keys are generated on your machine and never leave it. GitHub (or any git host) stores the encrypted `.env.up` file. The host cannot read the values.
 
-## What Is Encrypted
+This document is the threat model. For how to report a vulnerability, see [SECURITY.md](../SECURITY.md) at the repo root.
 
-- **Values** in `.env.up` are encrypted per-recipient using X25519-XChaCha20-Poly1305.
-- **Metadata** (key names, versions, timestamps, authors) is stored in cleartext in the `.env.up` header. This lets you see what's inside without decrypting.
+## What is encrypted, and what is not
 
-## Where Keys Live
+- **Values** in `.env.up` are encrypted per recipient using X25519 and XChaCha20-Poly1305 (libsodium). That is the same hybrid construction [age](https://github.com/FiloSottile/age) uses: X25519 for key agreement, an XChaCha20-Poly1305 AEAD for the payload. We chose it because it is boring and reviewed, not because it is novel.
+- **Key names** and per-key metadata (version, timestamp, author, optional notes and origin comments) stay readable in the `[keys]` header. Optional `[policy]` is also cleartext: it lists which recipient may receive which **names**. Values are still ciphertext.
+- Comments and original `.env` structure are inside the encrypted payload (`_raw`), not in the cleartext header.
+
+Commit `.env.up`. Delete `.env`. Values are encrypted at rest.
+
+Key names and per-key metadata stay readable. Values do not. If your key names are themselves sensitive, this format is not for you. SOPS and age leak names the same way (YAML keys, recipient stanzas). That is the half-open envelope, specified in [FORMAT_SPEC.md](FORMAT_SPEC.md).
+
+## What this does not protect against
+
+A hostile reader should not be able to write a comment more damaging than this section.
+
+### Same-user processes can see injected secrets
+
+Any process running as the same user can read the environment of a child you started, including via `/proc/<pid>/environ` on Linux.
+
+`up run -- <cmd>` does not hide secrets from the command it runs. It does not hide them from a coding agent running as you. It prevents a plaintext `.env` file sitting on disk waiting to be read or committed.
+
+Once secrets are in a process environment, they are available to that process. That is also true of `export`, of most hosted secret injectors, and of dotenvx `run`. Accidental file ingestion and accidental git commit are the failures this tool is built to stop. It does not claim more.
+
+### Key names are cleartext
+
+See above. Names, timestamps, authors, and `[policy]` rows are readable without a private key.
+
+### This implementation has not been independently audited
+
+The primitives are X25519 and XChaCha20-Poly1305. The DotEnvUp format parser, CLI, extension, and session agent have **not** had an independent cryptographic audit. Do not treat this repo as audited software.
+
+### Session behaviour is not the same on every OS
+
+After one successful unwrap, an in-memory session agent can keep the private key warm: about 30 minutes idle and 8 hours absolute (`up session status`, `up session stop`). Those timers are implemented.
+
+Wipe on screen lock, sleep, or logout:
+
+| Platform | What the code does |
+|----------|--------------------|
+| macOS | The session agent starts `watch-presence` on the Keychain helper **when that helper is installed**. On `screenLocked`, `sleep`, or `logout` events from the helper, it wipes the cached key and exits. If the helper is missing, this watcher does not start. We have not published a measured test that this fires on every Mac sleep path (clamshell, `pmset`, etc.). |
+| Linux | Not implemented. The presence watcher returns immediately unless `process.platform === 'darwin'`. |
+| Windows | Not implemented. Same as Linux. |
+
+Do not read "wiped on sleep" as a cross-platform guarantee. On Linux and Windows, the warm session lasts until idle/absolute TTL or `up session stop`.
+
+### Memory, swap, and crash dumps
+
+Decrypted values live in process memory (the editor buffer for Safe Edit, the child environment for `up run`, a temporary `.env` if you unlock to disk). We do not lock pages (`mlock`), we do not encrypt swap, and we do not scrub crash dumps. If that is not mitigated, it is not mitigated.
+
+### Stolen laptop
+
+**Default (file envelope, all platforms):** private key is `identity.enc` under `~/.dotenvup/`, wrapped by a `wrapping-key` file on disk. Anyone who can read both files can decrypt every `.env.up` that key opens. An unlocked user session, malware as that user, or a disk image of an unlocked home directory is enough. Full-disk encryption (FileVault, LUKS, BitLocker) is your OS, not DotEnvUp.
+
+**Opt-in macOS Keychain:** `up key migrate-to-keychain` moves the wrapping key into Keychain with `WhenUnlockedThisDeviceOnly` and a LocalAuthentication prompt (Touch ID, Apple Watch, or login password). The private key still never enters Keychain. This is **not** a full Keychain UserPresence ACL (that needs a provisioned app bundle). A stolen Mac that is powered off or at the lock screen is harder than the file-envelope case. A stolen Mac that is unlocked, or an attacker already running as you, can still reach secrets the same way as in the same-user section above.
+
+**Recovery bundle:** `~/.dotenvup/recovery/<keyId>.dotenvup-key` is passphrase-protected (scrypt + XChaCha20). The bundle without the recovery code does not unlock the identity. The bundle with the code does. Treat the code like a master backup.
+
+**CI:** `UP_KEY` / `DOTENVUP_PRIVATE_KEY` bypasses files and never prompts. Whoever can read that environment can decrypt.
+
+## Where keys live
 
 - **Keypair directory:** `~/.dotenvup/` (mode `0700`).
 - **Current default (file envelope):**
-  - `identity.enc` — private key encrypted under a random wrapping key (mode `0600`)
-  - `wrapping-key` — 32-byte file wrapping key (mode `0600`)
-  - `identity.pub` — public key (mode `0644`) for sharing recipients
+  - `identity.enc`: private key encrypted under a random wrapping key (mode `0600`)
+  - `wrapping-key`: 32-byte file wrapping key (mode `0600`)
+  - `identity.pub`: public key (mode `0644`) for sharing recipients
 - **Legacy:** plaintext `identity` (mode `0600`) is still readable until the user runs `up key upgrade`.
 - **CI / automation:** `UP_KEY` or `DOTENVUP_PRIVATE_KEY` (base64 private key) overrides files; never prompts.
-- **Optional (macOS):** `up key migrate-to-keychain` moves the wrapping key into Keychain (`WhenUnlockedThisDeviceOnly`). Reads go through our helper, which prompts via LocalAuthentication (Touch ID / Apple Watch / login password). The private key never enters Keychain. (True Keychain ACL needs a provisioned app bundle; see [design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).) Until you migrate, anyone who can read both `identity.enc` and `wrapping-key` can decrypt.
+- **Optional (macOS):** `up key migrate-to-keychain`. See stolen laptop above. Design notes: [design/KEYCHAIN_TOUCHID.md](design/KEYCHAIN_TOUCHID.md).
 
-## Key Backup and Recovery
+## Key backup and recovery
 
-- **Automatic recovery (recommended):** `up init` and `up key upgrade` write `~/.dotenvup/recovery/<keyId>.dotenvup-key` and show a one-time recovery code. Store that code somewhere durable. Check with `up key recovery status`.
-- **Manual export/import** between machines:
-  - `up key export backup.dotenvup-key`
-  - `up key import backup.dotenvup-key`
-- Export/recovery bundles are passphrase-protected (scrypt + XChaCha20) and include integrity/fingerprint checks.
+- `up init` and `up key upgrade` write `~/.dotenvup/recovery/<keyId>.dotenvup-key` and show a one-time recovery code. Store that code somewhere durable. Check with `up key recovery status`.
+- Manual export/import: `up key export` / `up key import`. Bundles are passphrase-protected.
 - DotEnvUp never writes raw private keys to logs.
-- **Existing users:** migration is opt-in (`up key upgrade`). It does not change Key-Id. Details: [RELEASE_NOTES_IDENTITY_ENVELOPE.md](RELEASE_NOTES_IDENTITY_ENVELOPE.md).
+- Migration is opt-in (`up key upgrade`). It does not change Key-Id. Details: [RELEASE_NOTES_IDENTITY_ENVELOPE.md](RELEASE_NOTES_IDENTITY_ENVELOPE.md).
 
-## What We Never Log
+## What we never log
 
 - Decrypted values are never logged.
-- Debug mode (`UP_DEBUG=1`) logs paths and key counts only — no key names that look secret (e.g. PASSWORD, API_KEY), and no values.
+- Debug mode (`UP_DEBUG=1`) logs paths and key counts only. It skips key names that look secret (for example PASSWORD, API_KEY) and never logs values.
 - Error messages redact secret-like key names and never include values.
 
-## Threat Model (Summary)
+## Disk access (summary)
 
 | Attacker capability | Result |
 |--------------------|--------|
-| Disk access (read `.env.up`) | Can see metadata; cannot decrypt without private key |
-| Disk access (read `.env`) | Can read plaintext if file exists (unlocked) |
-| Access to plaintext `identity` (legacy) or to both `identity.enc` + `wrapping-key` | Can decrypt `.env.up`; full compromise |
-| Access to recovery bundle **without** the recovery code | Cannot decrypt (scrypt-protected) |
-| Access to recovery bundle **with** the recovery code | Can restore identity (treat the code like a master backup) |
+| Read `.env.up` | Metadata and names; cannot decrypt values without the private key |
+| Read `.env` | Plaintext if the file exists (unlocked) |
+| Read plaintext `identity` (legacy) or both `identity.enc` and `wrapping-key` | Can decrypt `.env.up` for that key |
+| Recovery bundle without the recovery code | Cannot decrypt |
+| Recovery bundle with the recovery code | Can restore identity |
 
-**Mitigation:** Lock removes `.env` from disk. Prefer `up key upgrade` on older installs. The main day-to-day risk surface remains the plaintext `.env` when unlocked — use short unlock durations, Safe Edit, or `up run --`.
+Lock removes `.env` from disk. Prefer `up key upgrade` on older installs. Day-to-day risk is still plaintext `.env` when unlocked. Use a short unlock duration, Safe Edit, or `up run --`.
 
-## Sharing and Recipients
+## Sharing and recipients
 
-`.env.up` supports multiple recipients. Each recipient's block is encrypted with their public key. Only they can decrypt.
+`.env.up` supports multiple recipients. Each recipient's block is encrypted to their public key. Only they can decrypt that block.
 
-**Team policy:** optional cleartext `[policy]` defines which key *values* each recipient receives; key *names* stay visible in `[keys]` for everyone with repo access. Shipped in `@dotenvup/format` and `@dotenvup/cli` — see [design/TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md) and [design/TEAM_SECRETS_SECURITY.md](design/TEAM_SECRETS_SECURITY.md).
+Optional `[policy]` defines which key **values** each recipient receives. Key **names** stay visible in `[keys]` for everyone with repo access. Shipped in `@dotenvup/format` and `@dotenvup/cli`. See [design/TEAM_SECRETS_SOLUTION.md](design/TEAM_SECRETS_SOLUTION.md).
 
-Recipient public keys may come from manual exchange, GitHub SSH keys, or a team directory (e.g. UnknownPassword).
+Recipient public keys may come from manual exchange, GitHub SSH keys, or a team directory (for example UnknownPassword). UnknownPassword is optional UX. It is not required to encrypt or decrypt.
 
-## Ed25519-to-X25519 Key Conversion
+## Ed25519-to-X25519 conversion
 
-DotEnvUp supports encrypting shares for GitHub users using their SSH Ed25519 public keys. The conversion uses libsodium's `crypto_sign_ed25519_pk_to_curve25519` function, which performs the standard birational mapping between the Ed25519 (twisted Edwards) and X25519 (Montgomery) curve representations.
+DotEnvUp can encrypt for a GitHub user who publishes an Ed25519 SSH key. Conversion uses libsodium `crypto_sign_ed25519_pk_to_curve25519` (Ed25519 to X25519). That is the same mapping age uses for `age -R github:username`.
 
-This is the same conversion used by:
-- **age** (`age -R github:username`)
-- **Signal Protocol** (X3DH)
-- **WireGuard**
+Standard flow: fetch `github.com/{user}.keys`, convert, add as a recipient, re-encrypt `.env.up`. Optional one-off sealed shares use `crypto_box_seal` (ephemeral X25519, XSalsa20-Poly1305). There is no DotEnvUp server in either flow. A share host, if you use one, sees ciphertext only.
 
-### GitHub User as `.env.up` Recipient (standard flow)
+Sender authentication is not provided by a recipient block alone. A sealed box is anonymous.
 
-The standard DotEnvUp sharing flow is still the `.env.up` format itself:
+## Local operations
 
-1. Sender fetches recipient's SSH Ed25519 key from `github.com/{user}.keys`
-2. Ed25519 public key is converted to X25519
-3. Sender adds that key as a recipient and re-encrypts `.env.up`
-4. Recipient decrypts the shared `.env.up` with the matching private key
-
-This keeps sharing aligned with the open standard: one `.env.up` file, one encrypted block per recipient.
-
-### Dedicated Sealed Shares (optional / one-off flow)
-
-For one-off payloads and share-specific flows, DotEnvUp also supports standalone sealed shares using `crypto_box_seal`:
-
-1. Sender fetches recipient's SSH Ed25519 key from `github.com/{user}.keys`
-2. Ed25519 public key is converted to X25519
-3. `crypto_box_seal` generates an ephemeral X25519 keypair, performs DH, and encrypts with XSalsa20-Poly1305
-4. Only the holder of the corresponding private key can call `crypto_box_seal_open` to decrypt
-
-The server never has the private key and cannot decrypt the payload. This is true zero-knowledge sharing.
-
-### Security Properties
-
-| Property | `.env.up` recipient flow | Standalone sealed share |
-|----------|---------------------------|-------------------------|
-| Confidentiality | Only listed recipients' private keys decrypt | Only recipient's private key decrypts |
-| Server compromise | Server holds ciphertext only; cannot decrypt | Server holds ciphertext only; cannot decrypt |
-| Forward secrecy | Per-recipient sealed key wrapping | Each share uses a fresh ephemeral key |
-| Sender authentication | Not provided by recipient block alone | Not provided (sealed box is anonymous) |
-
-## Audit
-
-- We do not phone home. All operations are local.
-- No telemetry or analytics.
-- Local operations only (no remote telemetry/analytics calls from runtime flows).
+Runtime flows do not phone home. There is no telemetry. GitHub is used only when you ask (fetch a user's SSH keys, clone the repo).

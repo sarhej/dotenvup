@@ -4,6 +4,7 @@ Optional edge layer for [dotenvup.com](https://dotenvup.com/) when DNS is proxie
 
 ## What it does
 
+- **`/security`**: HTML rendering of `docs/SECURITY.md` so the site and the repo cannot drift. Raw markdown is also at `/SECURITY.md`.
 - **RFC 8288 `Link` headers** on the HTML homepage (`/` and `/index.html`).
 - **Markdown for agents**: `GET /` with `Accept: text/markdown` returns `docs/markdown.md` with `Content-Type: text/markdown` and `x-markdown-tokens` (rough estimate).
 - **RFC 9727**: sets `Content-Type` for `/.well-known/api-catalog` to `application/linkset+json` (with profile).

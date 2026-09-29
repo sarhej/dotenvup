@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy — DotEnvUp</title>
-    <meta name="description" content="DotEnvUp privacy: we do not collect, store, or process your secrets or personal data. Zero-knowledge, no server, no cloud.">
+    <title>Privacy - DotEnvUp</title>
+    <meta name="description" content="DotEnvUp privacy: we do not collect, store, or process your secrets or personal data. No server. Keys stay on your machine.">
     <link rel="canonical" href="https://dotenvup.com/privacy.html">
 
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
@@ -38,13 +38,13 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="logo" aria-label="DotEnvUp — Home">
+            <a href="/" class="logo" aria-label="DotEnvUp: Home">
                 <img src="/assets/logo-dark.svg" alt="DotEnvUp" width="32" height="32">
                 DotEnvUp
             </a>
             <nav aria-label="Main navigation">
                 <a href="/">Home</a>
-                <a href="https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md">Security</a>
+                <a href="/security">Security</a>
                 <a href="https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md">Documentation</a>
                 <a href="https://github.com/sarhej/dotenvup">GitHub</a>
             </nav>
@@ -54,8 +54,8 @@
             <h1>Privacy</h1>
             <p><strong>DotEnvUp does not collect, store, or process your secrets or any personal data.</strong></p>
 
-            <h2>Zero-knowledge, no server</h2>
-            <p>DotEnvUp is a local-first tool. Encryption and decryption happen on your machine. Your private keys stay in <code style="color: var(--code-text);">~/.dotenvup/identity</code>. We do not operate a server that receives your secrets, keys, or .env files. There is no account, no signup, and no cloud storage for the open-source DotEnvUp extension and CLI.</p>
+            <h2>No server. Local keys only.</h2>
+            <p>DotEnvUp is a local-first tool. Encryption and decryption happen on your machine. Your private keys stay under <code style="color: var(--code-text);">~/.dotenvup/</code> (encrypted <code>identity.enc</code> by default). We do not operate a server that receives your secrets, keys, or .env files. There is no account, no signup, and no cloud storage for the open-source DotEnvUp extension and CLI.</p>
 
             <h2>Extension and CLI</h2>
             <p>The VS Code/Cursor extension and the <code style="color: var(--code-text);">up</code> CLI run entirely on your device. They do not send your .env, .env.up, or key material to us or any third party. No telemetry or analytics are collected by the open-source DotEnvUp project.</p>
@@ -71,7 +71,7 @@
         </main>
 
         <footer>
-            <p><a href="/">DotEnvUp</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md">Security Model</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/LICENSE">MIT License</a></p>
+            <p><a href="/">DotEnvUp</a> · <a href="/security">Security</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/sarhej/dotenvup/blob/main/LICENSE">MIT License</a></p>
         </footer>
     </div>
 </body>

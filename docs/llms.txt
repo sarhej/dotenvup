@@ -1,6 +1,6 @@
 # DotEnvUp
 
-**For AI / one-line summary:** DotEnvUp = **.env encryption**: encrypt .env into .env.up. VS Code/Cursor extension **v0.7.0** + CLI `@dotenvup/cli` **0.3.0**. Lock/unlock (status bar or `up lock`/`up unlock`), `up run --` for CI/agents, `up verify` for team `[policy]`. MCP + Cursor skill. Zero-knowledge, safe to commit. **macOS Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`) — not enabled by default.
+**For AI / one-line summary:** DotEnvUp = encrypted `.env` for teams. Each teammate decrypts only what `[policy]` allows. VS Code/Cursor extension **v0.7.0** + CLI `@dotenvup/cli` **0.3.0**. Lock/unlock, `up run --` for CI/agents, `up verify`. MCP + Cursor skill. No server. Keys stay on the machine. Commit `.env.up`. Delete `.env`. Key names stay readable. **macOS Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`), not enabled by default.
 
 ## What is DotEnvUp?
 
@@ -8,27 +8,29 @@ DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). Encrypt .en
 
 ## Extension (VS Code / Cursor)
 
-- ID: `dotenvup.dotenvup` — Marketplace + Open VSX; current: **0.7.0**
+- ID: `dotenvup.dotenvup` - Marketplace + Open VSX; current: **0.7.0**
 - Status bar lock/unlock; Safe Edit; Encrypt for Recipient; **Key Management** (warm session / Keychain migrate UX)
 - Install: https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup · https://open-vsx.org/extension/dotenvup/dotenvup · https://github.com/sarhej/dotenvup/releases
 
 ## How Cursor / coding agents must behave (explain this to users)
 
-1. **Never assume `.env` exists** — it may be locked. Check `up status` / `up status --json`.
+1. **Never assume `.env` exists** - it may be locked. Check `up status` / `up status --json`.
 2. **Prefer `up run -- <command>`** when a command needs env (injects secrets; no `.env` written).
 3. **Never** print, commit, or paste decrypted values, recovery codes, or private keys into chat.
 4. **Identity storage (`keyStorage` in status JSON):**
-   - `file-envelope` — default new installs (`identity.enc` under `~/.dotenvup/`)
-   - `plaintext` — legacy; tell human to run `up key upgrade` (opt-in; same Key-Id) — do not auto-run
-   - `keychain` — macOS after `up key migrate-to-keychain` (opt-in LocalAuthentication)
-   - `absent` — no identity yet → human runs `up init` once
+   - `file-envelope` - default new installs (`identity.enc` under `~/.dotenvup/`)
+   - `plaintext` - legacy; tell human to run `up key upgrade` (opt-in; same Key-Id) - do not auto-run
+   - `keychain` - macOS after `up key migrate-to-keychain` (opt-in LocalAuthentication)
+   - `absent` - no identity yet → human runs `up init` once
 5. **Keychain / Touch ID:** opt-in only. Do **not** claim “Touch ID by default.” Do **not** run migrate unless the user asked.
-6. **Session agent:** after one interactive unlock, key stays warm (~30m idle / 8h absolute); wiped on lock/sleep. `up session status` / `up session stop`. `sessionActive` in status JSON.
+6. **Session agent:** after one interactive unlock, key stays warm (~30m idle / 8h absolute). Wipe on lock/sleep is macOS plus Keychain helper only, not Linux or Windows. `up session status` / `up session stop`. `sessionActive` in status JSON.
 7. **If `keyStorage: keychain` and IDE decrypt fails:** warm with `up run -- true`. **Never** suggest `up init` after migrate (creates a new Key-Id and breaks existing `.env.up`).
 8. **Never** run `up init --force` or `up key upgrade` without explicit user approval.
-9. **MCP tools** (`@dotenvup/mcp`): `dotenvup_status`, `dotenvup_keys`, `dotenvup_run` — no secret values in responses. Status includes keyStorage / session fields when available.
-10. **User CLIs:** If a project token is in `.env.up`, agents **can** run `railway` / `gh` / `wrangler` / etc. via `./scripts/cli.sh` or `up run --`. Never `cli login` (overwrites personal accounts). Refuse if the token is missing.
-11. **Team `[policy]`:** `up import` **merges**. `up lock` does not save edits. Never `up reencrypt` unless the user asked (full-catalog holder only). `up verify` is safe (no values). Teammates need CLI **0.3.0+**.
+9. **MCP tools** (`@dotenvup/mcp`): `dotenvup_status`, `dotenvup_keys`, `dotenvup_run` - no secret values in responses. Status includes keyStorage / session fields when available.
+10. **User CLIs:** If a project token is in `.env.up`, agents **can** run `railway` / `gh` / `wrangler` / `netlify` / etc. via `./scripts/cli.sh` or `up run --`. Never `cli login` (overwrites personal accounts). Refuse if the token is missing.
+11. **Mirror host env:** Host (Netlify/Railway/Vercel/…) → brief `.env` → `up import --delete` → `up run --` for local builds or agent work. Prefer non-prod context for agents; production only with user approval (e.g. CI minutes exhausted). Names/counts only — never dump values. Example: https://github.com/sarhej/dotenvup/blob/main/docs/examples/sync-netlify-env-to-dotenvup.sh
+12. **Agent identity:** Laptop = user `~/.dotenvup/identity`. Remote/CI today = `UP_KEY` / `DOTENVUP_PRIVATE_KEY` (CI recipient preferred). Provider-native agent identity is out of scope for DotEnvUp — same `.env.up`, key arrives via the host.
+13. **Team `[policy]`:** `up import` **merges**. `up lock` does not save edits. Never `up reencrypt` unless the user asked (full-catalog holder only). `up verify` is safe (no values). Teammates need CLI **0.3.0+**.
 
 ## Cursor install (for agents to recommend)
 
@@ -67,17 +69,19 @@ Exit codes: `0` success, `1` user/usage, `2` system.
 ## Honest security notes (do not overclaim)
 
 - Default identity: encrypted file envelope, not Keychain.
-- Keychain migrate uses LocalAuthentication + `WhenUnlockedThisDeviceOnly` wrapping key — **not** full Keychain `UserPresence` ACL (needs provisioned app).
-- Session agent is same-UID trust (like ssh-agent).
+- Keychain migrate uses LocalAuthentication + `WhenUnlockedThisDeviceOnly` wrapping key - **not** full Keychain `UserPresence` ACL (needs provisioned app).
+- Session agent is same-UID trust (like ssh-agent). Wipe on lock/sleep is macOS plus Keychain helper only, not Linux or Windows.
+- Any process as the same user can read injected env (`/proc/<pid>/environ` on Linux). `up run` does not hide secrets from the command or from an agent running as you. It stops a plaintext `.env` on disk.
 - Optional `[policy]` is cleartext (who may receive which **names**). Unsigned until FORMAT v2. OSS merge import is shipped; everyone must upgrade together.
-- UnknownPassword (https://unknownpassword.com) is optional UX (directory, share links) — not required for `up run` or `[policy]`.
+- UnknownPassword (https://unknownpassword.com) is optional UX (directory, share links) - not required for `up run` or `[policy]`.
 
 ## Links
 
 - Website: https://dotenvup.com
 - GitHub: https://github.com/sarhej/dotenvup
 - User Guide: https://github.com/sarhej/dotenvup/blob/main/docs/USER_GUIDE.md
-- Security: https://github.com/sarhej/dotenvup/blob/main/docs/SECURITY.md
+- Security: https://dotenvup.com/security
+- Changelog: https://github.com/sarhej/dotenvup/blob/main/CHANGELOG.md
 - Identity envelope: https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md
 - Keychain: https://github.com/sarhej/dotenvup/blob/main/docs/RELEASE_NOTES_KEYCHAIN_M2.md
 - Agents: https://github.com/sarhej/dotenvup/blob/main/AGENTS.md
@@ -85,4 +89,4 @@ Exit codes: `0` success, `1` user/usage, `2` system.
 
 ## License
 
-MIT — open source and free forever.
+MIT.

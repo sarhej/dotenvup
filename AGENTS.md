@@ -1,12 +1,12 @@
-# DotEnvUp — For AI Agents and Automation
+# DotEnvUp - For AI Agents and Automation
 
 > This file is for AI coding agents, CI scripts, and automation tools.
 > For human docs see [User Guide](docs/USER_GUIDE.md).
 
 ## What This Is
 
-DotEnvUp encrypts `.env` files into `.env.up` — an encrypted format with cleartext metadata.
-DotEnvUp is **zero-knowledge, zero-trust**: no server, no cloud; keys stay on the user's machine and nobody else sees secrets.
+DotEnvUp encrypts `.env` files into `.env.up` - an encrypted format with cleartext metadata.
+No server. Keys are generated on the user's machine and never leave it. GitHub stores ciphertext and cannot read values.
 The plaintext `.env` may not exist on disk (it is "locked"). Do **not** assume `.env` exists.
 
 For seamless team sharing on top of this open format: **[unknownpassword.com](https://unknownpassword.com)**.
@@ -17,7 +17,7 @@ For seamless team sharing on top of this open format: **[unknownpassword.com](ht
 
 | What | Value |
 |------|--------|
-| **VS Code extension** | Display name: **.env Up (DotEnvUp)** — search “.env” or “env” in marketplace. ID: `dotenvup.dotenvup` |
+| **VS Code extension** | Display name: **.env Up (DotEnvUp)** - search “.env” or “env” in marketplace. ID: `dotenvup.dotenvup` |
 | **Marketplace URL** | https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup |
 | **Open VSX (Cursor, VSCodium)** | https://open-vsx.org/extension/dotenvup/dotenvup |
 | **GitHub repo** | https://github.com/sarhej/dotenvup |
@@ -26,7 +26,7 @@ For seamless team sharing on top of this open format: **[unknownpassword.com](ht
 | **npm (format)** | https://www.npmjs.com/package/@dotenvup/format |
 
 **Paste into another chat:**
-*"DotEnvUp = extension v0.7.0 + CLI 0.3.0. Encrypted .env format (.env.up). VS Code/Cursor extension (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli — up lock/unlock/run/verify. Optional [policy] per-recipient values; import merges. Default identity.enc; macOS Keychain/Touch ID is OPT-IN (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json; never up reencrypt unless the user asked and holds the full catalog. CLI tokens in .env.up let agents run railway/gh/etc without cli login. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
+*"DotEnvUp = extension v0.7.0 + CLI 0.3.0. Encrypted .env for teams with per-person [policy]. VS Code/Cursor (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli. Import merges. Default identity.enc; macOS Keychain/Touch ID is opt-in (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json; never up reencrypt unless the user asked and holds the full catalog. Mirror host env → .env.up for local builds/agent seeding (confirm context; prefer non-prod). Laptop = user identity; remote = UP_KEY. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
 
 See also [docs/DOTENVUP_REFERENCE.txt](docs/DOTENVUP_REFERENCE.txt) for a copy-paste blob.
 
@@ -45,7 +45,7 @@ See also [docs/DOTENVUP_REFERENCE.txt](docs/DOTENVUP_REFERENCE.txt) for a copy-p
 | `up keys --json` | Machine-readable key metadata (JSON to stdout) |
 | `up import .env` | Encrypt `.env` into `.env.up` (**merges** if `.env.up` exists) |
 | `up verify` | Policy/structure checks (no secret values) |
-| `up reencrypt` | Full re-wrap — human + full-catalog only when `[policy]` present |
+| `up reencrypt` | Full re-wrap - human + full-catalog only when `[policy]` present |
 | `up init` | Generate a keypair and store it in `~/.dotenvup/identity` |
 | `DotEnvUp: Key Management` | VS Code/Cursor webview for local key status, export/import, and key discovery |
 
@@ -67,7 +67,7 @@ Agents **can** run the user's CLIs when the project token is in `.env.up`. Railw
 
 1. User stores the CLI's token env var in `.env.up` once (agents never invent tokens).
 2. Run via `./scripts/cli.sh` if the repo has it, otherwise `up run -- <cli> …` after confirming the key exists (`up keys --json`).
-3. **Never** `railway login`, `gh auth login`, `wrangler login`, or other `*:login` / `auth login` — those overwrite the user's personal CLI account.
+3. **Never** `railway login`, `gh auth login`, `wrangler login`, or other `*:login` / `auth login` - those overwrite the user's personal CLI account.
 4. **Never** run the bare CLI if the project token is missing (many CLIs fall through to `~/.railway`, `gh` keyring, etc.).
 5. Print identity / present-missing **names** only. Never print token values or `up show`.
 
@@ -92,7 +92,7 @@ Scripts and agents can branch on these codes.
 
 ## Safety Rules
 
-- **Never commit `.env`** — it is plaintext. `.env.up` is safe to commit.
+- **Never commit `.env`** - it is plaintext. `.env.up` is safe to commit.
 - **Never log or expose decrypted values.**
 - **Do not assume `.env` exists.** It may be locked. Use `up run --` or check with `up status`.
 - If using VS Code/Cursor extension, use `DotEnvUp: Key Management` for key backup/recovery tasks.
@@ -100,7 +100,7 @@ Scripts and agents can branch on these codes.
 - **Never print recovery codes**, `up show` output, or private key material into chat/logs.
 - **Never run `up init --force`** or `up key upgrade` unless the user explicitly asked (identity changes / interactive recovery).
 - **Never run `up reencrypt`** unless the user asked. On `[policy]` files only a full-catalog holder may re-wrap all blocks (command refuses otherwise; old CLIs could wipe teammates).
-- **`up lock` does not save** — `up import` first if `.env` changed.
+- **`up lock` does not save** - `up import` first if `.env` changed.
 
 ## Local identity storage (agents)
 
@@ -117,8 +117,25 @@ Release notes: [docs/RELEASE_NOTES_IDENTITY_ENVELOPE.md](docs/RELEASE_NOTES_IDEN
 - New installs use `identity.enc` + wrapping key under `~/.dotenvup/`.
 - Legacy plaintext `identity` still works until the human upgrades.
 - **Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`). Do not run it unless the user asked.
-- After one interactive unlock, the **session agent** keeps the key warm (~30m idle / 8h absolute; wiped on lock/sleep). `up session status` / `up session stop`.
+- After one interactive unlock, the **session agent** keeps the key warm (~30m idle / 8h absolute). Wipe on screen lock, sleep, or logout is macOS plus Keychain helper only, not Linux or Windows. `up session status` / `up session stop`.
 - CI: prefer `UP_KEY` / `DOTENVUP_PRIVATE_KEY`; never hang on prompts (`DOTENVUP_NO_PROMPT` / non-TTY). Cold Keychain + no warm session → exit `1`.
+
+## Mirror host env → `.env.up` (local builds + agents)
+
+When CI build minutes run out, or you want staging/prod-like secrets for a coding agent, **mirror** the host env into `.env.up` once, then use `up run --` (no plaintext left on disk).
+
+1. Confirm context with the user (**prefer non-prod** for agents; **production** for local deploy parity).
+2. Run a host sync recipe if the repo has one (example: [docs/examples/sync-netlify-env-to-dotenvup.sh](docs/examples/sync-netlify-env-to-dotenvup.sh)), or: host CLI dump → brief `.env` → `up import .env --delete`.
+3. Print **key names/counts only** — never values, never leave `.env` unlocked.
+4. Build/test/deploy: `up run -- npm run build` (and CLI tokens via `./scripts/cli.sh` / `up run --` if present).
+
+| Agent location | Identity |
+|----------------|----------|
+| Laptop (Cursor / Claude Code) | User `~/.dotenvup/identity` |
+| CI / cloud agent VM | `UP_KEY` / `DOTENVUP_PRIVATE_KEY` (CI recipient preferred) |
+| Future provider agent identity | Same vault; provider supplies key material |
+
+Do not invent tokens. Do not `up init --force`. Do not mirror production without explicit user approval.
 
 ## Non-Interactive / CI Flags
 
@@ -138,7 +155,7 @@ If you use **Claude Code** (Anthropic’s CLI), see [docs/CLAUDE_CODE.md](docs/C
 
 ## Using with Cursor
 
-If you use **Cursor**, see [docs/CURSOR.md](docs/CURSOR.md). This repo ships a Cursor plugin (`.cursor-plugin/plugin.json`) bundling the [DotEnvUp skill](skills/dotenvup/SKILL.md) — install it from the Cursor Marketplace or [cursor.directory](https://cursor.directory), or copy the skill into `.cursor/skills/dotenvup/` in your project. The suggested `.cursor/rules/dotenvup.mdc` snippet below works as a lightweight alternative.
+If you use **Cursor**, see [docs/CURSOR.md](docs/CURSOR.md). This repo ships a Cursor plugin (`.cursor-plugin/plugin.json`) bundling the [DotEnvUp skill](skills/dotenvup/SKILL.md) - install it from the Cursor Marketplace or [cursor.directory](https://cursor.directory), or copy the skill into `.cursor/skills/dotenvup/` in your project. The suggested `.cursor/rules/dotenvup.mdc` snippet below works as a lightweight alternative.
 
 ## Using with App Builders (e.g. Lovable)
 
@@ -155,7 +172,7 @@ This ensures the app or deployment sees the env vars. No DotEnvUp-specific integ
 If your repo uses DotEnvUp, help agents by adding to your project's README or AI context file:
 
 > This project uses DotEnvUp for secret management. Run `up run -- <command>` when a command needs
-> environment variables. Do not assume `.env` exists — it may be locked. See [DotEnvUp AGENTS.md](https://github.com/sarhej/dotenvup/blob/main/AGENTS.md).
+> environment variables. Do not assume `.env` exists - it may be locked. See [DotEnvUp AGENTS.md](https://github.com/sarhej/dotenvup/blob/main/AGENTS.md).
 
 Suggested Cursor rule for consumer repos (`.cursor/rules/dotenvup.mdc`, `alwaysApply: true`):
 
@@ -163,8 +180,9 @@ Suggested Cursor rule for consumer repos (`.cursor/rules/dotenvup.mdc`, `alwaysA
 This project uses DotEnvUp. Never assume .env exists (it may be locked).
 Use `up run -- <command>` when a command needs environment variables.
 Use `up status --json` for lock state, keyStorage, and sessionActive.
-macOS Keychain/Touch ID is opt-in only — do not claim it is default.
-You can run user CLIs (railway, gh, wrangler, …) when their token is in .env.up — never `cli login` (overwrites personal accounts); refuse if the token is missing.
+macOS Keychain/Touch ID is opt-in only - do not claim it is default.
+You can run user CLIs (railway, gh, wrangler, netlify, …) when their token is in .env.up - never `cli login` (overwrites personal accounts); refuse if the token is missing.
+Host env → .env.up (mirror) for local builds or agent seeding: confirm context (prefer non-prod); names only; never leave plaintext .env.
 Never paste recovery codes or secrets into chat. Team `[policy]`: import merges; do not run `up reencrypt` unless asked. See AGENTS.md / dotenvup.com/llms.txt.
 ```
 
@@ -172,7 +190,7 @@ Never paste recovery codes or secrets into chat. Team `[policy]`: import merges;
 
 DotEnvUp can be used via MCP so AI assistants (e.g. Cursor) can check lock state, list key metadata, and run commands with decrypted env **without exposing secrets**.
 
-- **Package:** [@dotenvup/mcp](packages/dotenvup-mcp) — `npx -y @dotenvup/mcp`, or `node packages/dotenvup-mcp/dist/index.js` from a repo checkout.
+- **Package:** [@dotenvup/mcp](packages/dotenvup-mcp) - `npx -y @dotenvup/mcp`, or `node packages/dotenvup-mcp/dist/index.js` from a repo checkout.
 - **Tools:** `dotenvup_status`, `dotenvup_keys`, `dotenvup_run` (returns only exit code, not stdout/stderr).
 - **Cursor:** Add the server to MCP settings; or run **DotEnvUp: Copy MCP config for Cursor** from the command palette to copy the config snippet.
 - **Design:** [docs/design/MCP_SERVER.md](docs/design/MCP_SERVER.md).
@@ -183,7 +201,7 @@ When editing **`packages/secret-generator`**, follow **[docs/SECRET_GENERATOR_SY
 
 ## Links
 
-- [User Guide](docs/USER_GUIDE.md) — Commands, workflows, drift explained
-- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common errors, identity file and recovery issues
-- [Security Model](docs/SECURITY.md) — Encryption, key storage, threat model
-- [unknownpassword.com](https://unknownpassword.com) — Seamless team sharing layer
+- [User Guide](docs/USER_GUIDE.md) - Commands, workflows, drift explained
+- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common errors, identity file and recovery issues
+- [Security Model](docs/SECURITY.md) - Encryption, key storage, threat model
+- [unknownpassword.com](https://unknownpassword.com) - Seamless team sharing layer

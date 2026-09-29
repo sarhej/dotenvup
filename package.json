@@ -2,7 +2,7 @@
   "name": "dotenvup-monorepo",
   "private": true,
   "version": "0.0.0",
-  "description": ".env files, but with memory — and a lock. Encrypted .env.up format and tools.",
+  "description": "Encrypted .env format (.env.up) and tools. Per-person policy, VS Code/Cursor extension, CLI.",
   "workspaces": [
     "packages/*"
   ],

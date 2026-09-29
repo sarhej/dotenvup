@@ -43,7 +43,7 @@ up status --json        # keyStorage, upgradeRecommended, hasRecoveryBundle
 - `.env.up` format and crypto (X25519 + XChaCha20-Poly1305)
 - Lock / unlock / Safe Edit / `up run --` workflows
 - CI via `UP_KEY` / `DOTENVUP_PRIVATE_KEY` (still highest priority; no prompts)
-- Zero-knowledge stance: no server, no cloud, keys stay on the machine
+- Local keys only: no server, no cloud, keys stay on the machine
 - Extension marketplace ID (`dotenvup.dotenvup`) — still shares `~/.dotenvup` with the CLI
 
 ## Trust & safety (existing users)

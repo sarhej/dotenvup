@@ -1,26 +1,26 @@
-# DotEnvUp — VS Code Extension
+# DotEnvUp - VS Code Extension
 
 By [Sergej Fedorovic](https://strt.it) · [Website](https://dotenvup.com) · [All projects](https://strt.it/projects.html)
 
-> `.env` files, but with memory — and a lock.
+> `.env` files, but with memory - and a lock.
 
-Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.up` directly in VS Code (and Cursor). **Zero-knowledge, zero-trust** — no cloud, no server; your keys stay on your machine and we never see your secrets. Lock and unlock with one click, keep AI workflows safe, and use local key backup/recovery — without changing app code.
+Encrypt `.env` secrets, API keys, tokens, and environment variables into `.env.up` directly in VS Code (and Cursor). No server. Keys are generated on your machine and never leave it. Lock and unlock with one click, keep AI workflows safer from accidental file commits, and use local key backup/recovery without changing app code.
 
 ## Features
 
-- **Zero-knowledge, zero-trust** — No server, no cloud. Keys at `~/.dotenvup/identity`; we never see your secrets.
-- **One-click lock / unlock** — Status bar shows lock state; click to toggle. Auto-locks after a timer or when the editor closes.
-- **Comment preservation** — Comments, blank lines, commented-out secrets, and ordering survive the encrypt/decrypt roundtrip.
-- **Cross-IDE keys** — Keypair stored at `~/.dotenvup/identity`, shared across VS Code, Cursor, CLI, and any tool.
-- **First Protect onboarding** — Consent popup on first use explains what happens before any encryption.
-- **Import** — Convert an existing `.env` to encrypted `.env.up` (auto-detects `.env` in workspace root).
-- **Show Keys** — View key names, versions, and timestamps without decrypting values.
-- **Status** — Lock state, key count, stale key warnings, and drift detection.
-- **Multi-root workspaces** — When you have multiple roots, only the current project’s envs are shown (the folder containing the active editor). Click the status bar to lock, unlock, or protect any location.
-- **All env locations** — The extension scans the workspace for every `.env` and `.env.up` (including subfolders like `worker-api/`), so the status reflects “All protected”, “Partially protected”, or “All unprotected” and you can protect any of them from one menu.
-- **Safety everywhere** — Every `.env` deletion path is guarded: decrypt verification, pre-deletion backups, TOCTOU checks.
-- **Recipient sharing** — Copy your public key, add recipients, or add a GitHub user as a `.env.up` recipient from the explorer or status bar.
-- **Encrypted share helpers** — Receive encrypted shares, decrypt standalone `.sealed` files, and copy ready-to-paste MCP config for Cursor.
+- **No server. Local keys only.** Keys at `~/.dotenvup/` (`identity.enc` by default). GitHub stores ciphertext and cannot read values.
+- **One-click lock / unlock** - Status bar shows lock state; click to toggle. Auto-locks after a timer or when the editor closes.
+- **Comment preservation** - Comments, blank lines, commented-out secrets, and ordering survive the encrypt/decrypt roundtrip.
+- **Cross-IDE keys** - Keypair stored at `~/.dotenvup/identity`, shared across VS Code, Cursor, CLI, and any tool.
+- **First Protect onboarding** - Consent popup on first use explains what happens before any encryption.
+- **Import** - Convert an existing `.env` to encrypted `.env.up` (auto-detects `.env` in workspace root).
+- **Show Keys** - View key names, versions, and timestamps without decrypting values.
+- **Status** - Lock state, key count, stale key warnings, and drift detection.
+- **Multi-root workspaces** - When you have multiple roots, only the current project’s envs are shown (the folder containing the active editor). Click the status bar to lock, unlock, or protect any location.
+- **All env locations** - The extension scans the workspace for every `.env` and `.env.up` (including subfolders like `worker-api/`), so the status reflects “All protected”, “Partially protected”, or “All unprotected” and you can protect any of them from one menu.
+- **Safety everywhere** - Every `.env` deletion path is guarded: decrypt verification, pre-deletion backups, TOCTOU checks.
+- **Recipient sharing** - Copy your public key, add recipients, or add a GitHub user as a `.env.up` recipient from the explorer or status bar.
+- **Encrypted share helpers** - Receive encrypted shares, decrypt standalone `.sealed` files, and copy ready-to-paste MCP config for Cursor.
 
 ### Lock command flow
 
@@ -32,9 +32,9 @@ Lock persists the current `.env` into `.env.up` and removes `.env`. If the file 
 
 The status bar shows:
 
-- **All protected** — Every `.env` location in scope is under DotEnvUp (locked or temporarily unlocked). Click to lock or unlock.
-- **Partially protected** — Some folders have `.env.up`, others still have plaintext `.env`. Click to choose: Unlock / Lock any protected location, or **Protect** an unprotected one (one-click import + lock).
-- **All unprotected** — No `.env.up` in scope; at least one plaintext `.env`. Click to protect it.
+- **All protected** - Every `.env` location in scope is under DotEnvUp (locked or temporarily unlocked). Click to lock or unlock.
+- **Partially protected** - Some folders have `.env.up`, others still have plaintext `.env`. Click to choose: Unlock / Lock any protected location, or **Protect** an unprotected one (one-click import + lock).
+- **All unprotected** - No `.env.up` in scope; at least one plaintext `.env`. Click to protect it.
 
 With multiple roots, only the current project (the folder of the active editor) is considered, so you don’t see envs from other roots.
 
@@ -42,9 +42,9 @@ With multiple roots, only the current project (the folder of the active editor) 
 
 1. Open a project that has a `.env` file
 2. Click the status bar (or run `DotEnvUp: Lock .env.up`)
-3. On first use, a consent popup explains local encryption — click "Protect My .env"
+3. On first use, a consent popup explains local encryption - click "Protect My .env"
 4. Your `.env` is encrypted to `.env.up` and the plaintext is removed
-5. Click unlock to temporarily restore `.env` — choose a duration or "Forever"
+5. Click unlock to temporarily restore `.env` - choose a duration or "Forever"
 
 ## Requirements
 
@@ -55,8 +55,8 @@ With multiple roots, only the current project (the folder of the active editor) 
 
 **Extension ID:** `dotenvup.dotenvup`
 
-- **VS Code:** [Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) — Extensions → search “DotEnvUp”
-- **Cursor / VSCodium:** [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) — or search “DotEnvUp” in Extensions
+- **VS Code:** [Marketplace](https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup) - Extensions → search “DotEnvUp”
+- **Cursor / VSCodium:** [Open VSX](https://open-vsx.org/extension/dotenvup/dotenvup) - or search “DotEnvUp” in Extensions
 
 Alternatively, download the latest [.vsix from Releases](https://github.com/sarhej/dotenvup/releases), then **Extensions** → `...` → **Install from VSIX...**, or run `code --install-extension <path-to-dotenvup-*.vsix>` (same for `cursor`).
 
@@ -100,7 +100,7 @@ Alternatively, download the latest [.vsix from Releases](https://github.com/sarh
 
 ## Key Storage
 
-Your keypair lives at `~/.dotenvup/identity` (private key, mode `0600`) and `~/.dotenvup/identity.pub` (public key). This location is shared across all IDEs and the CLI — same model as `~/.ssh/`.
+Your keypair lives at `~/.dotenvup/identity` (private key, mode `0600`) and `~/.dotenvup/identity.pub` (public key). This location is shared across all IDEs and the CLI - same model as `~/.ssh/`.
 
 If you previously used DotEnvUp 0.0.1, keys in VS Code Secret Storage are automatically migrated to the new location on first use.
 
@@ -119,8 +119,8 @@ If decrypt fails after restore, recover/import the correct key first (`DotEnvUp:
 
 ## Links
 
-- [DotEnvUp CLI & format](https://github.com/sarhej/dotenvup) — Open-source format, CLI, and Node.js library (MIT).
-- [UnknownPassword](https://unknownpassword.com) — Team sharing, dashboard, and governance on top of `.env.up`.
+- [DotEnvUp CLI & format](https://github.com/sarhej/dotenvup) - Open-source format, CLI, and Node.js library (MIT).
+- [UnknownPassword](https://unknownpassword.com) - Team sharing, dashboard, and governance on top of `.env.up`.
 
 ## License
 
