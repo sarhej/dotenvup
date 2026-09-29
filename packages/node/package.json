@@ -44,7 +44,7 @@
     "@dotenvup/format": "^0.3.0"
   },
   "devDependencies": {
-    "@types/node": "^25.2.3",
+    "@types/node": "^26.6.3",
     "typescript": "^5.7.0"
   }
 }
