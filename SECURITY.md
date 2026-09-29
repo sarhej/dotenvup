@@ -23,3 +23,9 @@ Please include: affected package and version (`@dotenvup/cli`, extension `dotenv
 In scope: the format parser, CLI, VS Code/Cursor extension, MCP server, Keychain helper, and this website's static content.
 
 Out of scope: UnknownPassword (separate product), third-party git hosts, and "any process as the same user can read `/proc/<pid>/environ`". That last item is documented on the threat model page. It is not a vulnerability in DotEnvUp.
+
+## Maintainer security ops
+
+- Dependency audit remediation: [docs/SECURITY_AUDIT_REMEDIATION.md](docs/SECURITY_AUDIT_REMEDIATION.md)
+- Findings triage (CodeQL, secret scanning, Scorecard): [docs/SECURITY_FINDINGS.md](docs/SECURITY_FINDINGS.md)
+- Local checklist: [docs/SECURITY_CHECKS_LOCAL.md](docs/SECURITY_CHECKS_LOCAL.md)

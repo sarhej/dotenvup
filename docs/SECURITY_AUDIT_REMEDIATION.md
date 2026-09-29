@@ -1,6 +1,42 @@
 # npm audit remediation plan
 
-Plan for addressing the 11 vulnerabilities reported by `npm audit`. Order is by priority (high first, then moderate/low) and dependency chain.
+Current goal: **`npm run security:check` → 0 vulnerabilities** (including moderate when `npm audit` is clean).
+
+Order is by priority (high first) and dependency chain. Historical items kept for context.
+
+---
+
+## Current status (2026-09-29)
+
+| Check | Result |
+|--------|--------|
+| `npm audit` / `npm run security:check` | **0 vulnerabilities** |
+| Root cause of CI red | Stale transitive versions (vitest, hono, js-yaml, fast-uri, qs, ip-address) |
+| Fix applied | `npm audit fix` + sync root `overrides` to patched floors + lockfile regen |
+
+### Root overrides (`package.json`)
+
+Keep overrides at **patched floors** so a later `npm install` cannot re-pin vulnerable versions:
+
+```json
+"overrides": {
+  "diff": "8.0.3",
+  "serialize-javascript": "7.0.5",
+  "brace-expansion": "5.0.9",
+  "fast-uri": ">=3.1.8",
+  "js-yaml": ">=4.3.2",
+  "nanoid": "3.3.18",
+  "hono": ">=4.13.11",
+  "qs": ">=6.16.0",
+  "ip-address": ">=10.5.1",
+  "mocha": {
+    "diff": "8.0.3",
+    "serialize-javascript": "7.0.5"
+  }
+}
+```
+
+**Rule:** Any security lockfile bump that touches overridden packages must update `overrides` in the same PR.
 
 ---
 
@@ -12,8 +48,8 @@ Plan for addressing the 11 vulnerabilities reported by `npm audit`. Order is by 
 | mocha | Depends on vulnerable diff + serialize-javascript | — | transitive via @vscode/test-cli |
 | @vscode/test-cli | Depends on vulnerable mocha | — | `packages/vscode-dotenvup` |
 
-**Fix:** Pin `@vscode/test-cli` to `0.0.11` in `packages/vscode-dotenvup/package.json` (0.0.12 pulls in vulnerable mocha/diff).  
-**Status:** [x] Done. Pinned @vscode/test-cli to 0.0.11. Remaining diff/serialize-javascript (via mocha) fixed via root `overrides` (see below).
+**Fix:** Root `overrides` for `diff` / `serialize-javascript` (and under `mocha`).  
+**Status:** [x] Done
 
 ---
 
@@ -23,84 +59,63 @@ Plan for addressing the 11 vulnerabilities reported by `npm audit`. Order is by 
 |--------|--------|----------|--------|
 | serialize-javascript | RCE via RegExp.flags / Date.prototype.toISOString | high | transitive via mocha → @vscode/test-cli |
 
-**Fix:** Addressed via root `overrides` (serialize-javascript@7.0.3, and mocha → serialize-javascript).  
-**Status:** [x] Done (overrides)
+**Fix:** Override `serialize-javascript@7.0.5`.  
+**Status:** [x] Done
 
 ---
 
-## 3. minimatch (ReDoS)
+## 3. minimatch / brace-expansion (ReDoS)
 
-| Package | Issue | Severity | Where |
-|--------|--------|----------|--------|
-| minimatch | ReDoS (multiple advisories) | high | root or transitive |
-
-**Fix:** Root `overrides` (diff@8.0.3, and mocha → diff).  
-**Status:** [x] Done (overrides)
+**Fix:** Root override `brace-expansion` / historical minimatch remediation.  
+**Status:** [x] Done
 
 ---
 
-## 4. rollup (path traversal)
+## 4. rollup / vite toolchain (path traversal)
 
-| Package | Issue | Severity | Where |
-|--------|--------|----------|--------|
-| rollup | Arbitrary file write via path traversal (4.x) | high | transitive (likely vite/vitest) |
-
-**Fix:** `npm audit fix`. If that bumps rollup to 4.x patch or 5.x, run full build + tests.  
-**Status:** [ ] Run `npm audit fix`; re-test
+Earlier rollup advisories. Current tree uses Vite 8 / rolldown; keep vitest current (`^4.1.11`).  
+**Status:** [x] Addressed via vitest/vite lockfile bumps (2026-09-29)
 
 ---
 
 ## 5. esbuild (dev server)
 
-| Package | Issue | Severity | Where |
-|--------|--------|----------|--------|
-| esbuild | Any website can send requests to dev server and read response | moderate | vscode-dotenvup (esbuild ^0.24.0), vite/vitest |
-
-**Fix:** Bump esbuild to ^0.25.0 in vscode-dotenvup + root `overrides` "esbuild": ">=0.25.0".  
+**Fix:** Bump esbuild to ^0.25.0 in vscode-dotenvup (historical).  
 **Status:** [x] Done
 
 ---
 
-## 6. vite / @vitest/mocker / vitest / vite-node (esbuild chain)
+## 6. hono / fast-uri / js-yaml / qs / ip-address (MCP + test CLI tree)
 
-| Package | Issue | Severity | Where |
-|--------|--------|----------|--------|
-| vite, @vitest/mocker, vitest, vite-node | Depend on vulnerable esbuild | moderate | root vitest, workspace tests |
+| Package | Severity | Via | Floor |
+|--------|----------|-----|-------|
+| hono | high/moderate | `@modelcontextprotocol/sdk` | `>=4.13.11` |
+| fast-uri | high | ajv | `>=3.1.8` |
+| js-yaml | high | mocha → `@vscode/test-cli` | `>=4.3.2` |
+| qs | moderate | express | `>=6.16.0` |
+| ip-address | moderate | express-rate-limit | `>=10.5.1` |
 
-**Fix:** Resolved by root override esbuild >= 0.25.0 (vitest/vite get the overridden esbuild).  
-**Status:** [x] Done
+**Note:** DotEnvUp MCP uses **stdio** only (not Hono HTTP). Still keep hono patched for transitive hygiene and consumers who enable HTTP transports.  
+**Status:** [x] Done (2026-09-29)
 
 ---
 
 ## Summary checklist
 
-- [x] **1** Pin @vscode/test-cli to 0.0.11 (vscode-dotenvup).
-- [ ] **2** Verify serialize-javascript gone after #1.
-- [x] **3** Run `npm audit fix` (minimatch, rollup) — done; 8 vulns remaining.
-- [x] **4** Same as #3.
-- [x] **5** Bump esbuild in vscode-dotenvup to ^0.25.0 + root override.
-- [x] **6** Override esbuild applied to vitest/vite.
-- [x] Run `npm run security:check` — 0 vulnerabilities.
-- [x] Run full test suite (`npm test`) and extension tests — all pass.
+- [x] Pin / override mocha toolchain (diff, serialize-javascript)
+- [x] esbuild ≥ 0.25 where used
+- [x] Sync overrides with lockfile after every `npm audit fix`
+- [x] `npm run security:check` — 0 vulnerabilities
+- [x] `npm run build` + `npm test`
 
-### Root overrides (package.json)
+### When CI Security → Dependency audit fails again
 
-To get to 0 vulnerabilities, the following overrides were added (lockfile was regenerated so they take effect):
-
-```json
-"overrides": {
-  "diff": "8.0.3",
-  "serialize-javascript": "7.0.3",
-  "esbuild": ">=0.25.0",
-  "mocha": {
-    "diff": "8.0.3",
-    "serialize-javascript": "7.0.3"
-  }
-}
-```
-
-vscode-dotenvup devDependency: `esbuild` set to `^0.25.0`.
+1. `npm run security:check` locally
+2. `npm audit fix` (avoid `--force` unless intentional)
+3. Update `overrides` floors for any package still pinned below the patched version
+4. `npm install` → re-run `security:check` + build + test
+5. Open a PR; do **not** admin-merge past a red Dependency audit on an open-source default branch
 
 ---
 
-*Last updated from `npm audit` output (diff, esbuild, minimatch, rollup, serialize-javascript).*
+*Last updated 2026-09-29 from `npm audit` (vitest/hono/js-yaml/fast-uri/qs/ip-address).*
