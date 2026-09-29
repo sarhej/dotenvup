@@ -41,7 +41,7 @@ jobs:
             echo "Apple signing secrets not fully configured — skipping (use local notary profile)."
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.secrets.outputs.ready == 'true'
         with:
           node-version: '20'
