@@ -1,6 +1,6 @@
 # npm audit remediation plan
 
-Current goal: **`npm run security:check` → 0 vulnerabilities** (including moderate when `npm audit` is clean).
+Current goal: **`npm run security:check` → 0 vulnerabilities** on both the monorepo root lockfile and `workers/dotenvup-edge` (separate Wrangler lockfile).
 
 Order is by priority (high first) and dependency chain. Historical items kept for context.
 
