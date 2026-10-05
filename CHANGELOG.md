@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Earlier GitHub Releases exist (extension 0.2 through 0.6.x). This file starts at the current public line (extension 0.7.0 and CLI 0.3.0) rather than inventing a full history from tags.
 
+## [0.7.1] - 2026-10-05
+
+### Fixed
+
+- Extension activates on startup (gitignored `.env` files no longer block activation).
+- Detects `.env` / `.env.up` in subdirectories even when gitignored; status bar stays hidden when there is nothing to protect.
+
+CLI/npm packages are unchanged at **0.3.0**. GitHub Release: [v0.7.1](https://github.com/sarhej/dotenvup/releases/tag/v0.7.1).
+
 ## [0.7.0] / CLI [0.3.0] - 2026-08-25
 
 ### Added

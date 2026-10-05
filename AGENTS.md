@@ -26,7 +26,7 @@ For seamless team sharing on top of this open format: **[unknownpassword.com](ht
 | **npm (format)** | https://www.npmjs.com/package/@dotenvup/format |
 
 **Paste into another chat:**
-*"DotEnvUp = extension v0.7.0 + CLI 0.3.0. Encrypted .env for teams with per-person [policy]. VS Code/Cursor (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli. Import merges. Default identity.enc; macOS Keychain/Touch ID is opt-in (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json; never up reencrypt unless the user asked and holds the full catalog. Mirror host env → .env.up for local builds/agent seeding (confirm context; prefer non-prod). Laptop = user identity; remote = UP_KEY. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
+*"DotEnvUp = extension v0.7.1 + CLI 0.3.0. Encrypted .env for teams with per-person [policy]. VS Code/Cursor (ID: dotenvup.dotenvup) and CLI: npm i -g @dotenvup/cli. Import merges. Default identity.enc; macOS Keychain/Touch ID is opt-in (up key migrate-to-keychain), not default. Agents: never assume .env exists; use up run -- and up status --json; never up reencrypt unless the user asked and holds the full catalog. Mirror host env → .env.up for local builds/agent seeding (confirm context; prefer non-prod). Laptop = user identity; remote = UP_KEY. Skill: https://raw.githubusercontent.com/sarhej/dotenvup/main/skills/dotenvup/SKILL.md · https://dotenvup.com/llms.txt · Repo: https://github.com/sarhej/dotenvup."*
 
 See also [docs/DOTENVUP_REFERENCE.txt](docs/DOTENVUP_REFERENCE.txt) for a copy-paste blob.
 

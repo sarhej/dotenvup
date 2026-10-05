@@ -1,6 +1,6 @@
 # DotEnvUp - canonical reference (paste into other chats/agents)
 
-DotEnvUp: .env encryption - encrypted .env format (.env.up), VS Code/Cursor extension **v0.7.0** (ID: dotenvup.dotenvup), CLI `@dotenvup/cli` **0.3.0** (`up` / npm i -g @dotenvup/cli), MCP (`npx -y @dotenvup/mcp`). Optional `[policy]` per-recipient values; import merges; `up verify`.
+DotEnvUp: .env encryption - encrypted .env format (.env.up), VS Code/Cursor extension **v0.7.1** (ID: dotenvup.dotenvup), CLI `@dotenvup/cli` **0.3.0** (`up` / npm i -g @dotenvup/cli), MCP (`npx -y @dotenvup/mcp`). Optional `[policy]` per-recipient values; import merges; `up verify`.
 
 No server. Keys stay on the machine. Default identity = encrypted `identity.enc` under ~/.dotenvup/ + recovery code. Legacy plaintext → `up key upgrade` (opt-in, same Key-Id).
 

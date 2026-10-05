@@ -7,7 +7,7 @@ description: "Manages DotEnvUp encrypted env files (.env.up). Use for .env.up pr
 
 This project uses DotEnvUp: secrets live in `.env.up` (encrypted, safe to commit). The plaintext `.env` may not exist on disk (it is "locked").
 
-**Current versions (this repo):** Extension **0.7.0** · CLI `@dotenvup/cli` **0.3.0** · MCP `@dotenvup/mcp` · Keychain helper `@dotenvup/keychain` (macOS). Site: https://dotenvup.com · Agents: https://github.com/sarhej/dotenvup/blob/main/AGENTS.md
+**Current versions (this repo):** Extension **0.7.1** · CLI `@dotenvup/cli` **0.3.0** · MCP `@dotenvup/mcp` · Keychain helper `@dotenvup/keychain` (macOS). Site: https://dotenvup.com · Agents: https://github.com/sarhej/dotenvup/blob/main/AGENTS.md
 
 ## Explain to the user (short, honest)
 
