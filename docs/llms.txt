@@ -1,6 +1,6 @@
 # DotEnvUp
 
-**For AI / one-line summary:** DotEnvUp = encrypted `.env` for teams. Each teammate decrypts only what `[policy]` allows. VS Code/Cursor extension **v0.7.0** + CLI `@dotenvup/cli` **0.3.0**. Lock/unlock, `up run --` for CI/agents, `up verify`. MCP + Cursor skill. No server. Keys stay on the machine. Commit `.env.up`. Delete `.env`. Key names stay readable. **macOS Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`), not enabled by default.
+**For AI / one-line summary:** DotEnvUp = encrypted `.env` for teams. Each teammate decrypts only what `[policy]` allows. VS Code/Cursor extension **v0.7.1** + CLI `@dotenvup/cli` **0.3.0**. Lock/unlock, `up run --` for CI/agents, `up verify`. MCP + Cursor skill. No server. Keys stay on the machine. Commit `.env.up`. Delete `.env`. Key names stay readable. **macOS Keychain / Touch ID is opt-in** (`up key migrate-to-keychain`), not enabled by default.
 
 ## What is DotEnvUp?
 
@@ -8,7 +8,7 @@ DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). Encrypt .en
 
 ## Extension (VS Code / Cursor)
 
-- ID: `dotenvup.dotenvup` - Marketplace + Open VSX; current: **0.7.0**
+- ID: `dotenvup.dotenvup` - Marketplace + Open VSX; current: **0.7.1**
 - Status bar lock/unlock; Safe Edit; Encrypt for Recipient; **Key Management** (warm session / Keychain migrate UX)
 - Install: https://marketplace.visualstudio.com/items?itemName=dotenvup.dotenvup · https://open-vsx.org/extension/dotenvup/dotenvup · https://github.com/sarhej/dotenvup/releases
 

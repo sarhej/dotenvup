@@ -2,6 +2,14 @@
 
 All notable changes to the DotEnvUp extension will be documented in this file.
 
+## [0.7.1] - 2026-10-05
+
+### Fixed
+
+- **Always activate** — the extension no longer waits for `workspaceContains:**/.env` (VS Code search skips gitignored files, so a new `.env` never woke the status bar).
+- **Gitignored `.env` in subfolders** — scan with a filesystem walk so `deploy/local/.env` (and similar) is detected even when `.gitignore` hides it from search.
+- **Status bar** — hidden when the workspace has no `.env` or `.env.up`; it still appears as soon as one is created.
+
 ## [0.7.0] - 2026-08-25
 
 ### Added

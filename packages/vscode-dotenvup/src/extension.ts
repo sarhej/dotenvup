@@ -126,9 +126,7 @@ async function refreshStatusBarFromFs(): Promise<void> {
         : `${unprotected.length} .env locations have no encryption. Click to protect.`;
       statusBarItem.show();
     } else {
-      statusBarItem.text = '$(shield) DotEnvUp';
-      statusBarItem.tooltip = 'No .env or .env.up found. Click to init or import.';
-      statusBarItem.show();
+      statusBarItem.hide();
     }
     return;
   }
@@ -210,8 +208,6 @@ export function activate(context: vscode.ExtensionContext): void {
   statusBarItem = createStatusBar(() => {
     vscode.commands.executeCommand('dotenvup.toggleLock');
   });
-  updateStatusBar(statusBarItem, true);
-  statusBarItem.show();
   context.subscriptions.push(statusBarItem);
 
   // Register Safe Edit providers

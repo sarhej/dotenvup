@@ -6,7 +6,7 @@ image: "https://dotenvup.com/assets/og-image.png"
 
 # DotEnvUp
 
-**For AI / one-line summary:** DotEnvUp = encrypted `.env` for teams. Each teammate decrypts only what `[policy]` allows. VS Code/Cursor extension (v**0.7.0**) + CLI `@dotenvup/cli` **0.3.0**. Lock/unlock, `up run --` for CI/agents. MCP + Cursor skill so agents never assume `.env` exists. macOS Keychain / Touch ID is **opt-in** (`up key migrate-to-keychain`), not default. No server. Keys stay on the machine. Commit `.env.up`. Delete `.env`. Key names stay readable.
+**For AI / one-line summary:** DotEnvUp = encrypted `.env` for teams. Each teammate decrypts only what `[policy]` allows. VS Code/Cursor extension (v**0.7.1**) + CLI `@dotenvup/cli` **0.3.0**. Lock/unlock, `up run --` for CI/agents. MCP + Cursor skill so agents never assume `.env` exists. macOS Keychain / Touch ID is **opt-in** (`up key migrate-to-keychain`), not default. No server. Keys stay on the machine. Commit `.env.up`. Delete `.env`. Key names stay readable.
 
 ## What is DotEnvUp?
 
@@ -14,7 +14,7 @@ DotEnvUp is a **VS Code and Cursor extension** and a **CLI** (`up`). You encrypt
 
 The `.env.up` format is a "half-open envelope": key names, versions, timestamps, and authors are visible in cleartext (replacing `.env.example`), while secret values are encrypted. Optional `[policy]` says which recipient may decrypt which **values**.
 
-## Extension (VS Code / Cursor) - v0.7.0
+## Extension (VS Code / Cursor) - v0.7.1
 
 - One-click lock/unlock from the status bar
 - Right-click `.env.up`: Lock, Unlock to Disk, Edit with DotEnvUp (Safe Edit), Copy Public Key, Encrypt for Recipient
@@ -78,8 +78,8 @@ up status --json             # keyStorage, sessionActive, upgradeRecommended
 
 ```bash
 # Extension: Marketplace / Open VSX, or:
-code --install-extension dotenvup-0.7.0.vsix
-cursor --install-extension dotenvup-0.7.0.vsix
+code --install-extension dotenvup-0.7.1.vsix
+cursor --install-extension dotenvup-0.7.1.vsix
 
 npm install -g @dotenvup/cli
 npm install @dotenvup/node
@@ -90,7 +90,7 @@ npm install @dotenvup/node
 MIT.
 
 ```json
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"DotEnvUp","applicationCategory":"DeveloperApplication","operatingSystem":"Cross-platform","description":"Encrypted .env for teams. Each teammate decrypts only what policy allows. Works inside VS Code and Cursor. No server. Keys stay on your machine. CLI: npm i -g @dotenvup/cli.","url":"https://dotenvup.com","license":"https://opensource.org/licenses/MIT","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"DotEnvUp","url":"https://dotenvup.com"},"codeRepository":"https://github.com/sarhej/dotenvup","programmingLanguage":"TypeScript","softwareVersion":"0.7.0"}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"DotEnvUp","applicationCategory":"DeveloperApplication","operatingSystem":"Cross-platform","description":"Encrypted .env for teams. Each teammate decrypts only what policy allows. Works inside VS Code and Cursor. No server. Keys stay on your machine. CLI: npm i -g @dotenvup/cli.","url":"https://dotenvup.com","license":"https://opensource.org/licenses/MIT","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"DotEnvUp","url":"https://dotenvup.com"},"codeRepository":"https://github.com/sarhej/dotenvup","programmingLanguage":"TypeScript","softwareVersion":"0.7.1"}
 ```
 
 ```json

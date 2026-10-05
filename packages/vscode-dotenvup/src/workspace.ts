@@ -21,6 +21,51 @@ export interface WorkspaceEnvState {
 /** Exclude common non-project dirs when scanning for .env / .env.up */
 const SCAN_EXCLUDE = '**/node_modules/**,**/.git/**';
 
+/** Directory names skipped by the fs walk (dependency, VCS, and build-output dirs). */
+const FS_WALK_SKIP = new Set([
+  'node_modules', '.git', '.hg', '.svn', 'dist', 'build', 'out', 'coverage',
+  '.next', '.nuxt', '.turbo', '.cache', '.venv', 'venv', '__pycache__', 'target',
+  '.vscode-test',
+]);
+/** Max directory depth for the fs walk (workspace root = 0). */
+const FS_WALK_MAX_DEPTH = 6;
+/** Max total directories visited per workspace folder, to bound cost on huge repos. */
+const FS_WALK_MAX_DIRS = 5000;
+
+/**
+ * Walk the directory tree with fs and record every directory containing .env or .env.up.
+ * findFiles / workspaceContains can miss gitignored files (and .env is almost always
+ * gitignored), so this walk is the authoritative scan; findFiles results are merged in
+ * as a bonus for anything the walk's depth/skip limits might miss.
+ * Exported for unit tests (gitignored .env in subdirectories must be detected).
+ */
+export async function walkForEnvDirs(
+  root: string,
+  dirsWithEnv: Set<string>,
+  dirsWithEnvUp: Set<string>,
+): Promise<void> {
+  let visited = 0;
+  const queue: { dir: string; depth: number }[] = [{ dir: root, depth: 0 }];
+  while (queue.length > 0) {
+    const { dir, depth } = queue.shift()!;
+    if (visited++ >= FS_WALK_MAX_DIRS) return;
+    let entries: import('fs').Dirent[];
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      continue; // unreadable dir (permissions etc.)
+    }
+    for (const e of entries) {
+      if (e.isFile()) {
+        if (e.name === '.env') dirsWithEnv.add(path.normalize(dir));
+        else if (e.name === '.env.up') dirsWithEnvUp.add(path.normalize(dir));
+      } else if (e.isDirectory() && depth < FS_WALK_MAX_DEPTH && !FS_WALK_SKIP.has(e.name)) {
+        queue.push({ dir: path.join(dir, e.name), depth: depth + 1 });
+      }
+    }
+  }
+}
+
 /**
  * Compute folder state from presence of .env and .env.up.
  * Used by getWorkspaceEnvStates; exported for unit tests (state matrix).
@@ -103,29 +148,29 @@ export async function getWorkspaceEnvStates(): Promise<WorkspaceEnvState[]> {
     return result;
   }
 
-  const envUris: vscode.Uri[] = [];
-  const envUpUris: vscode.Uri[] = [];
+  const dirsWithEnv = new Set<string>();
+  const dirsWithEnvUp = new Set<string>();
+
+  // Primary scan: fs walk. findFiles / workspaceContains can omit gitignored files
+  // (and .env usually is gitignored), so the walk is what guarantees detection.
+  for (const folder of effectiveFolders) {
+    await walkForEnvDirs(folder.uri.fsPath, dirsWithEnv, dirsWithEnvUp);
+  }
+
+  // Secondary scan: findFiles, to catch anything beyond the walk's depth/skip limits.
   for (const folder of effectiveFolders) {
     const envPattern = new vscode.RelativePattern(folder, '**/.env');
     const envUpPattern = new vscode.RelativePattern(folder, '**/.env.up');
-    envUris.push(...(await vscode.workspace.findFiles(envPattern, SCAN_EXCLUDE)));
-    envUpUris.push(...(await vscode.workspace.findFiles(envUpPattern, SCAN_EXCLUDE)));
-  }
-
-  const dirsWithEnv = new Set(envUris.map((u) => path.normalize(path.dirname(u.fsPath))));
-  const dirsWithEnvUp = new Set(envUpUris.map((u) => path.normalize(path.dirname(u.fsPath))));
-
-  // findFiles can omit files in .gitignore or search.exclude; always check workspace roots with fs
-  for (const folder of effectiveFolders) {
-    const root = path.normalize(folder.uri.fsPath);
     try {
-      await fs.access(path.join(root, '.env'));
-      dirsWithEnv.add(root);
-    } catch {}
-    try {
-      await fs.access(path.join(root, '.env.up'));
-      dirsWithEnvUp.add(root);
-    } catch {}
+      for (const u of await vscode.workspace.findFiles(envPattern, SCAN_EXCLUDE)) {
+        dirsWithEnv.add(path.normalize(path.dirname(u.fsPath)));
+      }
+      for (const u of await vscode.workspace.findFiles(envUpPattern, SCAN_EXCLUDE)) {
+        dirsWithEnvUp.add(path.normalize(path.dirname(u.fsPath)));
+      }
+    } catch {
+      // findFiles unavailable (e.g. tests without search service); fs walk already covered us
+    }
   }
 
   const allDirs = new Set<string>([...dirsWithEnv, ...dirsWithEnvUp]);

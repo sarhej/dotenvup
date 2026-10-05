@@ -16,11 +16,13 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import {
   getWorkspaceEnvStates,
   getTargetWorkspaceRoot,
   computeFolderState,
   envRootDisplayName,
+  walkForEnvDirs,
   type FolderState,
 } from '../../workspace';
 
@@ -127,6 +129,48 @@ suite('Workspace helpers', () => {
         assert.ok(typeof s.name === 'string', 'name must be string');
         assert.ok(validStates.includes(s.state), `state must be one of ${validStates.join(', ')}`);
       }
+    });
+  });
+
+  suite('walkForEnvDirs (fs scan independent of gitignore/search.exclude)', () => {
+    async function makeTempTree(): Promise<string> {
+      const root = path.join(os.tmpdir(), `dotenvup-walk-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
+      await fs.mkdir(path.join(root, 'deploy', 'local'), { recursive: true });
+      await fs.mkdir(path.join(root, 'node_modules', 'pkg'), { recursive: true });
+      await fs.mkdir(path.join(root, 'apps', 'api'), { recursive: true });
+      await fs.writeFile(path.join(root, 'deploy', 'local', '.env'), 'A=1\n');
+      await fs.writeFile(path.join(root, 'apps', 'api', '.env.up'), '# dotenvup\n');
+      await fs.writeFile(path.join(root, 'node_modules', 'pkg', '.env'), 'IGNORED=1\n');
+      // .gitignore listing .env must NOT hide it from the walk (that's the point)
+      await fs.writeFile(path.join(root, '.gitignore'), '.env\n');
+      return root;
+    }
+
+    test('finds .env and .env.up in subdirectories, even when gitignored', async () => {
+      const root = await makeTempTree();
+      const dirsWithEnv = new Set<string>();
+      const dirsWithEnvUp = new Set<string>();
+      await walkForEnvDirs(root, dirsWithEnv, dirsWithEnvUp);
+      assert.ok(
+        dirsWithEnv.has(path.normalize(path.join(root, 'deploy', 'local'))),
+        'subdirectory .env must be found by fs walk',
+      );
+      assert.ok(
+        dirsWithEnvUp.has(path.normalize(path.join(root, 'apps', 'api'))),
+        'subdirectory .env.up must be found by fs walk',
+      );
+      await fs.rm(root, { recursive: true, force: true });
+    });
+
+    test('skips node_modules', async () => {
+      const root = await makeTempTree();
+      const dirsWithEnv = new Set<string>();
+      const dirsWithEnvUp = new Set<string>();
+      await walkForEnvDirs(root, dirsWithEnv, dirsWithEnvUp);
+      for (const dir of dirsWithEnv) {
+        assert.ok(!dir.includes('node_modules'), `.env inside node_modules must be skipped: ${dir}`);
+      }
+      await fs.rm(root, { recursive: true, force: true });
     });
   });
 

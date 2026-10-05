@@ -1,7 +1,7 @@
 {
   "name": "dotenvup",
   "displayName": ".env Up (DotEnvUp)",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Encrypted .env for teams. Each teammate decrypts only what policy allows. VS Code/Cursor extension + CLI (up). No server. Keys stay on your machine. Opt-in macOS Keychain. CLI: npm i -g @dotenvup/cli.",
   "publisher": "dotenvup",
   "keywords": [
@@ -54,8 +54,7 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:**/.env.up",
-    "workspaceContains:**/.env",
+    "onStartupFinished",
     "onCustomEditor:dotenvup.safeEdit",
     "onLanguage:dotenvup"
   ],
@@ -355,7 +354,7 @@
     "@types/node": "^25.2.3",
     "@types/vscode": "^1.85.0",
     "@vscode/test-cli": "^0.0.15",
-    "@vscode/test-electron": "^2.3.9",
+    "@vscode/test-electron": "^3.1.0",
     "esbuild": "^0.25.0",
     "typescript": "^5.7.0"
   },
