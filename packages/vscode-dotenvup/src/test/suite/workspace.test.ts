@@ -134,7 +134,7 @@ suite('Workspace helpers', () => {
 
   suite('walkForEnvDirs (fs scan independent of gitignore/search.exclude)', () => {
     async function makeTempTree(): Promise<string> {
-      const root = path.join(os.tmpdir(), `dotenvup-walk-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
+      const root = await fs.mkdtemp(path.join(os.tmpdir(), 'dotenvup-walk-'));
       await fs.mkdir(path.join(root, 'deploy', 'local'), { recursive: true });
       await fs.mkdir(path.join(root, 'node_modules', 'pkg'), { recursive: true });
       await fs.mkdir(path.join(root, 'apps', 'api'), { recursive: true });
