@@ -207,6 +207,7 @@ flowchart LR
 - [Troubleshooting](docs/TROUBLESHOOTING.md): common errors, identity and recovery
 - [File Type Registration](docs/FILE_TYPE.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Unsealer RFC](docs/design/UNSEALER.md): draft proposal for production boots. Not implemented
 - [Publishing to the Marketplace](docs/PUBLISHING.md) (maintainers)
 
 ## Install
@@ -282,6 +283,7 @@ npm test
 
 Planned work (not yet scheduled):
 
+- **Unsealer (proposal only).** A production `.env.up` that the host cannot open. The app boots without values. The admin decrypts in a static page they host, and the map stays in that process's memory. A process that is still running can prove it is the one already approved. A restart has no such proof and is still answered, by the admin or automatically if they opted in. There is no `up unseal` command. Design: [Unsealer RFC](docs/design/UNSEALER.md).
 - **Kubernetes controller:** cluster-side controller that decrypts `.env.up` and creates a standard Kubernetes `Secret`. Same idea as [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets): one format for local dev and GitOps in-cluster.
 - **MCP:** **Implemented.** [@dotenvup/mcp](packages/dotenvup-mcp) exposes `dotenvup_status`, `dotenvup_keys`, and `dotenvup_run`. Use **DotEnvUp: Copy MCP config for Cursor**, or see [docs/design/MCP_SERVER.md](docs/design/MCP_SERVER.md).
 - **Lock for Agent:** explicit guidance so agents never persist plaintext `.env`; use `up run --`.
