@@ -393,7 +393,7 @@ up unseal -- npm start
 
 The wrapper serves sealed mode, checks the proof, opens the reply with the boot key, and execs the command with the map in its environment. Application code keeps reading `process.env` or `os.environ`. Signals, health checks, process managers, and restart policies see the app, not DotEnvUp.
 
-It is a small static **Go binary**, so Python, Ruby, and Go images need no Node runtime. It does not decrypt `.env.up`. It reads `.dotenvup.recipients.json` for the `@unseal` public key, `.dotenvup/devices` for device keys, and the `Encrypted-For` header to confirm the file is for `@unseal`. It hashes the file and seals the challenge. A file whose recipients do not include `@unseal` is refused: that is a dev or CI file, and `up run` is its path. It is distributed through npm platform packages, the way esbuild is, and as checksummed release binaries. Test vectors are shared with the TypeScript libraries.
+It is a small TypeScript program. It uses `@dotenvup/format` to seal the challenge and hash the file, so there is one implementation of the cipher. It does not decrypt `.env.up`. It reads `.dotenvup.recipients.json` for the `@unseal` public key, `.dotenvup/devices` for device keys, and the `Encrypted-For` header to confirm the file is for `@unseal`. A file whose recipients do not include `@unseal` is refused: that is a dev or CI file, and `up run` is its path. The production image needs Node to run it. A static binary in another language is not part of this version.
 
 Hosting variables: none for a decryption key. The only new ones are the push subscription and VAPID key, which open nothing. The image contains `.env.up`, `.dotenvup.recipients.json`, and `.dotenvup/`, never a private key.
 
@@ -585,7 +585,7 @@ The file stays `#!dotenvup v1`. This RFC is a boot protocol, not a format versio
 
 [FORMAT_V2.md](./FORMAT_V2.md) proposes signing the cleartext header and `[keys]` with a key bound to `Key-Id`. Approval records do a narrower version of that job at the protocol layer: they say which file hash a human saved. If v2 ships, a record can carry the v2 signature and the client can show both.
 
-**Errata, shipping separately before this RFC:** §5.2 claims forward secrecy, which `crypto_box_seal` does not give: the recipient's long-term key opens every file ever sealed to it, including git history. §4.4 step 4 is an example, not a rule; a private key in a hosting variable is the deployment this RFC refuses.
+**Errata, applied in [FORMAT_SPEC.md](../FORMAT_SPEC.md):** §5.2 no longer claims forward secrecy. `crypto_box_seal_open` uses the recipient's long-term private key, so that key opens every file ever sealed to it, including git history. §4.4 step 4 is an example for a CI recipient, not a rule that a production key belongs in a hosting variable.
 
 ## 14. Decisions
 
@@ -600,7 +600,7 @@ The file stays `#!dotenvup v1`. This RFC is a boot protocol, not a format versio
 | Auto-path proof | Device keys committed in `.dotenvup/devices` | Hosting variables are the store we distrust |
 | Coding machines | Approve, but never hold restart material | Agents can read the browser profile |
 | Delivery to the process | Exec wrapper in the start command | One line, any stack, nothing left running. A resident supervisor fights process managers |
-| Wrapper language | Small static Go binary | Runs in images without Node. Tiny, no `.env.up` decryption |
+| Wrapper language | TypeScript, calling `@dotenvup/format` | One cipher. The image needs Node. A Go rewrite of the system is rejected |
 | Map transport | Sealed to a per-boot key | Hides the map from a forwarder. It does not identify the process |
 | Process continuity | A random value in the memory of the unsealed process | Names the process that is still running. A restart has none, and is answered without it. Not a key |
 | Approval history | Signed records in the repo | Shared across devices, visible in git, unforgeable without a passkey |
@@ -615,14 +615,14 @@ The file stays `#!dotenvup v1`. This RFC is a boot protocol, not a format versio
 | Phase | Scope |
 |---|---|
 | Now | FORMAT_SPEC errata. Terraform documentation for `up run` |
-| v1 | Go wrapper, sealed mode, waiting record and sealed reply, continuity value. Web app the admin hosts: identity creation, passkey unlock, recovery kit, approval, editing. Approval records. Web Push. `up unseal init` with platform detection, `up unseal record`. Auto restart with capsules and device keys, off unless the admin turns it on |
+| v1 | TypeScript wrapper, sealed mode, waiting record and sealed reply, continuity value. Web app the admin hosts: identity creation, passkey unlock, recovery kit, approval, editing. Approval records. Web Push. `up unseal init` with platform detection, `up unseal record`. Auto restart with capsules and device keys, off unless the admin turns it on |
 | v1.1 | Mailbox, pairing link, OIDC auto-approval, egress proxy, CLI relay, browser extension |
 | Later | Replicas, sibling fan-out, build provenance, native phone app, `up run --prefix` |
 | Backlog, not scheduled | Witnessed log. See [Backlog: witnessed log](#18-backlog-witnessed-log). No implementation in this RFC |
 
 **Validation before calling it production-ready**
 
-- **Now and in v1:** shared test vectors (waiting record, reply, capsule, approval record) across Go and TypeScript; fuzzing of the well-known endpoint and, later, the mailbox; GitHub private vulnerability reporting.
+- **Now and in v1:** test vectors for the waiting record, reply, capsule, and approval record in the TypeScript libraries; fuzzing of the well-known endpoint and, later, the mailbox; GitHub private vulnerability reporting.
 - **Public canary:** a live sealed deployment holding a canary value. Reading it without an enrolled device is a break.
 - **Before 1.0:** a funded third-party audit with a narrow scope (protocol, client crypto, wrapper), sought through programs such as NLnet NGI Zero or OSTIF.
 
@@ -656,6 +656,8 @@ The file stays `#!dotenvup v1`. This RFC is a boot protocol, not a format versio
 | An egress proxy as the agent's OS user | The agent could read its memory |
 | A native phone app as the only client | Open source cannot require an install |
 | A Terraform provider | Values would land in state exactly as with `TF_VAR_` |
+| A Go rewrite of DotEnvUp | The extension, `@dotenvup/node`, the approval page, and the worker stay JavaScript. A second cipher is the risk |
+| A Go wrapper in v1 | The cipher would be written twice before the protocol is frozen. Node in the image is accepted for now |
 
 ## 18. Backlog: witnessed log
 

@@ -304,7 +304,7 @@ The format explicitly supports non-human recipients. This enables CI/CD without 
 1. Generate a keypair for the CI environment.
 2. Add the CI's **public key** as a recipient to `.env.up`.
 3. Commit `.env.up` to the repository.
-4. Configure the CI runner with its **private key** (e.g. `DOTENVUP_PRIVATE_KEY` secret).
+4. Give the CI runner that identity's private key, for example in `DOTENVUP_PRIVATE_KEY`. This is an example for a CI recipient. It is not a rule that every private key belongs in a hosting secret. A key that opens production files beyond this job does not belong there.
 5. The CI decrypts at runtime: `up run -- npm test`.
 
 Developers never see the CI's private key. The CI never sees developers' private keys.
@@ -324,7 +324,7 @@ Developers never see the CI's private key. The CI never sees developers' private
 | :--- | :--- |
 | **Confidentiality** | XChaCha20-Poly1305 encryption. Without a recipient's private key, values cannot be read. |
 | **Integrity** | Poly1305 MAC. Ciphertext modification is detected on decryption. |
-| **Forward Secrecy** | Each encryption uses a fresh ephemeral key (`crypto_box_seal`). Compromise of a long-term key does not decrypt past files encrypted with different ephemeral keys. |
+| **Long-term recipient key** | `crypto_box_seal` uses a fresh ephemeral key, and `crypto_box_seal_open` uses the recipient's long-term private key. That key opens every file ever sealed to it, including older copies in git. |
 | **Recipient Isolation** | Each recipient's symmetric key is independently sealed. Removing a recipient (re-encrypting without their block) revokes their access. |
 
 ### 5.3. Cleartext (Known to Attacker)
